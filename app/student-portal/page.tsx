@@ -4,8 +4,6 @@ import { ContinueLearningCard } from "@/components/portal/widgets/ContinueLearni
 import { ProgressSummaryCard } from "@/components/portal/widgets/ProgressSummaryCard";
 import { CourseModulesList } from "@/components/portal/widgets/CourseModulesList";
 import { RecentLessonsList } from "@/components/portal/widgets/RecentLessonsList";
-import { HomeworkCard } from "@/components/portal/widgets/HomeworkCard";
-import { TeacherFeedbackCard } from "@/components/portal/widgets/TeacherFeedbackCard";
 import { AnnouncementsCard } from "@/components/portal/widgets/AnnouncementsCard";
 
 export default function StudentDashboardPage() {
@@ -24,8 +22,6 @@ export default function StudentDashboardPage() {
         <NextLiveClassCard />
         <ContinueLearningCard />
         <ProgressSummaryCard />
-        <HomeworkCard />
-        <TeacherFeedbackCard />
         <AnnouncementsCard />
       </div>
 

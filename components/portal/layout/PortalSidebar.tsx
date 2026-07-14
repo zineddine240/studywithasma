@@ -23,8 +23,6 @@ const NAV_LINKS = [
   { name: "My Course", href: "/student-portal/course", icon: BookOpen },
   { name: "Live Classes", href: "/student-portal/live-classes", icon: Video },
   { name: "Recorded Lessons", href: "/student-portal/recorded-lessons", icon: PlayCircle },
-  { name: "Homework", href: "/student-portal/homework", icon: FileText },
-  { name: "Teacher Feedback", href: "/student-portal/feedback", icon: MessageSquare },
   { name: "Resources", href: "/student-portal/resources", icon: BookOpen },
   { name: "My Progress", href: "/student-portal/progress", icon: BarChart3 },
   { name: "Writing Practice", href: "/student-portal/writing-practice", icon: PenTool },
