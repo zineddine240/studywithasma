@@ -1,48 +1,89 @@
-import { Layers, ChevronRight } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { PortalCard } from "../shared/PortalCard";
 import { SectionHeader } from "../shared/SectionHeader";
 import { StatusBadge } from "../shared/StatusBadge";
 import { ProgressBar } from "../shared/ProgressBar";
-import { courseModules } from "@/lib/mock/student-dashboard";
+import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 
-export function CourseModulesList() {
+export async function CourseModulesList() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let enrolledCourseId = null;
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("enrolled_course_id").eq("id", user.id).single();
+    enrolledCourseId = profile?.enrolled_course_id;
+  }
+
+  const modulesQuery = supabase.from("modules").select("*").order("number", { ascending: true });
+  if (enrolledCourseId) {
+    modulesQuery.eq("course_id", enrolledCourseId);
+  }
+  const { data: modules } = await modulesQuery;
+
+  const { data: allLessons } = await supabase.from("recorded_lessons").select("id, module_id");
+  const { data: progress } = user ? await supabase.from("lesson_progress").select("*").eq("student_id", user.id) : { data: [] };
+
+  const progressMap = new Map((progress || []).map(p => [p.lesson_id, p]));
+
+  const courseModules = (modules || []).map(m => {
+    const moduleLessons = (allLessons || []).filter(l => l.module_id === m.id);
+    let completed = 0;
+    moduleLessons.forEach(l => {
+      if (progressMap.get(l.id)?.is_completed) completed++;
+    });
+
+    const percent = moduleLessons.length > 0 ? Math.round((completed / moduleLessons.length) * 100) : 0;
+    let status = "Not Started";
+    if (percent === 100) status = "Completed";
+    else if (percent > 0) status = "In Progress";
+
+    return {
+      id: m.id,
+      title: m.name,
+      slug: m.slug,
+      lessons: moduleLessons.length,
+      progress: percent,
+      status: status as any
+    };
+  });
+
   return (
     <PortalCard>
-      <SectionHeader title="Course Modules" icon={<Layers className="w-5 h-5" />} />
-      
-      <div className="mt-4 space-y-3">
-        {courseModules.map((module, index) => (
-          <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border border-[#E5E7EB] hover:border-[#C4B5FD] hover:shadow-sm transition-all group">
-            <div className="flex-grow">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="font-bold text-[#1E1B4B]">{module.title}</h3>
-                <StatusBadge status={module.status} />
-              </div>
-              <p className="text-xs font-semibold text-[#64748B] mb-2">{module.lessons} Lessons</p>
-              <div className="flex items-center gap-3">
-                <ProgressBar progress={module.progress} className="max-w-[200px]" />
-                <span className="text-xs font-semibold text-[#64748B]">{module.progress}%</span>
-              </div>
+      <div className="flex items-center justify-between mb-4">
+        <SectionHeader title="Course Modules" icon={<BookOpen className="w-5 h-5" />} />
+        <Link href="/student-portal/course" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+          Course Overview
+        </Link>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        {courseModules.map((module) => (
+          <Link
+            key={module.id}
+            href={`/student-portal/course/${module.slug}`}
+            className="flex flex-col p-4 rounded-xl border border-border hover:border-primary/50 transition-colors group bg-card"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <h4 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 pr-2">
+                {module.title}
+              </h4>
+              <StatusBadge status={module.status} />
             </div>
             
-            <Link
-              href="#"
-              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-[#FAF7FF] text-[#7C3AED] group-hover:bg-[#7C3AED] group-hover:text-white transition-colors shrink-0"
-              aria-label={`Open ${module.title}`}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Link>
-            
-            {/* Mobile button */}
-            <Link
-              href="#"
-              className="sm:hidden w-full flex items-center justify-center gap-2 bg-[#FAF7FF] text-[#7C3AED] py-2 rounded-lg text-sm font-semibold border border-[#EDE9FE]"
-            >
-              Open Module
-            </Link>
-          </div>
+            <div className="mt-auto">
+              <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground mb-2">
+                <span>{module.lessons} Lessons</span>
+                <span className="text-primary">{module.progress}%</span>
+              </div>
+              <ProgressBar progress={module.progress} className="h-1.5" />
+            </div>
+          </Link>
         ))}
+        {courseModules.length === 0 && (
+          <p className="text-sm text-slate-500 py-4">No modules found.</p>
+        )}
       </div>
     </PortalCard>
   );

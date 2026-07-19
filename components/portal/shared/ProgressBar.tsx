@@ -9,10 +9,10 @@ export function ProgressBar({
 }) {
   return (
     <div
-      className={`w-full bg-[#EDE9FE] rounded-full h-2.5 overflow-hidden ${className}`}
+      className={`w-full bg-secondary rounded-full h-2.5 overflow-hidden ${className}`}
     >
       <div
-        className="bg-[#7C3AED] h-2.5 rounded-full"
+        className="bg-primary h-2.5 rounded-full"
         style={{ width: `${progress}%` }}
       ></div>
     </div>

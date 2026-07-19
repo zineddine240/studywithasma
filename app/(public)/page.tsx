@@ -3,15 +3,19 @@ import CoursesPreviewSection from "@/components/home/CoursesPreviewSection";
 import AboutSection from "@/components/home/AboutSection";
 import WhyUsSection from "@/components/home/WhyUsSection";
 import CtaSection from "@/components/home/CtaSection";
+import { getCoursesWithModules } from "@/lib/courseData";
 
-export default function Home() {
+export default async function Home() {
+  const courses = await getCoursesWithModules();
+
   return (
-    <main className="flex-grow">
+    <main className="grow">
       <HeroSection />
-      <CoursesPreviewSection />
+      <CoursesPreviewSection courses={courses} />
       <AboutSection />
       <WhyUsSection />
       <CtaSection />
     </main>
   );
 }
+

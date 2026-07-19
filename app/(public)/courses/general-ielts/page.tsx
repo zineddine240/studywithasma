@@ -4,13 +4,13 @@ import CourseDetailPageContent from "@/components/courses/CourseDetailPageConten
 import { getCourseBySlug } from "@/lib/courseData";
 
 export const metadata: Metadata = {
-  title: "General IELTS — Study with Asma",
+  title: "General IELTS - Study with Asma",
   description:
     "Prepare for work, migration, and everyday English communication through practical IELTS training with Asma.",
 };
 
-export default function GeneralIeltsPage() {
-  const course = getCourseBySlug("general-ielts");
+export default async function GeneralIeltsPage() {
+  const course = await getCourseBySlug("general-ielts");
   if (!course) return notFound();
 
   return <CourseDetailPageContent course={course} />;

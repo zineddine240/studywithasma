@@ -1,10 +1,35 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Play, Pause, Trash2, Send, AlertCircle, CheckCircle2, ChevronDown, Repeat, ListMusic, MessageSquareQuote, Copy } from "lucide-react";
+import {
+  Mic,
+  Square,
+  Play,
+  Pause,
+  Trash2,
+  Send,
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  Repeat,
+  ListMusic,
+  MessageSquareQuote,
+  Copy,
+} from "lucide-react";
 import { PortalCard } from "@/components/portal/shared/PortalCard";
 import { SectionHeader } from "@/components/portal/shared/SectionHeader";
-import { SpeakingPracticeRequest, SpeakingCorrectionResponse, SpeakingCorrectionSchema } from "@/lib/ai/schemas";
+import {
+  SpeakingPracticeRequest,
+  SpeakingCorrectionResponse,
+  SpeakingCorrectionSchema,
+} from "@/lib/ai/schemas";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getBestSupportedAudioType } from "@/lib/audio";
 
 const PRACTICE_TYPES = [
@@ -40,7 +65,7 @@ const QUESTIONS: Record<string, string[]> = {
     "What are your goals for improving your English?",
     "How do you usually practice speaking English?",
     "What is your favorite topic to discuss in English?",
-  ]
+  ],
 };
 
 const MAX_DURATION_SEC = 180; // 3 minutes
@@ -48,7 +73,9 @@ const MAX_DURATION_SEC = 180; // 3 minutes
 export default function SpeakingPracticePage() {
   // Practice Config
   const [practiceType, setPracticeType] = useState<string>(PRACTICE_TYPES[0]);
-  const [question, setQuestion] = useState<string>(QUESTIONS[PRACTICE_TYPES[0]][0]);
+  const [question, setQuestion] = useState<string>(
+    QUESTIONS[PRACTICE_TYPES[0]][0],
+  );
 
   // Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
@@ -102,7 +129,6 @@ export default function SpeakingPracticePage() {
     };
   }, [audioUrl]);
 
-
   // ── Recording Controls ──
 
   const startRecording = async () => {
@@ -113,7 +139,7 @@ export default function SpeakingPracticePage() {
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = getBestSupportedAudioType();
-      
+
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -140,30 +166,47 @@ export default function SpeakingPracticePage() {
       setAudioUrl(null);
     } catch (err: any) {
       console.error(err);
-      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        setPermissionError("Microphone access denied. Please allow microphone access in your browser settings to use this feature.");
+      if (
+        err.name === "NotAllowedError" ||
+        err.name === "PermissionDeniedError"
+      ) {
+        setPermissionError(
+          "Microphone access denied. Please allow microphone access in your browser settings to use this feature.",
+        );
       } else {
-        setPermissionError(err.message || "Could not access the microphone. Please check your hardware or browser support.");
+        setPermissionError(
+          err.message ||
+            "Could not access the microphone. Please check your hardware or browser support.",
+        );
       }
     }
   };
 
   const pauseRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
     }
   };
 
   const resumeRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "paused") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "paused"
+    ) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setIsPaused(false);
@@ -177,7 +220,6 @@ export default function SpeakingPracticePage() {
     setAudioUrl(null);
     setDuration(0);
   };
-
 
   // ── Submission ──
 
@@ -205,10 +247,11 @@ export default function SpeakingPracticePage() {
       const rawData = await res.json();
       const parsedData = SpeakingCorrectionSchema.parse(rawData);
       setResult(parsedData);
-
     } catch (err: any) {
       console.error(err);
-      setSubmitError(err.message || "An unexpected error occurred. Please try again.");
+      setSubmitError(
+        err.message || "An unexpected error occurred. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -227,7 +270,6 @@ export default function SpeakingPracticePage() {
     deleteRecording();
   };
 
-
   // ── Helpers ──
 
   const formatTime = (seconds: number) => {
@@ -236,19 +278,18 @@ export default function SpeakingPracticePage() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-8">
-      
       {/* ── Page Header ── */}
-      <section className="bg-[#1E1B4B] text-white p-6 sm:p-10 rounded-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#7C3AED] rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+      <section className="bg-card text-white p-6 sm:p-10 rounded-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
         <div className="relative z-10">
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">
             Speaking Practice
           </h1>
-          <p className="text-[#C4B5FD] text-lg max-w-2xl leading-relaxed">
-            Record your answer and receive AI-assisted language corrections and speaking feedback.
+          <p className="text-primary/70 text-lg max-w-2xl leading-relaxed">
+            Record your answer and receive AI-assisted language corrections and
+            speaking feedback.
           </p>
         </div>
       </section>
@@ -257,42 +298,63 @@ export default function SpeakingPracticePage() {
       {!result && (
         <div className="space-y-6">
           <PortalCard className="space-y-6">
-            <SectionHeader title="Select Topic" icon={<ListMusic className="w-5 h-5" />} />
-            
+            <SectionHeader
+              title="Select Topic"
+              icon={<ListMusic className="w-5 h-5" />}
+            />
+
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-[#1E1B4B] mb-2">Practice Type</label>
-                <select
+                <label className="block text-sm font-bold text-foreground mb-2">
+                  Practice Type
+                </label>
+                <Select
                   value={practiceType}
-                  onChange={(e) => setPracticeType(e.target.value)}
+                  onValueChange={(val) => setPracticeType(val || "")}
                   disabled={isRecording || isSubmitting || audioBlob !== null}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-all bg-white disabled:opacity-50"
                 >
-                  {PRACTICE_TYPES.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
+                    <SelectValue placeholder="Select practice type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRACTICE_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-[#1E1B4B] mb-2">Question</label>
-                <select
+                <label className="block text-sm font-bold text-foreground mb-2">
+                  Question
+                </label>
+                <Select
                   value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
+                  onValueChange={(val) => setQuestion(val || "")}
                   disabled={isRecording || isSubmitting || audioBlob !== null}
-                  className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-all bg-white disabled:opacity-50"
                 >
-                  {QUESTIONS[practiceType].map(q => (
-                    <option key={q} value={q}>{q}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
+                    <SelectValue placeholder="Select question" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {QUESTIONS[practiceType].map((q) => (
+                      <SelectItem key={q} value={q}>
+                        {q}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            
+
             {/* Display large question card */}
-            <div className="bg-[#FAF7FF] border border-[#EDE9FE] rounded-2xl p-6 text-center shadow-inner mt-4">
-              <span className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-2 block">{practiceType}</span>
-              <h2 className="text-2xl font-bold text-[#1E1B4B]">{question}</h2>
+            <div className="bg-muted/30 border border-border rounded-2xl p-6 text-center shadow-inner mt-4">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">
+                {practiceType}
+              </span>
+              <h2 className="text-2xl font-bold text-foreground">{question}</h2>
             </div>
           </PortalCard>
 
@@ -303,7 +365,7 @@ export default function SpeakingPracticePage() {
                 <p className="font-medium text-sm">{permissionError}</p>
               </div>
             )}
-            
+
             {submitError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 text-left mb-6 mx-auto max-w-2xl">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -313,12 +375,11 @@ export default function SpeakingPracticePage() {
 
             {!audioBlob && (
               <div className="flex flex-col items-center gap-6">
-                
                 {/* Timer Display */}
-                <div className="text-5xl font-extrabold tabular-nums tracking-tight text-[#1E1B4B]">
+                <div className="text-5xl font-extrabold tabular-nums tracking-tight text-foreground">
                   {formatTime(duration)}
                 </div>
-                
+
                 {isRecording && (
                   <div className="text-sm font-semibold text-rose-500 animate-pulse flex items-center gap-2">
                     <div className="w-2.5 h-2.5 bg-rose-500 rounded-full"></div>
@@ -331,7 +392,7 @@ export default function SpeakingPracticePage() {
                   </div>
                 )}
                 {!isRecording && duration === 0 && (
-                  <div className="text-sm font-semibold text-[#64748B]">
+                  <div className="text-sm font-semibold text-muted-foreground">
                     Max duration: 3 minutes. Press record to begin.
                   </div>
                 )}
@@ -351,7 +412,7 @@ export default function SpeakingPracticePage() {
                     <>
                       <button
                         onClick={pauseRecording}
-                        className="w-14 h-14 rounded-full bg-slate-100 hover:bg-slate-200 text-[#1E1B4B] flex items-center justify-center shadow transition-colors"
+                        className="w-14 h-14 rounded-full bg-slate-100 hover:bg-slate-200 text-foreground flex items-center justify-center shadow transition-colors"
                       >
                         <Pause className="w-6 h-6" fill="currentColor" />
                       </button>
@@ -368,7 +429,7 @@ export default function SpeakingPracticePage() {
                     <>
                       <button
                         onClick={resumeRecording}
-                        className="w-14 h-14 rounded-full bg-slate-100 hover:bg-slate-200 text-[#1E1B4B] flex items-center justify-center shadow transition-colors"
+                        className="w-14 h-14 rounded-full bg-slate-100 hover:bg-slate-200 text-foreground flex items-center justify-center shadow transition-colors"
                       >
                         <Mic className="w-6 h-6" />
                       </button>
@@ -387,8 +448,8 @@ export default function SpeakingPracticePage() {
             {/* Audio Preview & Submit */}
             {audioBlob && audioUrl && (
               <div className="flex flex-col items-center gap-6 max-w-xl mx-auto w-full">
-                <div className="bg-[#FAF7FF] p-6 rounded-2xl border border-[#EDE9FE] w-full space-y-4">
-                  <h3 className="font-bold text-[#1E1B4B] flex items-center gap-2 justify-center">
+                <div className="bg-muted/30 p-6 rounded-2xl border border-border w-full space-y-4">
+                  <h3 className="font-bold text-foreground flex items-center gap-2 justify-center">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                     Recording Complete ({formatTime(duration)})
                   </h3>
@@ -399,12 +460,12 @@ export default function SpeakingPracticePage() {
                     className="w-full custom-audio-player"
                   />
                 </div>
-                
+
                 <div className="flex flex-wrap justify-center gap-4 w-full">
                   <button
                     onClick={deleteRecording}
                     disabled={isSubmitting}
-                    className="flex-1 min-w-[140px] px-6 py-3.5 rounded-xl font-bold bg-white border border-[#E5E7EB] text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 min-w-35 px-6 py-3.5 rounded-xl font-bold bg-card border border-border text-red-600 hover:bg-red-500/10 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     <Trash2 className="w-5 h-5" />
                     Delete
@@ -412,7 +473,7 @@ export default function SpeakingPracticePage() {
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-bold bg-[#7C3AED] text-white hover:bg-[#4C1D95] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                    className="flex-1 min-w-50 px-6 py-3.5 rounded-xl font-bold bg-primary text-white hover:bg-primary/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                   >
                     {isSubmitting ? (
                       <>
@@ -427,8 +488,9 @@ export default function SpeakingPracticePage() {
                     )}
                   </button>
                 </div>
-                <div className="text-xs text-[#64748B]">
-                  By submitting, you agree to have your audio processed securely by our AI service. No personal data is included.
+                <div className="text-xs text-muted-foreground">
+                  By submitting, you agree to have your audio processed securely
+                  by our AI service. No personal data is included.
                 </div>
               </div>
             )}
@@ -439,49 +501,55 @@ export default function SpeakingPracticePage() {
       {/* ── Results View ── */}
       {result && audioUrl && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-600 p-4 rounded-xl flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-500" />
             <p className="text-sm font-medium leading-relaxed">
-              <strong>Notice:</strong> AI feedback is provided for speaking practice and language learning only. It is not an official IELTS assessment or pronunciation score.
+              <strong>Notice:</strong> AI feedback is provided for speaking
+              practice and language learning only. It is not an official IELTS
+              assessment or pronunciation score.
             </p>
           </div>
 
           {/* Original context recap */}
-          <PortalCard className="bg-[#FAF7FF] border-[#EDE9FE]">
-            <span className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-1 block">{practiceType}</span>
-            <h2 className="text-xl font-bold text-[#1E1B4B] mb-4">{question}</h2>
+          <PortalCard className="bg-muted/30 border-border">
+            <span className="text-xs font-bold text-primary uppercase tracking-wider mb-1 block">
+              {practiceType}
+            </span>
+            <h2 className="text-xl font-bold text-foreground mb-4">
+              {question}
+            </h2>
             <audio src={audioUrl} controls className="w-full max-w-md h-10" />
           </PortalCard>
 
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Original Transcript */}
-            <PortalCard className="bg-slate-50 border-slate-200">
-              <h3 className="font-bold text-[#1E1B4B] mb-4 flex items-center gap-2">
-                <MessageSquareQuote className="w-4 h-4 text-[#64748B]" />
+            <PortalCard className="bg-muted/50 border-border">
+              <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                <MessageSquareQuote className="w-4 h-4 text-muted-foreground" />
                 Your Transcript
               </h3>
-              <div className="text-sm text-[#64748B] whitespace-pre-wrap leading-relaxed">
-                {result.transcript || "(Audio could not be transcribed properly)"}
+              <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                {result.transcript ||
+                  "(Audio could not be transcribed properly)"}
               </div>
             </PortalCard>
 
             {/* Corrected Transcript */}
-            <PortalCard className="bg-emerald-50/50 border-emerald-100">
+            <PortalCard className="bg-emerald-500/10 border-emerald-500/20">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-emerald-900 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   Corrected Transcript
                 </h3>
                 <button
                   onClick={handleCopyTranscript}
-                  className="p-2 text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors"
+                  className="p-2 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors"
                   title="Copy Corrected Transcript"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
-              <div className="text-sm text-[#1E1B4B] whitespace-pre-wrap leading-relaxed">
+              <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                 {result.correctedTranscript}
               </div>
             </PortalCard>
@@ -489,28 +557,43 @@ export default function SpeakingPracticePage() {
 
           {/* Detailed Feedback */}
           <PortalCard>
-            <SectionHeader title="Language Feedback" icon={<ListMusic className="w-5 h-5" />} />
-            
+            <SectionHeader
+              title="Language Feedback"
+              icon={<ListMusic className="w-5 h-5" />}
+            />
+
             <div className="mt-6 space-y-8">
-              
               {/* Language Corrections */}
               {result.corrections && result.corrections.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-[#1E1B4B] mb-4 border-b border-[#E5E7EB] pb-2">Mistakes & Corrections</h4>
+                  <h4 className="font-bold text-foreground mb-4 border-b border-[#E5E7EB] pb-2">
+                    Mistakes & Corrections
+                  </h4>
                   <div className="space-y-4">
                     {result.corrections.map((corr, idx) => (
-                      <div key={idx} className="bg-white border border-[#E5E7EB] rounded-xl p-4">
+                      <div
+                        key={idx}
+                        className="bg-card border border-border rounded-xl p-4"
+                      >
                         <div className="flex justify-between items-start gap-4 mb-3">
                           <div className="flex flex-wrap items-center gap-2 text-sm">
-                            <span className="line-through text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded">{corr.originalText}</span>
-                            <span className="text-[#64748B] font-bold">→</span>
-                            <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">{corr.correctedText}</span>
+                            <span className="line-through text-destructive font-medium bg-destructive/10 px-2 py-0.5 rounded">
+                              {corr.originalText}
+                            </span>
+                            <span className="text-muted-foreground font-bold">
+                              →
+                            </span>
+                            <span className="text-emerald-600 font-bold bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded">
+                              {corr.correctedText}
+                            </span>
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C3AED] bg-[#FAF7FF] border border-[#EDE9FE] px-2 py-1 rounded shrink-0">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-muted/30 border border-border px-2 py-1 rounded shrink-0">
                             {corr.category}
                           </span>
                         </div>
-                        <p className="text-sm text-[#64748B]">{corr.explanation}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {corr.explanation}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -518,52 +601,87 @@ export default function SpeakingPracticePage() {
               )}
 
               {/* Vocabulary Suggestions */}
-              {result.vocabularySuggestions && result.vocabularySuggestions.length > 0 && (
-                <div>
-                  <h4 className="font-bold text-[#1E1B4B] mb-4 border-b border-[#E5E7EB] pb-2">Vocabulary Suggestions</h4>
-                  <div className="space-y-4">
-                    {result.vocabularySuggestions.map((vocab, idx) => (
-                      <div key={idx} className="bg-[#FAF7FF] border border-[#EDE9FE] rounded-xl p-4">
-                        <div className="flex flex-wrap items-center gap-2 text-sm mb-2">
-                          <span className="text-[#64748B] font-medium px-2 py-0.5 bg-white rounded border border-[#E5E7EB]">{vocab.originalText}</span>
-                          <span className="text-[#64748B] font-bold">→</span>
-                          <span className="text-[#7C3AED] font-bold px-2 py-0.5 bg-white rounded border border-[#EDE9FE]">{vocab.suggestedText}</span>
+              {result.vocabularySuggestions &&
+                result.vocabularySuggestions.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-foreground mb-4 border-b border-[#E5E7EB] pb-2">
+                      Vocabulary Suggestions
+                    </h4>
+                    <div className="space-y-4">
+                      {result.vocabularySuggestions.map((vocab, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-muted/30 border border-border rounded-xl p-4"
+                        >
+                          <div className="flex flex-wrap items-center gap-2 text-sm mb-2">
+                            <span className="text-muted-foreground font-medium px-2 py-0.5 bg-card rounded border border-border">
+                              {vocab.originalText}
+                            </span>
+                            <span className="text-muted-foreground font-bold">
+                              →
+                            </span>
+                            <span className="text-primary font-bold px-2 py-0.5 bg-card rounded border border-border">
+                              {vocab.suggestedText}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {vocab.explanation}
+                          </p>
                         </div>
-                        <p className="text-sm text-[#64748B]">{vocab.explanation}</p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </PortalCard>
 
           {/* Speaking Observations */}
           <PortalCard>
-            <SectionHeader title="Speaking Observations" icon={<Mic className="w-5 h-5" />} />
+            <SectionHeader
+              title="Speaking Observations"
+              icon={<Mic className="w-5 h-5" />}
+            />
             <div className="mt-6 grid sm:grid-cols-3 gap-6">
               <div>
-                <h4 className="font-bold text-[#1E1B4B] mb-3 text-sm">Fluency & Pace</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-[#64748B]">
-                  {(result.fluencyNotes && result.fluencyNotes.length > 0) ? result.fluencyNotes.map((note, i) => (
-                    <li key={i}>{note}</li>
-                  )) : <li>No specific notes.</li>}
+                <h4 className="font-bold text-foreground mb-3 text-sm">
+                  Fluency & Pace
+                </h4>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  {result.fluencyNotes && result.fluencyNotes.length > 0 ? (
+                    result.fluencyNotes.map((note, i) => (
+                      <li key={i}>{note}</li>
+                    ))
+                  ) : (
+                    <li>No specific notes.</li>
+                  )}
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-[#1E1B4B] mb-3 text-sm">Pronunciation & Clarity</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-[#64748B]">
-                  {(result.clarityNotes && result.clarityNotes.length > 0) ? result.clarityNotes.map((note, i) => (
-                    <li key={i}>{note}</li>
-                  )) : <li>No specific notes.</li>}
+                <h4 className="font-bold text-foreground mb-3 text-sm">
+                  Pronunciation & Clarity
+                </h4>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  {result.clarityNotes && result.clarityNotes.length > 0 ? (
+                    result.clarityNotes.map((note, i) => (
+                      <li key={i}>{note}</li>
+                    ))
+                  ) : (
+                    <li>No specific notes.</li>
+                  )}
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-[#1E1B4B] mb-3 text-sm">Task Relevance</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-[#64748B]">
-                  {(result.relevanceNotes && result.relevanceNotes.length > 0) ? result.relevanceNotes.map((note, i) => (
-                    <li key={i}>{note}</li>
-                  )) : <li>No specific notes.</li>}
+                <h4 className="font-bold text-foreground mb-3 text-sm">
+                  Task Relevance
+                </h4>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  {result.relevanceNotes && result.relevanceNotes.length > 0 ? (
+                    result.relevanceNotes.map((note, i) => (
+                      <li key={i}>{note}</li>
+                    ))
+                  ) : (
+                    <li>No specific notes.</li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -572,20 +690,34 @@ export default function SpeakingPracticePage() {
           {/* Improved Answer & Follow-ups */}
           <div className="grid lg:grid-cols-3 gap-6">
             <PortalCard className="lg:col-span-2">
-              <h4 className="font-bold text-[#1E1B4B] mb-4">Improved Example Answer</h4>
-              <p className="text-sm text-[#64748B] leading-relaxed whitespace-pre-wrap bg-white p-4 rounded-xl border border-[#E5E7EB]">
+              <h4 className="font-bold text-foreground mb-4">
+                Improved Example Answer
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap bg-card p-4 rounded-xl border border-border">
                 {result.improvedAnswer}
               </p>
             </PortalCard>
 
             <PortalCard>
-              <h4 className="font-bold text-[#1E1B4B] mb-4">Follow-up Questions</h4>
+              <h4 className="font-bold text-foreground mb-4">
+                Follow-up Questions
+              </h4>
               <ul className="space-y-3">
-                {(result.followUpQuestions && result.followUpQuestions.length > 0) ? result.followUpQuestions.map((fq, i) => (
-                  <li key={i} className="text-sm font-medium text-[#7C3AED] bg-[#FAF7FF] p-3 rounded-lg border border-[#EDE9FE]">
-                    Q: {fq}
+                {result.followUpQuestions &&
+                result.followUpQuestions.length > 0 ? (
+                  result.followUpQuestions.map((fq, i) => (
+                    <li
+                      key={i}
+                      className="text-sm font-medium text-primary bg-muted/30 p-3 rounded-lg border border-border"
+                    >
+                      Q: {fq}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-muted-foreground">
+                    None suggested.
                   </li>
-                )) : <li className="text-sm text-[#64748B]">None suggested.</li>}
+                )}
               </ul>
             </PortalCard>
           </div>
@@ -594,20 +726,19 @@ export default function SpeakingPracticePage() {
           <div className="flex flex-wrap items-center gap-4">
             <button
               onClick={resetPractice}
-              className="bg-white text-[#1E1B4B] px-6 py-2.5 rounded-xl font-bold border border-[#E5E7EB] hover:bg-slate-50 transition-colors flex items-center gap-2"
+              className="bg-card text-foreground px-6 py-2.5 rounded-xl font-bold border border-border hover:bg-muted transition-colors flex items-center gap-2"
             >
               <Repeat className="w-4 h-4" />
               Practice Again
             </button>
             <button
               disabled
-              className="bg-[#7C3AED] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#4C1D95] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               title="Coming Soon"
             >
               Send to Teacher
             </button>
           </div>
-
         </div>
       )}
     </div>

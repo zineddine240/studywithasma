@@ -4,13 +4,13 @@ import CourseDetailPageContent from "@/components/courses/CourseDetailPageConten
 import { getCourseBySlug } from "@/lib/courseData";
 
 export const metadata: Metadata = {
-  title: "Academic IELTS — Study with Asma",
+  title: "Academic IELTS - Study with Asma",
   description:
     "Prepare for university and academic purposes through structured IELTS lessons in Listening, Reading, Writing, and Speaking with Asma.",
 };
 
-export default function AcademicIeltsPage() {
-  const course = getCourseBySlug("academic-ielts");
+export default async function AcademicIeltsPage() {
+  const course = await getCourseBySlug("academic-ielts");
   if (!course) return notFound();
 
   return <CourseDetailPageContent course={course} />;

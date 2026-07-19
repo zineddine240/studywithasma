@@ -6,10 +6,10 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-white">
+    <div className="min-h-screen flex flex-col font-sans bg-background">
       <Navbar />
       {children}
-      <footer className="bg-[#1E1B4B] py-8 text-center text-[#64748B] text-sm mt-auto">
+      <footer className="bg-card py-8 text-center text-muted-foreground text-sm mt-auto">
         <p>&copy; {new Date().getFullYear()} Study with Asma. All rights reserved.</p>
       </footer>
     </div>

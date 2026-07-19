@@ -17,10 +17,10 @@ export default function FormField({
     <div>
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-semibold text-[#1E1B4B] mb-1.5"
+        className="block text-sm font-semibold text-foreground mb-1.5"
       >
         {label}
-        {required && <span className="text-[#7C3AED] ml-0.5">*</span>}
+        {required && <span className="text-primary ml-0.5">*</span>}
       </label>
       {children}
       {error && (
@@ -32,10 +32,10 @@ export default function FormField({
 
 /* Shared input class names */
 export const inputClassName =
-  "w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-[#1E1B4B] text-sm placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors";
+  "w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-foreground text-sm placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors";
 
 export const selectClassName =
-  "w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-[#1E1B4B] text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors appearance-none";
+  "w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors appearance-none";
 
 export const textareaClassName =
-  "w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-[#1E1B4B] text-sm placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors resize-none";
+  "w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-foreground text-sm placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-none";

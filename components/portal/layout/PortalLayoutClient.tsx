@@ -6,14 +6,17 @@ import { PortalTopBar } from "./PortalTopBar";
 
 export function PortalLayoutClient({
   children,
+  userEmail,
 }: {
   children: React.ReactNode;
+  userEmail?: string;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (sidebarOpen) {
+    if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -21,17 +24,31 @@ export function PortalLayoutClient({
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [sidebarOpen]);
+  }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-[#FAF7FF] font-sans">
-      <PortalSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="lg:pl-72 flex flex-col min-h-screen">
-        <PortalTopBar onOpenSidebar={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
-      </div>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <PortalSidebar 
+        isExpanded={isSidebarExpanded} 
+        setIsExpanded={setIsSidebarExpanded}
+        isOpen={mobileMenuOpen}
+        setIsOpen={setMobileMenuOpen}
+      />
+      
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+        <PortalTopBar 
+          onOpenSidebar={() => setMobileMenuOpen(true)} 
+          userEmail={userEmail}
+          isExpanded={isSidebarExpanded}
+          setIsExpanded={setIsSidebarExpanded}
+        />
+        
+        <div className="flex-1 overflow-auto w-full custom-scrollbar">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+            {children}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

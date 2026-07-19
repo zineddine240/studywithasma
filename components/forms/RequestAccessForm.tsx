@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Send,
@@ -8,17 +8,24 @@ import {
   ArrowRight,
   ChevronDown,
 } from "lucide-react";
-import FormField, {
-  inputClassName,
-  selectClassName,
-  textareaClassName,
-} from "@/components/forms/FormField";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox";
 
-const COURSE_OPTIONS = [
-  { value: "", label: "Select a course" },
-  { value: "academic-ielts", label: "Academic IELTS" },
-  { value: "general-ielts", label: "General IELTS" },
-];
+// We'll fetch courses dynamically, so no hardcoded COURSE_OPTIONS here.
 
 const ENGLISH_LEVEL_OPTIONS = [
   { value: "", label: "Select your level" },
@@ -49,17 +56,23 @@ const REASON_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-interface FormErrors {
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  country?: string;
-  course?: string;
-  englishLevel?: string;
-  targetBand?: string;
-  reason?: string;
-  agreement?: string;
-}
+const requestAccessSchema = z.object({
+  fullName: z.string().min(1, "Full Name is required."),
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
+  phone: z.string().min(1, "Phone / WhatsApp Number is required."),
+  country: z.string().min(1, "Country is required."),
+  course: z.string().min(1, "Please select a course."),
+  englishLevel: z.string().min(1, "Please select your English level."),
+  targetBand: z.string().min(1, "Please select your target band."),
+  reason: z.string().min(1, "Please select your reason."),
+  message: z.string().optional(),
+  agreement: z.literal(true, {
+    message: "You must accept the agreement before submitting."
+  }),
+});
+
+type RequestAccessFormValues = z.infer<typeof requestAccessSchema>;
 
 interface RequestAccessFormProps {
   defaultCourse?: string;
@@ -69,53 +82,67 @@ export default function RequestAccessForm({
   defaultCourse = "",
 }: RequestAccessFormProps) {
   const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [courses, setCourses] = useState<{value: string, label: string}[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState("");
-  const [course, setCourse] = useState(defaultCourse);
-  const [englishLevel, setEnglishLevel] = useState("");
-  const [targetBand, setTargetBand] = useState("");
-  const [reason, setReason] = useState("");
-  const [message, setMessage] = useState("");
-  const [agreement, setAgreement] = useState(false);
+  useEffect(() => {
+    async function fetchCourses() {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("courses")
+        .select("slug, title")
+        .order("created_at", { ascending: false });
 
-  function validate(): boolean {
-    const newErrors: FormErrors = {};
-
-    if (!fullName.trim()) newErrors.fullName = "Full Name is required.";
-
-    if (!email.trim()) {
-      newErrors.email = "Email Address is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address.";
+      if (data) {
+        const options = data.map((c) => ({ value: c.slug, label: c.title }));
+        setCourses([{ value: "", label: "Select a course" }, ...options]);
+      }
+      setIsLoadingCourses(false);
     }
+    fetchCourses();
+  }, []);
 
-    if (!phone.trim())
-      newErrors.phone = "Phone / WhatsApp Number is required.";
-    if (!country.trim()) newErrors.country = "Country is required.";
-    if (!course) newErrors.course = "Please select a course.";
-    if (!englishLevel)
-      newErrors.englishLevel = "Please select your English level.";
-    if (!targetBand)
-      newErrors.targetBand = "Please select your target band.";
-    if (!reason) newErrors.reason = "Please select your reason.";
-    if (!agreement)
-      newErrors.agreement =
-        "You must accept the agreement before submitting.";
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<RequestAccessFormValues>({
+    resolver: zodResolver(requestAccessSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      phone: "",
+      country: "",
+      course: defaultCourse,
+      englishLevel: "",
+      targetBand: "",
+      reason: "",
+      message: "",
+    },
+  });
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (validate()) {
+  const onSubmit = async (data: RequestAccessFormValues) => {
+    try {
+      const response = await fetch("/api/enrollment-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit request.");
+      }
+      
       setSubmitted(true);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to submit request.");
     }
-  }
+  };
 
   /* ── Success state ── */
   if (submitted) {
@@ -124,17 +151,17 @@ export default function RequestAccessForm({
         <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
           <CheckCircle className="w-10 h-10 text-emerald-600" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1E1B4B] mb-4">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-4">
           Request Submitted Successfully
         </h2>
-        <p className="text-[#64748B] leading-relaxed mb-10 max-w-md mx-auto">
+        <p className="text-muted-foreground leading-relaxed mb-10 max-w-md mx-auto">
           Thank you for your interest in Study with Asma. Your enrollment
           request has been received and will be reviewed shortly. You will be
           contacted by email or WhatsApp with the next steps.
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-[#7C3AED] text-white px-8 py-3.5 rounded-full font-semibold hover:bg-[#4C1D95] transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-full font-semibold hover:bg-primary/80 transition-colors shadow-sm"
         >
           Return to Home
           <ArrowRight className="w-4 h-4" />
@@ -145,196 +172,221 @@ export default function RequestAccessForm({
 
   /* ── Form ── */
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
       {/* Row: Name + Email */}
       <div className="grid sm:grid-cols-2 gap-5">
-        <FormField
-          label="Full Name"
-          htmlFor="fullName"
-          required
-          error={errors.fullName}
-        >
-          <input
-            id="fullName"
-            type="text"
-            placeholder="Your full name"
-            className={inputClassName}
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </FormField>
+        <Field>
+          <FieldLabel htmlFor="fullName">Full Name *</FieldLabel>
+          <FieldContent>
+            <Input
+              id="fullName"
+              placeholder="Your full name"
+              {...register("fullName")}
+            />
+          </FieldContent>
+          <FieldError errors={[errors.fullName]} />
+        </Field>
 
-        <FormField
-          label="Email Address"
-          htmlFor="email"
-          required
-          error={errors.email}
-        >
-          <input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            className={inputClassName}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </FormField>
+        <Field>
+          <FieldLabel htmlFor="email">Email Address *</FieldLabel>
+          <FieldContent>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              {...register("email")}
+            />
+          </FieldContent>
+          <FieldError errors={[errors.email]} />
+        </Field>
       </div>
 
-      {/* Row: Phone + Country */}
+      {/* Row: Password + Phone */}
       <div className="grid sm:grid-cols-2 gap-5">
-        <FormField
-          label="Phone / WhatsApp Number"
-          htmlFor="phone"
-          required
-          error={errors.phone}
-        >
-          <input
-            id="phone"
-            type="tel"
-            placeholder="+213 000 000 000"
-            className={inputClassName}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-        </FormField>
+        <Field>
+          <FieldLabel htmlFor="password">Password *</FieldLabel>
+          <FieldContent>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Create a password"
+              {...register("password")}
+            />
+          </FieldContent>
+          <FieldError errors={[errors.password]} />
+        </Field>
 
-        <FormField
-          label="Country"
-          htmlFor="country"
-          required
-          error={errors.country}
-        >
-          <input
-            id="country"
-            type="text"
-            placeholder="Your country"
-            className={inputClassName}
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-          />
-        </FormField>
+        <Field>
+          <FieldLabel htmlFor="phone">Phone / WhatsApp Number *</FieldLabel>
+          <FieldContent>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+213 000 000 000"
+              {...register("phone")}
+            />
+          </FieldContent>
+          <FieldError errors={[errors.phone]} />
+        </Field>
       </div>
+
+      {/* Country (Full Width or part of next row) */}
+      <Field>
+        <FieldLabel htmlFor="country">Country *</FieldLabel>
+        <FieldContent>
+          <Input
+            id="country"
+            placeholder="Your country"
+            {...register("country")}
+          />
+        </FieldContent>
+        <FieldError errors={[errors.country]} />
+      </Field>
 
       {/* Selected Course */}
-      <FormField
-        label="Selected Course"
-        htmlFor="course"
-        required
-        error={errors.course}
-      >
-        <div className="relative">
-          <select
-            id="course"
-            className={selectClassName}
-            value={course}
-            onChange={(e) => setCourse(e.target.value)}
-          >
-            {COURSE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] pointer-events-none" />
-        </div>
-      </FormField>
+      <Field>
+        <FieldLabel htmlFor="course">Selected Course *</FieldLabel>
+        <FieldContent>
+          <Controller
+            control={control}
+            name="course"
+            render={({ field }) => (
+              <Combobox value={field.value || null} onValueChange={(val) => field.onChange(val || "")} disabled={isLoadingCourses}>
+                <ComboboxInput
+                  placeholder={isLoadingCourses ? "Loading courses..." : "Select a course"}
+                  className="w-full bg-background"
+                />
+                <ComboboxContent className="w-[var(--anchor-width)]">
+                  <ComboboxList>
+                    {courses.filter(c => c.value !== "").length === 0 ? (
+                      <ComboboxEmpty>No courses found.</ComboboxEmpty>
+                    ) : (
+                      courses.filter(c => c.value !== "").map((opt) => (
+                        <ComboboxItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </ComboboxItem>
+                      ))
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            )}
+          />
+        </FieldContent>
+        <FieldError errors={[errors.course]} />
+      </Field>
 
       {/* Row: English Level + Target Band */}
       <div className="grid sm:grid-cols-2 gap-5">
-        <FormField
-          label="Current English Level"
-          htmlFor="englishLevel"
-          required
-          error={errors.englishLevel}
-        >
-          <div className="relative">
-            <select
-              id="englishLevel"
-              className={selectClassName}
-              value={englishLevel}
-              onChange={(e) => setEnglishLevel(e.target.value)}
-            >
-              {ENGLISH_LEVEL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] pointer-events-none" />
-          </div>
-        </FormField>
+        <Field>
+          <FieldLabel htmlFor="englishLevel">Current English Level *</FieldLabel>
+          <FieldContent>
+          <Controller
+            control={control}
+            name="englishLevel"
+            render={({ field }) => (
+              <Combobox value={field.value || null} onValueChange={(val) => field.onChange(val || "")}>
+                <ComboboxInput
+                  placeholder="Select your level"
+                  className="w-full bg-background"
+                />
+                <ComboboxContent className="w-[var(--anchor-width)]">
+                  <ComboboxList>
+                    {ENGLISH_LEVEL_OPTIONS.filter(c => c.value !== "").map((opt) => (
+                      <ComboboxItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </ComboboxItem>
+                    ))}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            )}
+          />
+          </FieldContent>
+          <FieldError errors={[errors.englishLevel]} />
+        </Field>
 
-        <FormField
-          label="Target IELTS Band"
-          htmlFor="targetBand"
-          required
-          error={errors.targetBand}
-        >
-          <div className="relative">
-            <select
-              id="targetBand"
-              className={selectClassName}
-              value={targetBand}
-              onChange={(e) => setTargetBand(e.target.value)}
-            >
-              {TARGET_BAND_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] pointer-events-none" />
-          </div>
-        </FormField>
+        <Field>
+          <FieldLabel htmlFor="targetBand">Target IELTS Band *</FieldLabel>
+          <FieldContent>
+          <Controller
+            control={control}
+            name="targetBand"
+            render={({ field }) => (
+              <Combobox value={field.value || null} onValueChange={(val) => field.onChange(val || "")}>
+                <ComboboxInput
+                  placeholder="Select your target"
+                  className="w-full bg-background"
+                />
+                <ComboboxContent className="w-[var(--anchor-width)]">
+                  <ComboboxList>
+                    {TARGET_BAND_OPTIONS.filter(c => c.value !== "").map((opt) => (
+                      <ComboboxItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </ComboboxItem>
+                    ))}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            )}
+          />
+          </FieldContent>
+          <FieldError errors={[errors.targetBand]} />
+        </Field>
       </div>
 
       {/* Reason */}
-      <FormField
-        label="Reason for Taking IELTS"
-        htmlFor="reason"
-        required
-        error={errors.reason}
-      >
-        <div className="relative">
-          <select
-            id="reason"
-            className={selectClassName}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          >
-            {REASON_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] pointer-events-none" />
-        </div>
-      </FormField>
+      <Field>
+        <FieldLabel htmlFor="reason">Reason for Taking IELTS *</FieldLabel>
+        <FieldContent>
+          <Controller
+            control={control}
+            name="reason"
+            render={({ field }) => (
+              <Combobox value={field.value || null} onValueChange={(val) => field.onChange(val || "")}>
+                <ComboboxInput
+                  placeholder="Select your reason"
+                  className="w-full bg-background"
+                />
+                <ComboboxContent className="w-[var(--anchor-width)]">
+                  <ComboboxList>
+                    {REASON_OPTIONS.filter(c => c.value !== "").map((opt) => (
+                      <ComboboxItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </ComboboxItem>
+                    ))}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            )}
+          />
+        </FieldContent>
+        <FieldError errors={[errors.reason]} />
+      </Field>
 
       {/* Message (optional) */}
-      <FormField label="Additional Message" htmlFor="message">
-        <textarea
-          id="message"
-          rows={4}
-          placeholder="Anything else you'd like us to know..."
-          className={textareaClassName}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-      </FormField>
+      <Field>
+        <FieldLabel htmlFor="message">Additional Message</FieldLabel>
+        <FieldContent>
+          <Textarea
+            id="message"
+            rows={4}
+            placeholder="Anything else you'd like us to know..."
+            {...register("message")}
+          />
+        </FieldContent>
+        <FieldError errors={[errors.message]} />
+      </Field>
 
       {/* Agreement */}
       <div>
         <label className="flex items-start gap-3 cursor-pointer group">
           <input
             type="checkbox"
-            checked={agreement}
-            onChange={(e) => setAgreement(e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-[#E5E7EB] text-[#7C3AED] focus:ring-[#7C3AED]/40 accent-[#7C3AED]"
+            className="mt-1 w-4 h-4 rounded border-[#E5E7EB] text-primary focus:ring-primary/40 accent-[#7C3AED]"
+            {...register("agreement")}
           />
-          <span className="text-sm text-[#64748B] leading-relaxed group-hover:text-[#1E1B4B] transition-colors">
+          <span className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
             I confirm that the information provided is correct and understand
             that submitting this form does not guarantee immediate enrollment or
             access to the course.
@@ -342,7 +394,7 @@ export default function RequestAccessForm({
         </label>
         {errors.agreement && (
           <p className="text-red-500 text-xs mt-1.5 font-medium ml-7">
-            {errors.agreement}
+            {errors.agreement.message}
           </p>
         )}
       </div>
@@ -350,10 +402,11 @@ export default function RequestAccessForm({
       {/* Submit */}
       <button
         type="submit"
-        className="w-full sm:w-auto bg-[#7C3AED] text-white px-10 py-3.5 rounded-full font-semibold hover:bg-[#4C1D95] transition-colors shadow-sm flex items-center justify-center gap-2"
+        disabled={isSubmitting}
+        className="w-full sm:w-auto bg-primary text-white px-10 py-3.5 rounded-full font-semibold hover:bg-primary/80 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
       >
         <Send className="w-4 h-4" />
-        Submit Request
+        {isSubmitting ? "Submitting..." : "Submit Request"}
       </button>
     </form>
   );
