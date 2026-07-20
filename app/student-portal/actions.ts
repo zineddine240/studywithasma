@@ -47,3 +47,38 @@ export async function markLessonCompleted(lessonId: string) {
 
   return { success: true };
 }
+
+export async function updateStudentProfileAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not authenticated" };
+  }
+
+  const full_name = (formData.get("full_name") as string) || null;
+  const phone = (formData.get("phone") as string) || null;
+  const country = (formData.get("country") as string) || null;
+  const target_band = (formData.get("target_band") as string) || null;
+  const bio = (formData.get("bio") as string) || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name,
+      phone,
+      country,
+      target_band,
+      bio,
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/student-portal");
+  revalidatePath("/student-portal/profile");
+
+  return { success: true };
+}

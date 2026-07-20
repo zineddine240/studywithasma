@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Bell, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, Bell, Settings, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -46,8 +46,9 @@ export function PortalTopBar({
             onClick={() => setIsExpanded(!isExpanded)}
             className="hidden lg:flex p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            title={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
           >
-            {isExpanded ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+            {isExpanded ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
           </button>
         )}
       </div>

@@ -51,3 +51,7 @@ export function MyForm() {
   )
 }
 ```
+
+## Dropdown & Select Component Rules
+- **Display Human-Readable Labels, Never Raw IDs/Values:** When using `<Select>` or custom pickers for items with UUIDs or internal keys (such as course IDs, student profile IDs, or expiry duration codes), always ensure `<SelectValue>` displays the human-readable label (e.g. course title, student name & email, humanized duration label) instead of falling back to the raw ID/value.
+

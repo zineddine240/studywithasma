@@ -28,8 +28,8 @@ export default async function AdminEnrollmentsPage() {
     .from("enrollment_requests")
     .select(`
       *,
-      student:profiles ( full_name, email, phone, country ),
-      course:courses ( title, badge )
+      student:profiles ( id, full_name, email, phone, country, target_band, group_name, enrollment_expiry, is_enrolled ),
+      course:courses ( id, title, badge )
     `)
     .order("created_at", { ascending: false });
 
@@ -37,18 +37,26 @@ export default async function AdminEnrollmentsPage() {
     console.error("Error fetching enrollment requests:", error);
   }
 
+  // Fetch available courses
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("id, title, badge")
+    .order("created_at", { ascending: false });
+
+  // Fetch all registered student profiles for direct manual enrollment
+  const { data: students } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, is_enrolled, enrolled_course_id, target_band, group_name")
+    .eq("role", "student")
+    .order("created_at", { ascending: false });
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Enrollment Requests</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage student registrations, review profiles, and approve course access.
-          </p>
-        </div>
-      </div>
-
-      <EnrollmentDashboard initialRequests={requests || []} />
+      <EnrollmentDashboard
+        initialRequests={requests || []}
+        courses={courses || []}
+        allStudents={students || []}
+      />
     </div>
   );
 }

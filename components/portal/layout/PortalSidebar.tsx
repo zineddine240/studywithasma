@@ -11,20 +11,43 @@ import {
   FileText,
   BarChart3,
   User,
+  Megaphone,
+  FolderOpen,
   LogOut,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { name: "Dashboard", href: "/student-portal", icon: LayoutDashboard },
-  { name: "My Course", href: "/student-portal/course", icon: BookOpen },
-  { name: "Live Classes", href: "/student-portal/live-classes", icon: Video },
-  { name: "Recorded Lessons", href: "/student-portal/recorded-lessons", icon: PlayCircle },
-  { name: "Resources", href: "/student-portal/resources", icon: BookOpen },
-  { name: "My Progress", href: "/student-portal/progress", icon: BarChart3 },
-  { name: "Practice Area", href: "/student-portal/practice", icon: FileText },
-  { name: "Profile", href: "/student-portal/profile", icon: User },
+const NAV_GROUPS = [
+  {
+    title: null,
+    links: [
+      { name: "Overview", href: "/student-portal", icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: "Academics",
+    links: [
+      { name: "My Course", href: "/student-portal/course", icon: BookOpen },
+      { name: "Live Classes", href: "/student-portal/live-classes", icon: Video },
+      { name: "Recorded Lessons", href: "/student-portal/recorded-lessons", icon: PlayCircle },
+      { name: "Practice Area", href: "/student-portal/practice", icon: FileText },
+    ],
+  },
+  {
+    title: "Information & Resources",
+    links: [
+      { name: "Announcements", href: "/student-portal/announcements", icon: Megaphone },
+      { name: "Resources", href: "/student-portal/resources", icon: FolderOpen },
+      { name: "My Progress", href: "/student-portal/progress", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Account",
+    links: [
+      { name: "Profile", href: "/student-portal/profile", icon: User },
+    ],
+  },
 ];
 
 interface PortalSidebarProps {
@@ -63,54 +86,69 @@ export function PortalSidebar({
         </button>
       </div>
 
-      <nav className="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden custom-scrollbar">
-        {NAV_LINKS.map((link) => {
-          const isActive = pathname === link.href;
-          const Icon = link.icon;
-          return (
-            <Link
-              key={link.name}
-              href={link.href}
-              title={!isExpanded ? link.name : undefined}
-              onClick={handleMobileClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-              <span
+      <nav className="flex-1 p-3 space-y-6 overflow-y-auto overflow-x-hidden custom-scrollbar">
+        {NAV_GROUPS.map((group, groupIdx) => (
+          <div key={groupIdx} className="space-y-1">
+            {group.title && (
+              <h4
                 className={cn(
-                  "truncate transition-all duration-300",
-                  isExpanded ? "opacity-100 w-auto ml-1" : "opacity-0 w-0 ml-0 overflow-hidden"
+                  "text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 transition-all duration-300 px-3 mb-2",
+                  isExpanded ? "opacity-100 block" : "opacity-0 h-0 overflow-hidden"
                 )}
               >
-                {link.name}
-              </span>
-            </Link>
-          );
-        })}
+                {group.title}
+              </h4>
+            )}
+            {!isExpanded && groupIdx > 0 && (
+              <div className="border-t border-border/60 my-3 mx-1" />
+            )}
+
+            {group.links.map((link) => {
+              const isActive =
+                pathname === link.href ||
+                (link.href !== "/student-portal" && pathname.startsWith(link.href));
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  title={!isExpanded ? link.name : undefined}
+                  onClick={handleMobileClose}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {isExpanded && (
+                    <span className="flex-1 flex items-center justify-between whitespace-nowrap">
+                      {link.name}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-border mt-auto">
-        <Link
-          href="/"
-          title={!isExpanded ? "Logout" : undefined}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-        >
-          <LogOut className="w-5 h-5 shrink-0" />
-          <span
+      <div className="p-3 shrink-0">
+        <form action="/auth/signout" method="post" className="w-full">
+          <button
+            type="submit"
+            title={!isExpanded ? "Sign Out" : undefined}
             className={cn(
-              "truncate transition-all duration-300",
-              isExpanded ? "opacity-100 w-auto ml-1" : "opacity-0 w-0 ml-0 overflow-hidden"
+              "flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors outline-none",
+              !isExpanded && "justify-center px-0"
             )}
           >
-            Logout
-          </span>
-        </Link>
+            <LogOut className="w-4 h-4 shrink-0" />
+            {isExpanded && <span>Sign Out</span>}
+          </button>
+        </form>
       </div>
     </>
   );
