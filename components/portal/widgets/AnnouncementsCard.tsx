@@ -2,6 +2,7 @@ import { Bell, ArrowRight } from "lucide-react";
 import { PortalCard } from "../shared/PortalCard";
 import { SectionHeader } from "../shared/SectionHeader";
 import { createClient } from "@/utils/supabase/server";
+import Link from "next/link";
 
 export async function AnnouncementsCard() {
   const supabase = await createClient();
@@ -48,10 +49,13 @@ export async function AnnouncementsCard() {
         )}
 
         {announcements && announcements.length > 0 && (
-          <button className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 w-fit transition-colors pt-2">
+          <Link
+            href="/student-portal/announcements"
+            className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 w-fit transition-colors pt-2"
+          >
             Read all announcements
             <ArrowRight className="w-3 h-3" />
-          </button>
+          </Link>
         )}
       </div>
     </PortalCard>

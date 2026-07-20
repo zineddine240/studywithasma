@@ -22,7 +22,7 @@ export function RecordedLessonCard({ lesson }: { lesson: RecordedLessonData }) {
   const isInProgress = lesson.status === "In Progress";
 
   return (
-    <div className="flex flex-col bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-sm transition-all overflow-hidden group">
+    <div className="flex flex-col bg-card rounded-2xl border border-border hover:border-primary/50 transition-all overflow-hidden group">
       {/* Thumbnail Placeholder */}
       <Link
         href={`/student-portal/recorded-lessons/${lesson.id}`}
@@ -32,7 +32,7 @@ export function RecordedLessonCard({ lesson }: { lesson: RecordedLessonData }) {
           <PlayCircle className="w-12 h-12 text-white opacity-90 drop-shadow-md group-hover:scale-110 transition-transform" />
         </div>
         <div className="absolute top-3 left-3">
-          <span className="text-xs font-bold text-primary bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md uppercase tracking-wide shadow-sm">
+          <span className="text-xs font-bold text-primary bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md uppercase tracking-wide">
             {lesson.module}
           </span>
         </div>
@@ -100,7 +100,7 @@ export function RecordedLessonCard({ lesson }: { lesson: RecordedLessonData }) {
               isCompleted
                 ? "bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20"
                 : isInProgress
-                  ? "bg-primary text-white hover:bg-primary/80 shadow-sm"
+                  ? "bg-primary text-white hover:bg-primary/80"
                   : "bg-muted/30 text-primary border border-border hover:bg-secondary"
             }`}
           >

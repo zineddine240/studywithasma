@@ -43,7 +43,7 @@ export function LiveClassCard({
       className={`flex flex-col p-5 rounded-2xl border transition-all ${
         isAlert
           ? "bg-red-50/30 border-red-100 dark:bg-red-950/20 dark:border-red-900/50"
-          : "bg-card border-border hover:border-primary/50 hover:shadow-sm"
+          : "bg-card border-border hover:border-primary/50"
       }`}
     >
       <div className="flex justify-between items-start gap-3 mb-3">

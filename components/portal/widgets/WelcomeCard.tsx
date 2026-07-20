@@ -24,30 +24,30 @@ export async function WelcomeCard() {
   }
 
   return (
-    <PortalCard className="bg-card text-white border-none relative overflow-hidden">
+    <PortalCard className="bg-card text-card-foreground border border-border relative overflow-hidden">
       {/* Decorative background element */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/3"></div>
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
       
       <div className="relative z-10">
-        <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 text-foreground tracking-tight">
           Welcome back, {name} 👋
         </h1>
-        <p className="text-primary/70 text-sm sm:text-base mb-6">
+        <p className="text-muted-foreground text-sm sm:text-base mb-6">
           Continue your IELTS journey with Asma.
         </p>
 
         <div className="flex flex-wrap gap-3 sm:gap-6">
-          <div className="bg-white/10 rounded-xl px-4 py-2 border border-white/10 backdrop-blur-sm">
-            <p className="text-xs text-primary/70 mb-0.5 uppercase tracking-wider font-semibold">Course</p>
-            <p className="font-bold text-sm">{course}</p>
+          <div className="bg-muted/50 rounded-xl px-4 py-2.5 border border-border">
+            <p className="text-xs text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">Course</p>
+            <p className="font-bold text-sm text-foreground">{course}</p>
           </div>
-          <div className="bg-white/10 rounded-xl px-4 py-2 border border-white/10 backdrop-blur-sm">
-            <p className="text-xs text-primary/70 mb-0.5 uppercase tracking-wider font-semibold">Group</p>
-            <p className="font-bold text-sm">{group}</p>
+          <div className="bg-muted/50 rounded-xl px-4 py-2.5 border border-border">
+            <p className="text-xs text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">Group</p>
+            <p className="font-bold text-sm text-foreground">{group}</p>
           </div>
-          <div className="bg-white/10 rounded-xl px-4 py-2 border border-white/10 backdrop-blur-sm">
-            <p className="text-xs text-primary/70 mb-0.5 uppercase tracking-wider font-semibold">Target Band</p>
-            <p className="font-bold text-sm">{targetBand}</p>
+          <div className="bg-muted/50 rounded-xl px-4 py-2.5 border border-border">
+            <p className="text-xs text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">Target Band</p>
+            <p className="font-bold text-sm text-foreground">{targetBand}</p>
           </div>
         </div>
       </div>

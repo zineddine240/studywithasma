@@ -146,7 +146,7 @@ export function PortalSidebar({
         {/* Sidebar Panel */}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 w-[280px] bg-card border-r border-border shadow-2xl flex flex-col transition-transform duration-300 ease-out",
+            "fixed inset-y-0 left-0 w-[280px] bg-card border-r border-border flex flex-col transition-transform duration-300 ease-out",
             isOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >

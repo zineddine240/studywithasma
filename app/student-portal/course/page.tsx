@@ -144,45 +144,45 @@ export default async function MyCoursePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
       {/* ── Course Header ── */}
-      <PortalCard className="bg-card text-white border-none relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/3"></div>
+      <PortalCard className="bg-card text-card-foreground border border-border relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
         <div className="relative z-10">
           <div className="inline-block bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-4">
             {courseTitle}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 text-foreground">
             {courseTitle}
           </h1>
-          <p className="text-primary/70 text-sm sm:text-base mb-6 max-w-2xl">
+          <p className="text-muted-foreground text-sm sm:text-base mb-6 max-w-2xl">
             {courseData?.short_description ||
               "Prepare through structured lessons."}
           </p>
 
           <div className="flex flex-wrap gap-4 sm:gap-6 mb-6">
-            <div>
-              <p className="text-xs text-primary/70 mb-0.5 uppercase tracking-wider font-semibold">
+            <div className="bg-muted/50 rounded-xl px-4 py-2.5 border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">
                 Group
               </p>
-              <p className="font-bold text-sm">{group}</p>
+              <p className="font-bold text-sm text-foreground">{group}</p>
             </div>
-            <div>
-              <p className="text-xs text-primary/70 mb-0.5 uppercase tracking-wider font-semibold">
+            <div className="bg-muted/50 rounded-xl px-4 py-2.5 border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">
                 Target Band
               </p>
-              <p className="font-bold text-sm">{targetBand}</p>
+              <p className="font-bold text-sm text-foreground">{targetBand}</p>
             </div>
           </div>
 
-          <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10">
+          <div className="bg-muted/50 p-4 rounded-xl border border-border">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold">Overall Progress</span>
-              <span className="font-bold">{courseProgress}%</span>
+              <span className="text-sm font-semibold text-foreground">Overall Progress</span>
+              <span className="font-bold text-primary">{courseProgress}%</span>
             </div>
             <ProgressBar
               progress={courseProgress}
-              className="bg-white/20 h-2"
+              className="h-2"
             />
           </div>
         </div>

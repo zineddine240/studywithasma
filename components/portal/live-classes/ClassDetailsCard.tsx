@@ -38,7 +38,7 @@ export function ClassDetailsCard({ classData }: ClassDetailsProps) {
           href={classData.meeting_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-primary/80 transition-colors shadow-sm shrink-0"
+          className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-primary/80 transition-colors shrink-0"
         >
           Join Class
           <ExternalLink className="w-4 h-4" />
