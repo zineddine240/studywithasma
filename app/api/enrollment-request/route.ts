@@ -10,7 +10,11 @@ export async function POST(request: Request) {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase environment variables.");
+      console.error("Missing Supabase environment variables.");
+      return NextResponse.json(
+        { error: "Service is not yet configured. Please contact the administrator." },
+        { status: 503 }
+      );
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);

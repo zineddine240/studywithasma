@@ -6,7 +6,6 @@ import {
   Send,
   CheckCircle,
   ArrowRight,
-  ChevronDown,
 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +14,6 @@ import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/fie
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { createClient } from "@/utils/supabase/client";
 import {
   Combobox,
   ComboboxInput,
@@ -87,16 +85,27 @@ export default function RequestAccessForm({
 
   useEffect(() => {
     async function fetchCourses() {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("courses")
-        .select("slug, title")
-        .order("created_at", { ascending: false });
-
-      if (data) {
-        const options = data.map((c) => ({ value: c.slug, label: c.title }));
-        setCourses([{ value: "", label: "Select a course" }, ...options]);
+      try {
+        const res = await fetch("/api/courses");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const options = data.map((c: { slug: string; title: string }) => ({ value: c.slug, label: c.title }));
+            setCourses([{ value: "", label: "Select a course" }, ...options]);
+            setIsLoadingCourses(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch courses, using default options.", err);
       }
+
+      // Default course options when Supabase is not yet configured
+      setCourses([
+        { value: "", label: "Select a course" },
+        { value: "academic-ielts", label: "Academic IELTS" },
+        { value: "general-ielts", label: "General Training IELTS" },
+      ]);
       setIsLoadingCourses(false);
     }
     fetchCourses();
@@ -125,18 +134,37 @@ export default function RequestAccessForm({
 
   const onSubmit = async (data: RequestAccessFormValues) => {
     try {
-      const response = await fetch("/api/enrollment-request", {
+      const response = await fetch("/api/request-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          fullName: data.fullName,
+          email: data.email,
+          password: data.password,
+          phone: data.phone,
+          country: data.country,
+          selectedCourse: data.course,
+          currentLevel: data.englishLevel,
+          targetBand: data.targetBand,
+          reason: data.reason,
+          additionalMessage: data.message,
+        }),
       });
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to submit request.");
+
+      let result: any = {};
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server returned error status ${response.status}`);
       }
-      
+
+      if (!response.ok || result.success === false) {
+        throw new Error(result.message || result.error || "Failed to submit request.");
+      }
+
+      toast.success("Your access request has been sent successfully!");
       setSubmitted(true);
     } catch (error: any) {
       console.error(error);
