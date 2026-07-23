@@ -1,7 +1,9 @@
 "use server";
 
+import { after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sendTelegramNotification } from "@/utils/telegram";
+
 
 export async function submitContactForm(data: {
   name: string;
@@ -34,8 +36,11 @@ export async function submitContactForm(data: {
     `🕒 ${new Date().toISOString()}`,
   ].join("\n");
 
-  sendTelegramNotification(telegramMessage).catch((err) =>
-    console.error("[Telegram] contact-form notification failed:", err)
+  // Schedule after response — guaranteed to run on Vercel serverless
+  after(() =>
+    sendTelegramNotification(telegramMessage).catch((err) =>
+      console.error("[Telegram] contact-form notification failed:", err)
+    )
   );
 
   return { success: true };

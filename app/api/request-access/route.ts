@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendTelegramNotification } from "@/utils/telegram";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/utils/env";
@@ -136,9 +136,13 @@ export async function POST(request: Request) {
       `🕒 ${new Date().toISOString()}`,
     ].join("\n");
 
-    // Fire-and-forget — a Telegram failure must not block the student response
-    sendTelegramNotification(telegramMessage).catch((err) =>
-      console.error("[Telegram] request-access notification failed:", err)
+    // Schedule notification to run after the response is sent.
+    // `after()` is guaranteed to complete even on Vercel serverless,
+    // unlike a bare .catch() which can be dropped when the function terminates.
+    after(() =>
+      sendTelegramNotification(telegramMessage).catch((err) =>
+        console.error("[Telegram] request-access notification failed:", err)
+      )
     );
 
     return NextResponse.json(
