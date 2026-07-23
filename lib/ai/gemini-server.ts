@@ -1,25 +1,23 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { GEMINI_API_KEY } from "@/utils/env";
 
 // Ensure this file is never imported into Client Components
 if (typeof window !== "undefined") {
   throw new Error("gemini-server.ts can only be imported on the server.");
 }
 
-const apiKey = process.env.GEMINI_API_KEY;
-
 export const geminiModel = "gemini-3.5-flash";
 
 // Initialize the Google GenAI client securely
-export const aiClient = new GoogleGenAI({ 
-  apiKey: apiKey || "MISSING_KEY" // Fallback to prevent crash during instantiation, but requests will fail securely
+export const aiClient = new GoogleGenAI({
+  apiKey: GEMINI_API_KEY() // Throws a clear error if the key is missing
 });
 
 /**
- * Validates if the API key is present before attempting a call.
- * This prevents confusing raw Gemini errors from bubbling up to the client.
+ * No-op kept for backward compatibility.
+ * GEMINI_API_KEY() already throws at module load if the key is missing,
+ * so by the time any route runs, the key is guaranteed to be present.
  */
 export function checkApiKey() {
-  if (!apiKey || apiKey === "MISSING_KEY") {
-    throw new Error("GEMINI_API_KEY is not configured in the server environment.");
-  }
+  // validation is handled by GEMINI_API_KEY() in utils/env.ts
 }

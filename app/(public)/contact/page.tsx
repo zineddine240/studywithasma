@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/utils/supabase/client";
+import { submitContactForm } from "./actions";
 import { fadeUp, fadeLeft, fadeRight, staggerContainer, viewport } from "@/components/home/motion";
 
 const contactSchema = z.object({
@@ -59,13 +59,10 @@ export default function ContactPage() {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("contact_submissions")
-      .insert([{ ...data, status: "unread" }]);
+    const result = await submitContactForm(data);
 
-    if (error) {
-      toast.error("Something went wrong. Please try again.");
+    if (result.error) {
+      toast.error(result.error);
       return;
     }
     toast.success("Thank you! Your message has been sent successfully.");

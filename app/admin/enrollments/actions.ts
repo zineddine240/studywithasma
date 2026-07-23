@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/utils/env";
 
 export async function approveEnrollment(
   requestId: string,
@@ -43,8 +44,8 @@ export async function approveEnrollment(
 
   // 3. Create Admin Client to bypass RLS
   const adminClient = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY()
   );
 
   // 4. Update student profile
@@ -105,8 +106,8 @@ export async function rejectEnrollment(requestId: string) {
   }
 
   const adminClient = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY()
   );
 
   const { error } = await adminClient
@@ -148,8 +149,8 @@ export async function updateEnrollmentAction(
   }
 
   const adminClient = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY()
   );
 
   const profileUpdate: Record<string, any> = {
@@ -226,8 +227,8 @@ export async function revokeEnrollmentAction(requestId: string, studentId: strin
   }
 
   const adminClient = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY()
   );
 
   const { error: profileError } = await adminClient
@@ -286,8 +287,8 @@ export async function createDirectEnrollmentAction(
   }
 
   const adminClient = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY()
   );
 
   let expiryDate = null;

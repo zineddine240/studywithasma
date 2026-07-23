@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendTelegramNotification } from "@/utils/telegram";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/utils/env";
 
 type AccessRequestData = {
   fullName?: string;
@@ -63,8 +65,9 @@ export async function POST(request: Request) {
     }
 
     // Optional Supabase persistence if DB is configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = SUPABASE_URL;
+    let supabaseKey: string | null = null;
+    try { supabaseKey = SUPABASE_SERVICE_ROLE_KEY(); } catch { /* not configured */ }
 
     if (supabaseUrl && supabaseKey) {
       try {
@@ -112,71 +115,31 @@ export async function POST(request: Request) {
       }
     }
 
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
-    if (!botToken || !chatId) {
-      console.error("Telegram environment variables are missing.");
-
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Notification service is not configured.",
-        },
-        { status: 500 }
-      );
-    }
-
     const telegramMessage = [
-      "🔔 NEW ACCESS REQUEST",
+      "🔔 <b>NEW ACCESS REQUEST</b>",
+      "<i>Study with Asma — IELTS Platform</i>",
       "",
-      "Study with Asma IELTS Platform",
+      `👤 <b>Name:</b> ${fullName}`,
+      `📧 <b>Email:</b> ${email}`,
+      `📱 <b>Phone/WhatsApp:</b> ${phone}`,
+      `🌍 <b>Country:</b> ${country}`,
+      `📚 <b>Course:</b> ${selectedCourse}`,
+      `📊 <b>Current level:</b> ${currentLevel}`,
+      `🎯 <b>Target band:</b> ${targetBand}`,
       "",
-      `👤 Full name: ${fullName}`,
-      `📧 Email: ${email}`,
-      `📱 Phone/WhatsApp: ${phone}`,
-      `🌍 Country: ${country}`,
-      `📚 Course: ${selectedCourse}`,
-      `📊 Current level: ${currentLevel}`,
-      `🎯 Target band: ${targetBand}`,
-      "",
-      "📝 Reason for joining:",
+      "📝 <b>Reason for joining:</b>",
       reason,
       "",
-      "💬 Additional message:",
+      "💬 <b>Additional message:</b>",
       additionalMessage,
       "",
-      `🕒 Received: ${new Date().toISOString()}`,
+      `🕒 ${new Date().toISOString()}`,
     ].join("\n");
 
-    const telegramResponse = await fetch(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: telegramMessage,
-        }),
-        cache: "no-store",
-      }
+    // Fire-and-forget — a Telegram failure must not block the student response
+    sendTelegramNotification(telegramMessage).catch((err) =>
+      console.error("[Telegram] request-access notification failed:", err)
     );
-
-    const telegramResult = await telegramResponse.json();
-
-    if (!telegramResponse.ok || !telegramResult.ok) {
-      console.error("Telegram error:", telegramResult);
-
-      return NextResponse.json(
-        {
-          success: false,
-          message: "The request could not be sent.",
-        },
-        { status: 502 }
-      );
-    }
 
     return NextResponse.json(
       {
