@@ -27,13 +27,13 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
           <p className="text-muted-foreground text-sm -mt-2 mb-4">Your text with all errors fixed.</p>
           <button
             onClick={handleCopy}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
+            className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
             title="Copy to clipboard"
           >
             <Copy className="w-5 h-5" />
           </button>
         </div>
-        <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
+        <div className="bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
           {result.correctedText}
         </div>
       </PortalCard>
@@ -50,11 +50,11 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
             {result.corrections.map((correction, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 flex flex-col sm:flex-row sm:items-start gap-4"
+                className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 dark:bg-rose-500/10 flex flex-col sm:flex-row sm:items-start gap-4"
               >
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400">
                       {correction.category}
                     </span>
                   </div>
@@ -62,11 +62,11 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
                     <span className="line-through text-rose-500 font-medium mr-2">
                       {correction.originalText}
                     </span>
-                    <span className="text-emerald-600 font-bold">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                       → {correction.correctedText}
                     </span>
                   </p>
-                  <p className="text-xs text-slate-600 font-medium">
+                  <p className="text-xs text-muted-foreground font-medium">
                     {correction.explanation}
                   </p>
                 </div>
@@ -88,16 +88,16 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
             {result.vocabularySuggestions.map((vocab, idx) => (
               <div
                 key={idx}
-                className="p-3 rounded-xl border border-amber-100 bg-amber-50/30"
+                className="p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10"
               >
                 <p className="text-sm font-medium mb-1">
-                  <span className="text-slate-500">{vocab.originalText}</span>
-                  <span className="mx-2 text-slate-300">→</span>
-                  <span className="text-amber-700 font-bold">
+                  <span className="text-muted-foreground">{vocab.originalText}</span>
+                  <span className="mx-2 text-muted-foreground/30">→</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">
                     {vocab.suggestedText}
                   </span>
                 </p>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-muted-foreground">
                   {vocab.explanation}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
             icon={<span className="text-xl">🌊</span>}
           />
           <p className="text-muted-foreground text-sm -mt-2 mb-4">Suggestions to make your writing sound more natural.</p>
-          <ul className="list-disc list-inside space-y-2 mt-4 text-sm text-slate-700">
+          <ul className="list-disc list-inside space-y-2 mt-4 text-sm text-foreground">
             {result.claritySuggestions.map((suggestion, idx) => (
               <li key={idx} className="leading-relaxed">
                 {suggestion}
@@ -132,7 +132,7 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
             icon={<span className="text-xl">📝</span>}
           />
           <p className="text-muted-foreground text-sm -mt-2 mb-4">Overall teacher comments.</p>
-          <ul className="space-y-3 mt-4 text-sm text-slate-800">
+          <ul className="space-y-3 mt-4 text-sm text-foreground">
             {result.generalNotes.map((note, idx) => (
               <li key={idx} className="flex gap-2 font-medium">
                 <span className="text-primary shrink-0">•</span>

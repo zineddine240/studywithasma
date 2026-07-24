@@ -258,6 +258,53 @@ export async function deleteLessonAction(id: string) {
   }
 }
 
+// ─── Attachment Actions ──────────────────────────────────────────────────────
+
+export async function createAttachmentAction(formData: FormData) {
+  try {
+    const { supabase, user } = await verifyAdminOrTeacher()
+    
+    const title = formData.get('title') as string
+    const file_url = formData.get('file_url') as string
+    const module_id = formData.get('module_id') as string
+
+    if (!title || !file_url || !module_id) {
+      return { error: 'Title, File URL, and Module are required' }
+    }
+
+    const { error } = await supabase.from('module_attachments').insert({
+      title,
+      file_url,
+      module_id,
+      created_by: user.id
+    })
+
+    if (error) throw error
+
+    revalidatePath('/admin/attachments')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to assign attachment' }
+  }
+}
+
+export async function deleteAttachmentAction(id: string) {
+  try {
+    const { supabase } = await verifyAdminOrTeacher()
+
+    const { error } = await supabase
+      .from('module_attachments')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/attachments')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to delete attachment' }
+  }
+}
 
 export async function updateProfileAction(formData: FormData) {
   try {

@@ -45,7 +45,7 @@ export function WritingTestLibrary() {
     <div className="space-y-8">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-primary/10 text-primary rounded-lg">
               <PenTool className="w-5 h-5" />
@@ -55,7 +55,7 @@ export function WritingTestLibrary() {
           <p className="text-3xl font-black text-foreground">{totalTests}</p>
         </div>
         
-        <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
               <CheckCircle2 className="w-5 h-5" />
@@ -65,7 +65,7 @@ export function WritingTestLibrary() {
           <p className="text-3xl font-black text-foreground">{completedCount}</p>
         </div>
         
-        <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-amber-500/10 text-amber-600 rounded-lg">
               <FileEdit className="w-5 h-5" />
@@ -75,7 +75,7 @@ export function WritingTestLibrary() {
           <p className="text-3xl font-black text-foreground">{draftCount}</p>
         </div>
         
-        <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-500/10 text-blue-600 rounded-lg">
               <MessageSquareQuote className="w-5 h-5" />
@@ -87,7 +87,7 @@ export function WritingTestLibrary() {
       </div>
 
       {/* Controls: Search and Filter */}
-      <div className="bg-white rounded-2xl p-4 border border-border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-card rounded-2xl p-4 border border-border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
         
         <div className="flex overflow-x-auto w-full md:w-auto gap-2 pb-2 md:pb-0 hide-scrollbar">
           {(["All Tests", "Academic Task 1", "General Task 1", "Task 2"] as FilterTab[]).map(tab => (
@@ -112,7 +112,7 @@ export function WritingTestLibrary() {
             placeholder="Search tests..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-muted/30 border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-muted/30 border border-border rounded-xl text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all"
           />
         </div>
       </div>

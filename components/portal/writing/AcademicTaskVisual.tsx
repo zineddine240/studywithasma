@@ -69,7 +69,7 @@ export function AcademicTaskVisual({ visualData }: AcademicTaskVisualProps) {
                       
                       return (
                         <div key={dsIdx} className="flex items-center gap-3">
-                          <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden relative">
+                          <div className="w-full bg-muted rounded-full h-4 overflow-hidden relative">
                             <div 
                               className="h-full rounded-full transition-all duration-1000" 
                               style={{ width: `${pct}%`, backgroundColor: ds.color }}
@@ -93,7 +93,7 @@ export function AcademicTaskVisual({ visualData }: AcademicTaskVisualProps) {
         return (
           <div className="grid md:grid-cols-2 gap-8">
             {data.charts.map((chart: any, i: number) => (
-              <div key={i} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div key={i} className="bg-muted/30 p-4 rounded-xl border border-border">
                 <h4 className="font-bold text-center mb-4 text-foreground">{chart.label}</h4>
                 <div className="space-y-3">
                   {chart.segments.map((seg: any, j: number) => (
@@ -115,14 +115,14 @@ export function AcademicTaskVisual({ visualData }: AcademicTaskVisualProps) {
         return (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {data.steps.map((step: any, i: number) => (
-              <div key={i} className="relative bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col items-center text-center">
+              <div key={i} className="relative bg-muted/50 border border-border p-4 rounded-xl flex flex-col items-center text-center">
                 <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold mb-3 z-10">
                   {step.id}
                 </div>
-                <p className="text-xs font-medium text-slate-700">{step.text}</p>
+                <p className="text-xs font-medium text-foreground">{step.text}</p>
                 {/* Connector line for desktop */}
                 {i < data.steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 right-0 w-full h-[2px] bg-slate-200 translate-x-1/2 z-0"></div>
+                  <div className="hidden md:block absolute top-8 right-0 w-full h-[2px] bg-border translate-x-1/2 z-0"></div>
                 )}
               </div>
             ))}
@@ -135,7 +135,7 @@ export function AcademicTaskVisual({ visualData }: AcademicTaskVisualProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-border p-6 shadow-sm mb-6">
+    <div className="bg-card rounded-2xl border border-border p-6 shadow-sm mb-6">
       <h3 className="font-extrabold text-foreground mb-6 text-center text-lg">{data.title}</h3>
       {renderContent()}
     </div>

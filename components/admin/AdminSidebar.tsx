@@ -15,6 +15,7 @@ import {
   Mail,
   BookOpen,
   Users,
+  Paperclip,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const NAV_GROUPS = [
       { name: "Tests & AI Gen", href: "/admin/tests", icon: FileText },
       { name: "Live Classes", href: "/admin/live-classes", icon: Video },
       { name: "Recorded Lessons", href: "/admin/lessons", icon: PlaySquare },
+      { name: "Attachments", href: "/admin/attachments", icon: Paperclip },
     ]
   },
   {
