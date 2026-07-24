@@ -80,8 +80,16 @@ export function WritingTestEditor({ test }: WritingTestEditorProps) {
     setTimerActive(false);
 
     try {
+      // Map frontend task types to the exact schema types expected by the backend
+      const mapTaskType = (type: string) => {
+        if (type === "Academic Task 1") return "Academic Writing Task 1";
+        if (type === "General Task 1") return "General Writing Task 1";
+        if (type === "Task 2") return "Writing Task 2";
+        return "General English Writing";
+      };
+
       const payload = {
-        practiceType: test.taskType,
+        practiceType: mapTaskType(test.taskType),
         topic: `${test.title}\n\n${test.prompt}`,
         studentAnswer: text,
         consent: true,
