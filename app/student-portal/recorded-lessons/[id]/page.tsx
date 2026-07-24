@@ -14,6 +14,7 @@ import { SectionHeader } from "@/components/portal/shared/SectionHeader";
 import { StatusBadge } from "@/components/portal/shared/StatusBadge";
 import { PortalCard } from "@/components/portal/shared/PortalCard";
 import { VideoPlayer } from "@/components/portal/recorded-lessons/VideoPlayer";
+import { BunnyVideoPlayer } from "@/components/portal/shared/BunnyVideoPlayer";
 import { createClient } from "@/utils/supabase/server";
 import { MarkCompletedButton } from "@/components/portal/recorded-lessons/MarkCompletedButton";
 
@@ -109,7 +110,15 @@ export default async function RecordedLessonDetailsPage({
 
       {/* ── Video Player Area ── */}
       <div className="w-full rounded-2xl overflow-hidden shadow-sm border border-border bg-card">
-        <VideoPlayer videoUrl={lesson.video_url} />
+        {lesson.video_provider === "bunny" && lesson.bunny_library_id && lesson.bunny_video_id ? (
+          <BunnyVideoPlayer
+            libraryId={lesson.bunny_library_id}
+            videoId={lesson.bunny_video_id}
+            title={lesson.title}
+          />
+        ) : (
+          <VideoPlayer videoUrl={lesson.video_url} />
+        )}
       </div>
 
       <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6 lg:gap-8 pt-4">
