@@ -177,22 +177,45 @@ export async function createLessonAction(formData: FormData) {
     const video_url = formData.get('video_url') as string
     const module_id = formData.get('module_id') as string || null
     const course_id_form = formData.get('course_id') as string || null
+    
+    // Bunny fields
+    const video_provider = formData.get('video_provider') as string || 'external'
+    const bunny_library_id = formData.get('bunny_library_id') as string || null
+    const bunny_video_id = formData.get('bunny_video_id') as string || null
+    const video_status = formData.get('video_status') as string || 'ready'
 
-    if (!title || !video_url) {
-      return { error: 'Title and Video URL are required' }
+    if (!title || (!video_url && !bunny_video_id)) {
+      return { error: 'Title and Video are required' }
     }
 
     const final_module_id = module_id;
     const final_course_id = module_id ? null : course_id_form;
 
-    const { error } = await supabase.from('recorded_lessons').insert({
+    // We build a payload. If the database schema isn't fully updated yet,
+    // this will attempt to insert the new fields. Ensure Supabase schema has these columns.
+    const payload: any = {
       title,
       description,
-      video_url,
       module_id: final_module_id,
       course_id: final_course_id,
       created_by: user.id
-    })
+    };
+
+    if (video_provider === 'bunny') {
+      // For bunny provider
+      payload.video_provider = video_provider;
+      payload.bunny_library_id = bunny_library_id;
+      payload.bunny_video_id = bunny_video_id;
+      payload.video_status = video_status;
+      // We also save a fallback video_url if needed by legacy parts of the app
+      payload.video_url = `https://iframe.mediadelivery.net/embed/${bunny_library_id}/${bunny_video_id}`;
+    } else {
+      payload.video_provider = 'external';
+      payload.video_url = video_url;
+      payload.video_status = 'ready';
+    }
+
+    const { error } = await supabase.from('recorded_lessons').insert(payload)
 
     if (error) throw error
 
