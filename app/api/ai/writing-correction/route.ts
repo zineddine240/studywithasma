@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { aiClient, geminiModel, checkApiKey } from "@/lib/ai/gemini-server";
+import { getAiClient, geminiModel } from "@/lib/ai/gemini-server";
 import { WritingPracticeRequestSchema } from "@/lib/ai/schemas";
 
 // Basic rate limiting structure (in-memory for mock purposes)
@@ -34,8 +34,9 @@ export async function POST(req: Request) {
     }
 
     // 2. Validate API Key configuration
+    let aiClient;
     try {
-      checkApiKey();
+      aiClient = getAiClient();
     } catch (error) {
       console.error("AI Configuration Error:", error);
       return NextResponse.json(

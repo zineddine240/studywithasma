@@ -8,16 +8,14 @@ if (typeof window !== "undefined") {
 
 export const geminiModel = "gemini-3.5-flash";
 
-// Initialize the Google GenAI client securely
-export const aiClient = new GoogleGenAI({
-  apiKey: GEMINI_API_KEY() // Throws a clear error if the key is missing
-});
+let _aiClient: GoogleGenAI | null = null;
 
-/**
- * No-op kept for backward compatibility.
- * GEMINI_API_KEY() already throws at module load if the key is missing,
- * so by the time any route runs, the key is guaranteed to be present.
- */
-export function checkApiKey() {
-  // validation is handled by GEMINI_API_KEY() in utils/env.ts
+// Initialize the Google GenAI client securely on demand
+export function getAiClient() {
+  if (!_aiClient) {
+    _aiClient = new GoogleGenAI({
+      apiKey: GEMINI_API_KEY() // Throws a clear error if the key is missing
+    });
+  }
+  return _aiClient;
 }

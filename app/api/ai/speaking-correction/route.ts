@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { aiClient, geminiModel, checkApiKey } from "@/lib/ai/gemini-server";
+import { getAiClient, geminiModel } from "@/lib/ai/gemini-server";
 import { SpeakingPracticeRequestSchema, SpeakingCorrectionSchema } from "@/lib/ai/schemas";
 import { isAudioFormatSupported, fileToBase64 } from "@/lib/audio";
 
@@ -38,13 +38,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Validate API Key
+    // 2. Validate API Key configuration
+    let aiClient;
     try {
-      checkApiKey();
+      aiClient = getAiClient();
     } catch (error) {
       console.error("AI Configuration Error:", error);
       return NextResponse.json(
-        { error: "AI service is currently unavailable. Please check your API key configuration." },
+        { error: "AI service is currently unavailable. Please try again later." },
         { status: 503 }
       );
     }
