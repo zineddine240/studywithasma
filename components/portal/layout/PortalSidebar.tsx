@@ -38,7 +38,6 @@ const NAV_GROUPS = [
     title: "Information & Resources",
     links: [
       { name: "Announcements", href: "/student-portal/announcements", icon: Megaphone },
-      { name: "Resources", href: "/student-portal/resources", icon: FolderOpen },
     ],
   },
   {
