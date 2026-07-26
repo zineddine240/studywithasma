@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { ProgressBar } from "@/components/portal/shared/ProgressBar";
 
@@ -19,11 +19,53 @@ interface TestData {
 }
 
 export default function LevelTestClient({ testData }: { testData: TestData }) {
+  const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
+  const [isReady, setIsReady] = useState(false);
   const [currentStep, setCurrentStep] = useState(0); // 0 = Intro, 1...N = Questions, N+1 = Results
-  const [answers, setAnswers] = useState<string[]>(new Array(testData.questions.length).fill(""));
+  const [answers, setAnswers] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
 
-  const totalQuestions = testData.questions.length;
+  useEffect(() => {
+    // Fisher-Yates Shuffle
+    const shuffleArray = <T,>(array: T[]): T[] => {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    };
+
+    // Shuffle all questions, pick up to 20
+    const shuffledQuestions = shuffleArray(testData.questions);
+    const selectedQuestions = shuffledQuestions.slice(0, 20).map(q => ({
+      ...q,
+      options: shuffleArray(q.options)
+    }));
+
+    setActiveQuestions(selectedQuestions);
+    setAnswers(new Array(selectedQuestions.length).fill(""));
+    setIsReady(true);
+  }, [testData.questions]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (currentStep > 0 && !showResults && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && !showResults) {
+      setShowResults(true);
+    }
+    return () => clearInterval(timer);
+  }, [currentStep, showResults, timeLeft]);
+
+  if (!isReady) {
+    return <div className="p-12 text-center text-muted-foreground animate-pulse">Loading assessment...</div>;
+  }
+
+  const totalQuestions = activeQuestions.length;
   const isLastQuestion = currentStep === totalQuestions;
 
   const handleNext = () => {
@@ -49,10 +91,10 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
   // INTRO SCREEN
   if (currentStep === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-border p-8 md:p-12 text-center">
+      <div className="bg-card rounded-2xl shadow-sm border border-border p-8 md:p-12 text-center">
         <h2 className="text-2xl font-bold text-foreground mb-4">{testData.title || "General English Assessment"}</h2>
         {testData.passage && (
-          <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-left mb-8 max-h-64 overflow-y-auto">
+          <div className="bg-muted/30 p-6 rounded-xl border border-border text-left mb-8 max-h-64 overflow-y-auto">
             <h3 className="font-bold text-foreground mb-2 text-sm uppercase tracking-wide">Reading Passage</h3>
             <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed">{testData.passage}</p>
           </div>
@@ -86,7 +128,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
   if (showResults) {
     let score = 0;
     answers.forEach((ans, i) => {
-      if (ans === testData.questions[i].correct_answer) score++;
+      if (ans === activeQuestions[i].correct_answer) score++;
     });
     const percentage = Math.round((score / totalQuestions) * 100);
 
@@ -101,9 +143,9 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
     else { cefrLevel = "C2 Proficient"; cefrColor = "text-purple-500"; recommendation = "Outstanding proficiency! You are capable of achieving top IELTS bands."; }
 
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-border p-8 md:p-12 text-center">
-        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-emerald-50">
-          <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+      <div className="bg-card rounded-2xl shadow-sm border border-border p-8 md:p-12 text-center">
+        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-emerald-500/10">
+          <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-500" />
         </div>
         <h2 className="text-3xl font-extrabold text-foreground mb-2">Assessment Complete!</h2>
         <p className="text-muted-foreground mb-8">Thank you for taking the time to complete the test.</p>
@@ -131,7 +173,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
           </Link>
           <Link
             href="/request-access"
-            className="w-full sm:w-auto inline-flex items-center justify-center bg-white text-foreground px-8 py-3.5 rounded-xl font-bold border-2 border-[#E5E7EB] hover:border-primary/50 hover:bg-slate-50 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center bg-card text-foreground px-8 py-3.5 rounded-xl font-bold border-2 border-border hover:border-primary/50 hover:bg-muted/50 transition-colors"
           >
             Enroll Now
           </Link>
@@ -142,23 +184,35 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
 
   // QUESTION SCREEN
   const qIndex = currentStep - 1;
-  const question = testData.questions[qIndex];
+  const question = activeQuestions[qIndex];
   const progressPercent = Math.round(((currentStep - 1) / totalQuestions) * 100);
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
+    <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
       {/* Progress Header */}
       <div className="bg-muted/30 p-6 border-b border-border">
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-bold text-primary">Question {currentStep} of {totalQuestions}</span>
-          <span className="text-sm font-semibold text-muted-foreground">{progressPercent}%</span>
+          <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-1.5 text-sm font-bold ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`}>
+              <Clock className="w-4 h-4" />
+              {formatTime(timeLeft)}
+            </div>
+            <span className="text-sm font-semibold text-muted-foreground">{progressPercent}%</span>
+          </div>
         </div>
         <ProgressBar progress={progressPercent} className="h-2" />
       </div>
 
       <div className="p-6 sm:p-10 grow flex flex-col">
         {testData.passage && (
-          <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 mb-8 max-h-48 overflow-y-auto">
+          <div className="bg-muted/30 p-6 rounded-xl border border-border mb-8 max-h-48 overflow-y-auto">
             <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">{testData.passage}</p>
           </div>
         )}
@@ -174,22 +228,22 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
             const isCorrectOption = opt === question.correct_answer;
             const isSelected = selectedOption === opt;
 
-            let btnClass = "border-[#E5E7EB] hover:border-primary/50 bg-white";
-            let indicatorClass = "border-[#CBD5E1]";
+            let btnClass = "border-border hover:border-primary/50 bg-card";
+            let indicatorClass = "border-border";
             let dotClass = "";
 
             if (isAnswered) {
               if (isCorrectOption) {
-                btnClass = "border-emerald-500 bg-emerald-50 shadow-sm";
+                btnClass = "border-emerald-500 bg-emerald-500/10 shadow-sm";
                 indicatorClass = "border-emerald-500";
                 dotClass = "bg-emerald-500";
               } else if (isSelected && !isCorrectOption) {
-                btnClass = "border-red-500 bg-red-50 shadow-sm";
+                btnClass = "border-red-500 bg-red-500/10 shadow-sm";
                 indicatorClass = "border-red-500";
                 dotClass = "bg-red-500";
               } else {
-                btnClass = "border-[#E5E7EB] bg-slate-50 opacity-50";
-                indicatorClass = "border-[#CBD5E1]";
+                btnClass = "border-border bg-muted/30 opacity-50";
+                indicatorClass = "border-border";
               }
             } else {
               if (isSelected) {
@@ -209,7 +263,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${indicatorClass}`}>
                   {(isSelected || (isAnswered && isCorrectOption)) && <div className={`w-2.5 h-2.5 rounded-full ${dotClass}`}></div>}
                 </div>
-                <span className={`font-medium ${isAnswered ? (isCorrectOption ? "text-emerald-900" : (isSelected ? "text-red-900" : "text-muted-foreground")) : (isSelected ? "text-foreground" : "text-muted-foreground")}`}>
+                <span className={`font-medium ${isAnswered ? (isCorrectOption ? "text-emerald-700 dark:text-emerald-400" : (isSelected ? "text-red-700 dark:text-red-400" : "text-muted-foreground")) : (isSelected ? "text-foreground" : "text-muted-foreground")}`}>
                   {opt}
                 </span>
               </button>
@@ -218,7 +272,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
         </div>
 
         {answers[qIndex] && (
-          <div className={`mb-8 p-4 rounded-xl text-sm font-medium border ${answers[qIndex] === question.correct_answer ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-red-800"}`}>
+          <div className={`mb-8 p-4 rounded-xl text-sm font-medium border ${answers[qIndex] === question.correct_answer ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400" : "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400"}`}>
              <span className="font-bold block mb-1">
                {answers[qIndex] === question.correct_answer ? "✓ Correct!" : "✗ Incorrect"}
              </span>
@@ -230,7 +284,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
           <button
             onClick={handlePrev}
             disabled={currentStep === 1}
-            className="inline-flex items-center gap-2 text-muted-foreground font-bold py-2.5 px-4 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 text-muted-foreground font-bold py-2.5 px-4 rounded-xl hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="w-5 h-5" />
             Previous

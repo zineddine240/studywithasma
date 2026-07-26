@@ -11,13 +11,13 @@ import type { Variants, Transition } from "framer-motion";
  */
 
 const transition: Transition = {
-  duration: 0.55,
-  ease: [0.16, 1, 0.3, 1], // cubic-bezier equivalent of power2.out
+  duration: 0.4,
+  ease: [0.22, 1, 0.36, 1], // snappier curve
 };
 
 const transitionFast: Transition = {
-  duration: 0.45,
-  ease: [0.16, 1, 0.3, 1],
+  duration: 0.25,
+  ease: [0.22, 1, 0.36, 1],
 };
 
 export const fadeUp: Variants = {

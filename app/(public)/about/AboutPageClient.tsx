@@ -3,7 +3,13 @@
 import { motion } from "framer-motion";
 import { Award, BookOpen, GraduationCap, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { fadeUp, fadeLeft, fadeRight, staggerContainer, viewport } from "@/components/home/motion";
+import {
+  fadeUp,
+  fadeLeft,
+  fadeRight,
+  staggerContainer,
+  viewport,
+} from "@/components/home/motion";
 
 const philosophyCards = [
   {
@@ -52,7 +58,7 @@ export default function AboutPageClient() {
             className="text-4xl sm:text-5xl font-serif font-extrabold text-foreground leading-tight"
           >
             Meet Asma &amp; <br />
-            <span className="bg-gradient-to-r from-amber-600 to-amber-700 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-amber-600 to-amber-700 bg-clip-text text-transparent">
               Study with Asma
             </span>
           </motion.h1>
@@ -60,13 +66,14 @@ export default function AboutPageClient() {
             variants={fadeUp}
             className="text-lg sm:text-xl text-muted-foreground leading-relaxed"
           >
-            We are dedicated to helping students and working professionals master
-            the English language and ace their IELTS exam with top band scores.
+            We are dedicated to helping students and working professionals
+            master the English language and ace their IELTS exam with top band
+            scores.
           </motion.p>
         </motion.div>
 
         {/* ── Story Grid ── */}
-        <div className="grid md:grid-cols-2 gap-12 sm:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
           <motion.div
             className="space-y-6"
             variants={fadeLeft}
@@ -74,41 +81,69 @@ export default function AboutPageClient() {
             whileInView="visible"
             viewport={viewport}
           >
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-foreground">
               A Decade of IELTS Excellence
             </h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              Founded by Asma, a certified senior IELTS trainer and ex-British
-              Council program lead, our academy was built on a single, powerful
-              mission: to make high-scoring IELTS strategies accessible,
-              structured, and easy to master online.
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Founded by Asma, a senior IELTS trainer and education specialist,
+              our academy was built on a single, powerful mission: to make
+              high-scoring IELTS strategies accessible, structured, and easy to
+              master online.
             </p>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+            <p className="text-muted-foreground text-lg leading-relaxed">
               Unlike generic English courses, our program specifically targets
               the exact descriptors examiners use to score the Writing and
               Speaking sections, while equipping you with rapid comprehension
               strategies for Reading and Listening.
             </p>
+
+            <div className="pt-6 grid grid-cols-2 gap-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <span className="text-3xl font-extrabold text-primary mb-1">
+                  10+
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  Years Experience
+                </span>
+              </div>
+              <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <span className="text-3xl font-extrabold text-amber-500 mb-1">
+                  500+
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  Successful Students
+                </span>
+              </div>
+            </div>
           </motion.div>
 
           <motion.div
-            className="relative"
+            className="relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-border"
             variants={fadeRight}
             initial="hidden"
             whileInView="visible"
             viewport={viewport}
           >
-            <div className="aspect-[4/3] bg-muted/40 rounded-3xl p-6 sm:p-8 border border-border flex items-center justify-center">
-              <div className="w-full h-full bg-card rounded-2xl p-6 flex flex-col justify-center border border-border text-center">
-                <GraduationCap className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="text-lg font-serif font-bold text-foreground mb-1">
-                  Senior IELTS Specialist
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Certified teacher with 10+ years of active IELTS curriculum
-                  design and training experience.
-                </p>
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=2073&auto=format&fit=crop')",
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+            <div className="absolute bottom-0 left-0 w-full p-8 text-white">
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full mb-4 border border-white/30">
+                <CheckCircle className="w-4 h-4 text-amber-400" />
+                <span className="text-sm font-bold tracking-wide">
+                  Expert Trainer
+                </span>
               </div>
+              <h3 className="text-3xl font-serif font-extrabold mb-2">Asma</h3>
+              <p className="text-white/80 font-medium">
+                Founder & Senior IELTS Trainer
+              </p>
             </div>
           </motion.div>
         </div>
@@ -140,8 +175,12 @@ export default function AboutPageClient() {
                 <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
                   <Icon className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-serif font-bold text-foreground">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+                <h3 className="text-lg font-serif font-bold text-foreground">
+                  {title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {description}
+                </p>
               </motion.div>
             ))}
           </motion.div>
