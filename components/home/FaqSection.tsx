@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "framer-motion/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { fadeUp, staggerContainer, viewport } from "./motion";
