@@ -56,14 +56,6 @@ export function PortalTopBar({
       <div className="flex items-center gap-3 sm:gap-5">
         <ThemeToggle />
 
-        <button
-          className="relative p-2 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-muted/30"
-          aria-label="Notifications"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-background"></span>
-        </button>
-
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-3 border-l border-border pl-4 sm:pl-6 cursor-pointer focus:outline-none">
             <div className="hidden sm:block text-right">
