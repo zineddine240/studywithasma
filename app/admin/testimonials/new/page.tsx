@@ -32,7 +32,7 @@ const formSchema = z.object({
   band: z.string().max(50).optional(),
   role: z.string().max(100).optional(),
   text: z.string().min(10, "Text must be at least 10 characters"),
-  is_published: z.boolean().default(false),
+  is_published: z.boolean(),
 });
 
 export default function NewTestimonialPage() {
@@ -151,7 +151,7 @@ export default function NewTestimonialPage() {
                 <Switch
                   id="is_published"
                   checked={isPublished}
-                  onCheckedChange={(checked) => setValue("is_published", checked)}
+                  onCheckedChange={(checked: boolean) => setValue("is_published", checked)}
                 />
                 <Label htmlFor="is_published" className="cursor-pointer">
                   Publish immediately (Show on public website)

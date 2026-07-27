@@ -19,6 +19,7 @@ const outfit = Outfit({
 
 import Providers from "./providers";
 import { Toaster } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://studywithasma.com"),
@@ -73,6 +74,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
         <Toaster />
+        <SpeedInsights />
       </body>
     </html>
   );

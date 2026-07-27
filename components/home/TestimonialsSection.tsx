@@ -4,28 +4,6 @@ import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
 import { fadeUp, staggerContainer, viewport } from "./motion";
 
-// Keep static testimonials as a fallback if database is empty
-const staticTestimonials = [
-  {
-    name: "Feriel B",
-    band: "Band 8.0",
-    text: "Asma's structured approach completely transformed my writing. I was stuck at 6.5 for months, but her detailed feedback helped me achieve an 8.0 in just 6 weeks!",
-    role: "Academic IELTS",
-  },
-  {
-    name: "Mohammed R.",
-    band: "Band 7.5",
-    text: "The live sessions are incredibly engaging. Asma explains complex strategies so simply. I felt fully prepared and confident on exam day.",
-    role: "General Training",
-  },
-  {
-    name: "Yacine B",
-    band: "Band 8.5",
-    text: "The best IELTS preparation course available online. The speaking practice sessions were a game-changer for my confidence.",
-    role: "Academic IELTS",
-  },
-];
-
 type Testimonial = {
   id?: string;
   name: string;
@@ -39,9 +17,7 @@ export default function TestimonialsSection({
 }: {
   testimonials?: Testimonial[];
 }) {
-  const displayTestimonials = testimonials.length > 0 ? testimonials : staticTestimonials;
-
-  if (displayTestimonials.length === 0) {
+  if (testimonials.length === 0) {
     return null;
   }
 
@@ -77,7 +53,7 @@ export default function TestimonialsSection({
           whileInView="visible"
           viewport={viewport}
         >
-          {displayTestimonials.map((testimonial, i) => (
+          {testimonials.map((testimonial, i) => (
             <motion.div
               key={testimonial.id || i}
               variants={fadeUp}
