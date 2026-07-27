@@ -15,6 +15,7 @@ import {
   FolderOpen,
   LogOut,
   X,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ const NAV_GROUPS = [
     title: "Information & Resources",
     links: [
       { name: "Announcements", href: "/student-portal/announcements", icon: Megaphone },
+      { name: "Testimonials", href: "/student-portal/testimonials", icon: Star },
     ],
   },
   {

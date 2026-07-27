@@ -82,3 +82,39 @@ export async function updateStudentProfileAction(formData: FormData) {
 
   return { success: true };
 }
+
+export async function submitTestimonial(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not authenticated" };
+  }
+
+  const name = formData.get("name") as string;
+  const band = (formData.get("band") as string) || null;
+  const role = (formData.get("role") as string) || null;
+  const text = formData.get("text") as string;
+
+  if (!name || !text) {
+    return { error: "Name and text are required" };
+  }
+
+  const { error } = await supabase
+    .from("testimonials")
+    .insert({
+      student_id: user.id,
+      name,
+      band,
+      role,
+      text,
+      is_published: false,
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/student-portal/testimonials");
+  return { success: true };
+}

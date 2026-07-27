@@ -518,4 +518,70 @@ export async function deleteModuleAction(id: string, courseId: string) {
   }
 }
 
+// ─── Testimonial Actions ──────────────────────────────────────────────────────
 
+export interface TestimonialFormData {
+  name: string;
+  band?: string | null;
+  role?: string | null;
+  text: string;
+  is_published?: boolean;
+}
+
+export async function addTestimonialAction(data: TestimonialFormData) {
+  try {
+    const { supabase } = await verifyAdminOrTeacher()
+
+    if (!data.name || !data.text) {
+      return { error: 'Name and text are required' }
+    }
+
+    const { error } = await supabase.from('testimonials').insert({
+      name: data.name,
+      band: data.band || null,
+      role: data.role || null,
+      text: data.text,
+      is_published: data.is_published ?? false,
+    })
+
+    if (error) throw error
+
+    revalidatePath('/admin/testimonials')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to add testimonial' }
+  }
+}
+
+export async function updateTestimonialAction(id: string, data: Partial<TestimonialFormData>) {
+  try {
+    const { supabase } = await verifyAdminOrTeacher()
+
+    const { error } = await supabase.from('testimonials').update(data).eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/testimonials')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to update testimonial' }
+  }
+}
+
+export async function deleteTestimonialAction(id: string) {
+  try {
+    const { supabase } = await verifyAdminOrTeacher()
+
+    const { error } = await supabase.from('testimonials').delete().eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/testimonials')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to delete testimonial' }
+  }
+}

@@ -16,6 +16,7 @@ import {
   BookOpen,
   Users,
   Paperclip,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ const NAV_GROUPS = [
     links: [
       { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
       { name: "Contact Submissions", href: "/admin/contact-submissions", icon: Mail },
+      { name: "Testimonials", href: "/admin/testimonials", icon: Star },
     ]
   }
 ];

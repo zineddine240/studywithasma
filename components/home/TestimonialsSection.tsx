@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
 import { fadeUp, staggerContainer, viewport } from "./motion";
 
-const testimonials = [
+// Keep static testimonials as a fallback if database is empty
+const staticTestimonials = [
   {
     name: "Feriel B",
     band: "Band 8.0",
@@ -25,7 +26,25 @@ const testimonials = [
   },
 ];
 
-export default function TestimonialsSection() {
+type Testimonial = {
+  id?: string;
+  name: string;
+  band?: string | null;
+  text: string;
+  role?: string | null;
+};
+
+export default function TestimonialsSection({
+  testimonials = [],
+}: {
+  testimonials?: Testimonial[];
+}) {
+  const displayTestimonials = testimonials.length > 0 ? testimonials : staticTestimonials;
+
+  if (displayTestimonials.length === 0) {
+    return null;
+  }
+
   return (
     <section
       className="py-24 bg-background relative overflow-hidden"
@@ -58,9 +77,9 @@ export default function TestimonialsSection() {
           whileInView="visible"
           viewport={viewport}
         >
-          {testimonials.map((testimonial, i) => (
+          {displayTestimonials.map((testimonial, i) => (
             <motion.div
-              key={i}
+              key={testimonial.id || i}
               variants={fadeUp}
               className="group bg-card p-8 rounded-[2rem] border border-border hover:border-primary/50 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative flex flex-col justify-between"
             >
@@ -89,14 +108,16 @@ export default function TestimonialsSection() {
                       {testimonial.name}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
+                      {testimonial.role || "Student"}
                     </p>
                   </div>
-                  <div className="bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-                    <span className="text-primary font-bold">
-                      {testimonial.band}
-                    </span>
-                  </div>
+                  {testimonial.band && (
+                    <div className="bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
+                      <span className="text-primary font-bold">
+                        {testimonial.band}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
