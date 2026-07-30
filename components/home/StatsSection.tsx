@@ -7,22 +7,22 @@ import { fadeUp, staggerContainer, viewport } from "./motion";
 const stats = [
   {
     icon: <Users className="w-8 h-8 text-amber-500" />,
-    value: "500+",
-    label: "Successful Students"
+    value: "370+",
+    label: "Students"
   },
   {
     icon: <Award className="w-8 h-8 text-amber-500" />,
-    value: "7.5",
-    label: "Average Band Score"
+    value: "45",
+    label: "Students Passed Exams"
   },
   {
     icon: <BookOpenCheck className="w-8 h-8 text-amber-500" />,
-    value: "10+",
-    label: "Years Experience"
+    value: "35",
+    label: "Band Score 5.5 to 7"
   },
   {
     icon: <Globe className="w-8 h-8 text-amber-500" />,
-    value: "15+",
+    value: "5",
     label: "Countries Reached"
   }
 ];
