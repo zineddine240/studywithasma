@@ -17,6 +17,7 @@ import {
   Users,
   Paperclip,
   Star,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ const NAV_GROUPS = [
     links: [
       { name: "Overview", href: "/admin", icon: LayoutDashboard },
       { name: "Enrollments", href: "/admin/enrollments", icon: Users },
+      { name: "Groups", href: "/admin/cohorts", icon: Layers },
     ]
   },
   {

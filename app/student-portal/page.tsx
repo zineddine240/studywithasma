@@ -5,13 +5,24 @@ import { ProgressSummaryCard } from "@/components/portal/widgets/ProgressSummary
 import { CourseModulesList } from "@/components/portal/widgets/CourseModulesList";
 import { RecentLessonsList } from "@/components/portal/widgets/RecentLessonsList";
 import { AnnouncementsCard } from "@/components/portal/widgets/AnnouncementsCard";
+import { CohortSummaryCard } from "@/components/portal/widgets/CohortSummaryCard";
+import { getStudentActiveCohort } from "@/lib/cohorts/queries";
+import { createClient } from "@/utils/supabase/server";
 
-export default function StudentDashboardPage() {
+export default async function StudentDashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let assignment = null;
+  if (user) {
+    assignment = await getStudentActiveCohort(user.id);
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] lg:gap-8">
       
       {/* ── Main Column ── */}
       <div className="flex flex-col gap-6 lg:gap-8">
+        <CohortSummaryCard cohort={assignment?.cohort} />
         <WelcomeCard />
         <CourseModulesList />
         <RecentLessonsList />

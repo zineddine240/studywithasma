@@ -69,6 +69,7 @@ import {
   revokeEnrollmentAction,
   createDirectEnrollmentAction,
 } from "./actions";
+import { approveStudentIntoCohort } from "@/lib/cohorts/actions";
 
 interface EnrollmentRequest {
   id: string;
@@ -97,6 +98,11 @@ interface EnrollmentRequest {
     title: string;
     badge?: string;
   };
+  requested_cohort?: {
+    id: string;
+    name: string;
+    max_students: number;
+  };
 }
 
 interface CourseItem {
@@ -119,10 +125,12 @@ export default function EnrollmentDashboard({
   initialRequests,
   courses = [],
   allStudents = [],
+  allCohorts = [],
 }: {
   initialRequests: any[];
   courses?: CourseItem[];
   allStudents?: StudentItem[];
+  allCohorts?: any[];
 }) {
   const [requests, setRequests] = useState<EnrollmentRequest[]>(initialRequests);
   const [selectedRequest, setSelectedRequest] = useState<EnrollmentRequest | null>(null);
@@ -140,6 +148,7 @@ export default function EnrollmentDashboard({
   const [editGroupName, setEditGroupName] = useState("");
   const [duration, setDuration] = useState<number | "permanent" | "keep">(1);
   const [paymentNotes, setPaymentNotes] = useState("");
+  const [assignedCohortId, setAssignedCohortId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Direct Enroll Form state
@@ -208,6 +217,7 @@ export default function EnrollmentDashboard({
     if (!selectedRequest) return;
     setIsSubmitting(true);
     try {
+      // Approve enrollment broadly
       const res = await approveEnrollment(
         selectedRequest.id,
         selectedRequest.student_id,
@@ -217,6 +227,12 @@ export default function EnrollmentDashboard({
         paymentNotes
       );
       if (res.error) throw new Error(res.error);
+
+      // If a cohort is selected, assign it
+      if (assignedCohortId && assignedCohortId !== "none") {
+        const cohortRes = await approveStudentIntoCohort(selectedRequest.id, selectedRequest.student_id, assignedCohortId);
+        if (cohortRes.error) throw new Error(cohortRes.error);
+      }
 
       toast.success("Enrollment approved successfully!");
       setRequests((prev) =>
@@ -472,6 +488,7 @@ export default function EnrollmentDashboard({
                               size="sm"
                               onClick={() => {
                                 setSelectedRequest(request);
+                                setAssignedCohortId(request.requested_cohort?.id || "none");
                                 setIsApproveOpen(true);
                               }}
                               className="h-8 px-2 text-xs font-bold text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
@@ -596,9 +613,9 @@ export default function EnrollmentDashboard({
                 <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
                   <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <Group className="w-4 h-4 text-primary" />
-                    Group Batch
+                    Requested Group
                   </span>
-                  <span className="font-bold text-foreground">{selectedRequest.student?.group_name || "Self-Paced"}</span>
+                  <span className="font-bold text-foreground">{selectedRequest.requested_cohort?.name || "None"}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
@@ -658,6 +675,26 @@ export default function EnrollmentDashboard({
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Assign Group</label>
+              <Select
+                value={assignedCohortId}
+                onValueChange={(val) => setAssignedCohortId(val || "")}
+              >
+                <SelectTrigger className="h-11 rounded-xl">
+                  <SelectValue placeholder="Select a cohort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Group (Self-paced)</SelectItem>
+                  {allCohorts.filter(c => c.course_id === selectedRequest?.course_id).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-muted-foreground uppercase">Access Duration</label>
               <Select

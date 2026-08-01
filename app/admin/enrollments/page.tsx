@@ -29,12 +29,13 @@ export default async function AdminEnrollmentsPage() {
     .select(`
       *,
       student:profiles ( id, full_name, email, phone, country, target_band, group_name, enrollment_expiry, is_enrolled ),
-      course:courses ( id, title, badge )
+      course:courses ( id, title, badge ),
+      requested_cohort:cohorts!requested_cohort_id ( id, name, max_students )
     `)
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching enrollment requests:", error);
+    console.error("Error fetching enrollment requests:", JSON.stringify(error, null, 2));
   }
 
   // Fetch available courses
@@ -42,6 +43,13 @@ export default async function AdminEnrollmentsPage() {
     .from("courses")
     .select("id, title, badge")
     .order("created_at", { ascending: false });
+
+  // Fetch cohorts for the assignment dropdown
+  const { data: allCohorts } = await supabase
+    .from("cohorts")
+    .select("id, name, course_id, max_students, status")
+    .in("status", ["open", "active"])
+    .order("start_date", { ascending: true });
 
   // Fetch all registered student profiles for direct manual enrollment
   const { data: students } = await supabase
@@ -56,6 +64,7 @@ export default async function AdminEnrollmentsPage() {
         initialRequests={requests || []}
         courses={courses || []}
         allStudents={students || []}
+        allCohorts={allCohorts || []}
       />
     </div>
   );

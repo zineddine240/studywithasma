@@ -3,6 +3,7 @@ import { SectionHeader } from "@/components/portal/shared/SectionHeader";
 import { ClassDetailsCard } from "@/components/portal/live-classes/ClassDetailsCard";
 import { LiveClassCard } from "@/components/portal/live-classes/LiveClassCard";
 import { createClient } from "@/utils/supabase/server";
+import { getStudentActiveCohort } from "@/lib/cohorts/queries";
 
 export default async function LiveClassesPage() {
   const supabase = await createClient();
@@ -10,8 +11,13 @@ export default async function LiveClassesPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let enrolledCourseId = null;
+  let cohortId = null;
   let moduleIds: string[] = [];
+  
   if (user) {
+    const assignment = await getStudentActiveCohort(user.id);
+    cohortId = assignment?.cohort_id;
+
     const { data: profile } = await supabase.from("profiles").select("enrolled_course_id").eq("id", user.id).single();
     enrolledCourseId = profile?.enrolled_course_id;
 
@@ -38,7 +44,18 @@ export default async function LiveClassesPage() {
 
   if (enrolledCourseId) {
     const moduleFilter = moduleIds.length > 0 ? `module_id.in.(${moduleIds.join(',')})` : 'module_id.is.null';
-    query.or(`course_id.eq.${enrolledCourseId},${moduleFilter}`);
+    
+    if (cohortId) {
+      // Sees specific cohort classes OR global classes for their course
+      query.or(`cohort_id.eq.${cohortId},and(cohort_id.is.null,or(course_id.eq.${enrolledCourseId},${moduleFilter}))`);
+    } else {
+      // No cohort, sees only global classes for their course
+      query.is("cohort_id", null);
+      query.or(`course_id.eq.${enrolledCourseId},${moduleFilter}`);
+    }
+  } else {
+    // No enrolled course
+    query.eq("id", "00000000-0000-0000-0000-000000000000"); // fetch none
   }
 
   const { data: liveClasses } = await query;

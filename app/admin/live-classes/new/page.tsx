@@ -41,6 +41,7 @@ const formSchema = z.object({
   meeting_link: z.string().url("Must be a valid URL"),
   scheduled_at: z.string().min(1, "Date and time are required"),
   module_id: z.string().optional(),
+  cohort_id: z.string().optional(),
   recording_url: z.union([z.literal(""), z.string().url("Must be a valid URL")]).optional(),
 });
 
@@ -56,6 +57,9 @@ export default function NewLiveClassPage() {
   const [modules, setModules] = useState<ModuleOption[]>([]);
   const [loadingModules, setLoadingModules] = useState(true);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("global");
+  const [groups, setGroups] = useState<{ id: string; name: string; course_id: string }[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(true);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("none");
 
   const {
     register,
@@ -72,6 +76,7 @@ export default function NewLiveClassPage() {
       meeting_link: "",
       scheduled_at: "",
       module_id: "none",
+      cohort_id: "none",
       recording_url: "",
     },
   });
@@ -110,6 +115,26 @@ export default function NewLiveClassPage() {
     fetchModules();
   }, []);
 
+  // Fetch groups
+  useEffect(() => {
+    const supabase = createClient();
+    async function fetchGroups() {
+      try {
+        const { data } = await supabase
+          .from("cohorts")
+          .select("id, name, course_id")
+          .in("status", ["open", "active", "full", "closed"])
+          .order("start_date", { ascending: true });
+        setGroups(data || []);
+      } catch (err) {
+        console.error("Failed to load groups:", err);
+      } finally {
+        setLoadingGroups(false);
+      }
+    }
+    fetchGroups();
+  }, []);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const formData = new FormData();
     formData.append("title", values.title);
@@ -124,6 +149,9 @@ export default function NewLiveClassPage() {
     }
     if (selectedCourseId && selectedCourseId !== "global") {
       formData.append("course_id", selectedCourseId);
+    }
+    if (selectedGroupId && selectedGroupId !== "none") {
+      formData.append("cohort_id", selectedGroupId);
     }
     if (values.recording_url) {
       formData.append("recording_url", values.recording_url);
@@ -239,6 +267,32 @@ export default function NewLiveClassPage() {
                   <FieldError errors={[errors.module_id]} />
                 </Field>
               )}
+
+              {/* Group Selector */}
+              <Field>
+                <FieldLabel>Group (Optional)</FieldLabel>
+                <FieldContent>
+                  <Select
+                    value={selectedGroupId}
+                    onValueChange={(val) => setSelectedGroupId(val || "none")}
+                    disabled={loadingGroups}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="-- No Group (visible to all) --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">-- No Group (visible to all) --</SelectItem>
+                      {groups
+                        .filter(g => selectedCourseId === "global" || g.course_id === selectedCourseId)
+                        .map((g) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            {g.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </FieldContent>
+              </Field>
 
               <Field>
                 <FieldLabel htmlFor="meeting_link">Meeting Link</FieldLabel>

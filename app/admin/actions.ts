@@ -79,6 +79,7 @@ export async function createLiveClassAction(formData: FormData) {
     const module_id = formData.get('module_id') as string || null
     const course_id_form = formData.get('course_id') as string || null
     const recording_url = formData.get('recording_url') as string || null
+    const cohort_id = formData.get('cohort_id') as string || null
 
     if (!title || !meeting_link || !scheduled_at) {
       return { error: 'Title, Meeting link, and date are required' }
@@ -95,6 +96,7 @@ export async function createLiveClassAction(formData: FormData) {
       module_id: final_module_id,
       course_id: final_course_id,
       recording_url,
+      cohort_id: cohort_id || null,
       created_by: user.id
     })
 
@@ -118,6 +120,7 @@ export async function updateLiveClassAction(id: string, formData: FormData) {
     const module_id = formData.get('module_id') as string || null
     const course_id_form = formData.get('course_id') as string || null
     const recording_url = formData.get('recording_url') as string || null
+    const cohort_id = formData.get('cohort_id') as string || null
 
     if (!title || !meeting_link || !scheduled_at) {
       return { error: 'Title, Meeting link, and date are required' }
@@ -136,6 +139,7 @@ export async function updateLiveClassAction(id: string, formData: FormData) {
         module_id: final_module_id,
         course_id: final_course_id,
         recording_url,
+        cohort_id: cohort_id || null,
       })
       .eq('id', id)
 

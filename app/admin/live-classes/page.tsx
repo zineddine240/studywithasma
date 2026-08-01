@@ -9,7 +9,12 @@ export default async function LiveClassesPage() {
 
   const { data: classes } = await supabase
     .from('live_classes')
-    .select('*')
+    .select(`
+      *,
+      cohorts (
+        name
+      )
+    `)
     .order('scheduled_at', { ascending: true })
 
   return (

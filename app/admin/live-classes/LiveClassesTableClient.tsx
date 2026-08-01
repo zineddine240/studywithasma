@@ -13,6 +13,7 @@ interface LiveClassRow {
   scheduled_at: string
   meeting_link: string
   recording_url?: string
+  cohorts?: { name: string } | null
 }
 
 export const columns: ColumnDef<LiveClassRow>[] = [
@@ -31,6 +32,24 @@ export const columns: ColumnDef<LiveClassRow>[] = [
             </div>
           )}
         </div>
+      );
+    },
+  },
+  {
+    accessorKey: "cohort",
+    header: "Group",
+    cell: ({ row }) => {
+      const cohort = row.original.cohorts;
+      return (
+        <span className="text-sm">
+          {cohort ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              {cohort.name}
+            </span>
+          ) : (
+            <span className="text-muted-foreground text-xs">Global</span>
+          )}
+        </span>
       );
     },
   },

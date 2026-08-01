@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import RecordedLessonsClient from "./RecordedLessonsClient";
 import { RecordedLessonData } from "@/components/portal/recorded-lessons/RecordedLessonCard";
 import { StatusType } from "@/components/portal/shared/StatusBadge";
+import { getStudentActiveCohort } from "@/lib/cohorts/queries";
 
 export default async function RecordedLessonsPage() {
   const supabase = await createClient();
@@ -10,8 +11,12 @@ export default async function RecordedLessonsPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let enrolledCourseId = null;
+  let cohortId = null;
   let moduleIds: string[] = [];
   if (user) {
+    const assignment = await getStudentActiveCohort(user.id);
+    cohortId = assignment?.cohort_id;
+
     const { data: profile } = await supabase.from("profiles").select("enrolled_course_id").eq("id", user.id).single();
     enrolledCourseId = profile?.enrolled_course_id;
 
@@ -31,13 +36,19 @@ export default async function RecordedLessonsPage() {
       created_at,
       course_id,
       course:courses(title),
-      module:modules(name, course:courses(title))
+      module:modules(name, course:courses(title))${cohortId ? ', recorded_lesson_cohorts!inner(cohort_id)' : ''}
     `)
     .order("created_at", { ascending: false });
 
-  if (enrolledCourseId) {
+  if (cohortId) {
+    query.eq("recorded_lesson_cohorts.cohort_id", cohortId);
+  } else if (enrolledCourseId) {
+    // Basic course level access if no cohort
     const moduleFilter = moduleIds.length > 0 ? `module_id.in.(${moduleIds.join(',')})` : 'module_id.is.null';
     query.or(`course_id.eq.${enrolledCourseId},${moduleFilter}`);
+  } else {
+    // No access
+    query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
   const { data: lessonsData } = await query;
@@ -57,7 +68,7 @@ export default async function RecordedLessonsPage() {
     }
   }
 
-  const mappedLessons: RecordedLessonData[] = (lessonsData || []).map((l) => {
+  const mappedLessons: RecordedLessonData[] = (lessonsData as any[] || []).map((l) => {
     const p = progressMap[l.id];
     let status: StatusType = "Not Started";
     if (p) {

@@ -58,6 +58,8 @@ export default function EditLiveClassPage({ params }: { params: Promise<{ id: st
   const [deleting, setDeleting] = useState(false);
   const [modules, setModules] = useState<ModuleOption[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("global");
+  const [groups, setGroups] = useState<{ id: string; name: string; course_id: string }[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("none");
 
   const {
     register,
@@ -132,6 +134,15 @@ export default function EditLiveClassPage({ params }: { params: Promise<{ id: st
             }
           }
         }
+
+        // Fetch groups
+        const { data: groupsData } = await supabase
+          .from("cohorts")
+          .select("id, name, course_id")
+          .in("status", ["open", "active", "full", "closed"])
+          .order("start_date", { ascending: true });
+        setGroups(groupsData || []);
+        if (liveClass.cohort_id) setSelectedGroupId(liveClass.cohort_id);
       } catch (err) {
         console.error("Failed to load live class:", err);
       } finally {
@@ -158,6 +169,9 @@ export default function EditLiveClassPage({ params }: { params: Promise<{ id: st
     if (selectedCourseId && selectedCourseId !== "global") {
       formData.append("course_id", selectedCourseId);
     }
+
+    // Always send cohort_id (empty string = remove, value = assign)
+    formData.append("cohort_id", selectedGroupId === "none" ? "" : selectedGroupId);
     
     if (values.recording_url) {
       formData.append("recording_url", values.recording_url);
@@ -343,6 +357,31 @@ export default function EditLiveClassPage({ params }: { params: Promise<{ id: st
                   />
                 </FieldContent>
                 <FieldError errors={[errors.scheduled_at]} />
+              </Field>
+
+              {/* Group Selector */}
+              <Field>
+                <FieldLabel>Group (Optional)</FieldLabel>
+                <FieldContent>
+                  <Select
+                    value={selectedGroupId}
+                    onValueChange={(val) => setSelectedGroupId(val || "none")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="-- No Group (visible to all) --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">-- No Group (visible to all) --</SelectItem>
+                      {groups
+                        .filter(g => selectedCourseId === "global" || g.course_id === selectedCourseId)
+                        .map((g) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            {g.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </FieldContent>
               </Field>
 
               <Field>
