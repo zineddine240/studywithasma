@@ -102,7 +102,7 @@ export async function approveStudentIntoCohort(enrollmentRequestId: string, stud
   // In a high concurrency env, an RPC is better.
   const { data: cohort, error: cohortErr } = await supabase
     .from("cohorts")
-    .select("max_students, status, is_visible_for_registration")
+    .select("max_students, status")
     .eq("id", cohortId)
     .single();
 
@@ -118,7 +118,7 @@ export async function approveStudentIntoCohort(enrollmentRequestId: string, stud
   const enrolled = count || 0;
   if (enrolled >= cohort.max_students) {
     // Also auto-mark cohort as full
-    await supabase.from("cohorts").update({ status: 'full', is_visible_for_registration: false }).eq("id", cohortId);
+    await supabase.from("cohorts").update({ status: 'full' }).eq("id", cohortId);
     return { error: "Cohort is full" };
   }
 
@@ -152,7 +152,7 @@ export async function approveStudentIntoCohort(enrollmentRequestId: string, stud
 
   // If this student reached the capacity, mark full
   if (enrolled + 1 >= cohort.max_students) {
-    await supabase.from("cohorts").update({ status: 'full', is_visible_for_registration: false }).eq("id", cohortId);
+    await supabase.from("cohorts").update({ status: 'full' }).eq("id", cohortId);
   }
 
   revalidatePath("/admin/enrollments");

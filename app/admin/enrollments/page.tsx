@@ -29,8 +29,7 @@ export default async function AdminEnrollmentsPage() {
     .select(`
       *,
       student:profiles ( id, full_name, email, phone, country, target_band, group_name, enrollment_expiry, is_enrolled ),
-      course:courses ( id, title, badge ),
-      requested_cohort:cohorts!requested_cohort_id ( id, name, max_students )
+      course:courses ( id, title, badge )
     `)
     .order("created_at", { ascending: false });
 

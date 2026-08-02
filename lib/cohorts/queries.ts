@@ -19,8 +19,6 @@ export async function getAvailableCohortsByCourse(courseSlug: string) {
     `)
     .eq("course_id", course.id)
     .eq("status", "open")
-    .eq("is_visible_for_registration", true)
-    .gte("registration_deadline", new Date().toISOString())
     .order("start_date", { ascending: true });
 
   if (error) {

@@ -14,10 +14,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function CohortDetailsPage({ params }: { params: { id: string } }) {
+export default async function CohortDetailsPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -31,11 +37,13 @@ export default async function CohortDetailsPage({ params }: { params: { id: stri
   // Fetch cohort details
   const { data: cohort, error: cohortError } = await supabase
     .from("cohorts")
-    .select(`
+    .select(
+      `
       *,
       course:courses(title),
       schedules:cohort_schedules(*)
-    `)
+    `,
+    )
     .eq("id", params.id)
     .single();
 
@@ -44,17 +52,23 @@ export default async function CohortDetailsPage({ params }: { params: { id: stri
   // Fetch enrolled students
   const { data: assignments, error: assignmentsError } = await supabase
     .from("student_cohort_assignments")
-    .select(`
+    .select(
+      `
       id,
       status,
       assigned_at,
       student:profiles(id, full_name, email)
-    `)
+    `,
+    )
     .eq("cohort_id", cohort.id)
     .order("assigned_at", { ascending: false });
 
-  const enrolledCount = assignments?.filter(a => a.status === 'active').length || 0;
-  const fillPercentage = Math.min(100, Math.round((enrolledCount / cohort.max_students) * 100));
+  const enrolledCount =
+    assignments?.filter((a) => a.status === "active").length || 0;
+  const fillPercentage = Math.min(
+    100,
+    Math.round((enrolledCount / cohort.max_students) * 100),
+  );
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
@@ -67,16 +81,29 @@ export default async function CohortDetailsPage({ params }: { params: { id: stri
         <div className="flex-1">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
             {cohort.name}
-            <Badge variant={cohort.status === 'open' ? 'default' : cohort.status === 'full' ? 'destructive' : 'secondary'} className="capitalize">
+            <Badge
+              variant={
+                cohort.status === "open"
+                  ? "default"
+                  : cohort.status === "full"
+                    ? "destructive"
+                    : "secondary"
+              }
+              className="capitalize"
+            >
               {cohort.status}
             </Badge>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {cohort.course?.title} • Starts {format(new Date(cohort.start_date), "MMM d, yyyy")}
+            {cohort.course?.title} • Starts{" "}
+            {format(new Date(cohort.start_date), "MMM d, yyyy")}
           </p>
         </div>
         <Link href={`/admin/cohorts/${cohort.id}/edit`}>
-          <Button variant="outline" className="font-bold flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="font-bold flex items-center gap-2"
+          >
             <Edit className="w-4 h-4" /> Edit Group
           </Button>
         </Link>
@@ -91,17 +118,23 @@ export default async function CohortDetailsPage({ params }: { params: { id: stri
               <Users className="w-4 h-4" /> Capacity
             </h3>
             <div className="flex items-end justify-between mb-2">
-              <span className="text-3xl font-extrabold text-foreground">{enrolledCount}</span>
-              <span className="text-sm text-muted-foreground font-medium mb-1">/ {cohort.max_students} students</span>
+              <span className="text-3xl font-extrabold text-foreground">
+                {enrolledCount}
+              </span>
+              <span className="text-sm text-muted-foreground font-medium mb-1">
+                / {cohort.max_students} students
+              </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
-              <div 
-                className={`h-full rounded-full transition-all duration-500 ${fillPercentage >= 100 ? 'bg-red-500' : fillPercentage > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${fillPercentage >= 100 ? "bg-red-500" : fillPercentage > 80 ? "bg-amber-500" : "bg-emerald-500"}`}
                 style={{ width: `${fillPercentage}%` }}
               />
             </div>
             {cohort.max_students - enrolledCount <= 0 && (
-              <p className="text-xs text-red-500 mt-2 font-medium">Group is at maximum capacity.</p>
+              <p className="text-xs text-red-500 mt-2 font-medium">
+                Group is at maximum capacity.
+              </p>
             )}
           </div>
 
@@ -113,22 +146,36 @@ export default async function CohortDetailsPage({ params }: { params: { id: stri
             {cohort.schedules && cohort.schedules.length > 0 ? (
               <ul className="space-y-3">
                 {cohort.schedules.map((schedule: any) => (
-                  <li key={schedule.id} className="flex justify-between items-center text-sm">
+                  <li
+                    key={schedule.id}
+                    className="flex justify-between items-center text-sm"
+                  >
                     <span className="font-bold">{schedule.day_of_week}</span>
-                    <span className="text-muted-foreground">{schedule.start_time} - {schedule.end_time}</span>
+                    <span className="text-muted-foreground">
+                      {schedule.start_time} - {schedule.end_time}
+                    </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No schedule defined.</p>
+              <p className="text-sm text-muted-foreground">
+                No schedule defined.
+              </p>
             )}
             <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
-              <div className="text-xs font-medium text-muted-foreground">Timezone: {cohort.timezone}</div>
-              {cohort.google_meet_url && (
-                <div className="flex items-center gap-2 text-sm text-primary font-medium mt-2">
-                  <Video className="w-4 h-4" />
-                  <a href={cohort.google_meet_url} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1">
-                    Google Meet Link <LinkIcon className="w-3 h-3" />
+              <div className="text-xs font-medium text-muted-foreground">
+                Timezone: {cohort.timezone}
+              </div>
+              {cohort.whatsapp_group_url && (
+                <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium mt-2">
+                  <LinkIcon className="w-4 h-4" />
+                  <a
+                    href={cohort.whatsapp_group_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:underline flex items-center gap-1"
+                  >
+                    WhatsApp Group Link <LinkIcon className="w-3 h-3" />
                   </a>
                 </div>
               )}
@@ -154,20 +201,37 @@ export default async function CohortDetailsPage({ params }: { params: { id: stri
               <TableBody>
                 {assignments?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    <TableCell
+                      colSpan={4}
+                      className="text-center py-8 text-muted-foreground"
+                    >
                       No students enrolled yet.
                     </TableCell>
                   </TableRow>
                 ) : (
                   assignments?.map((assignment) => (
                     <TableRow key={assignment.id}>
-                      <TableCell className="font-medium">{(assignment.student as any)?.full_name || "Unknown"}</TableCell>
-                      <TableCell className="text-muted-foreground">{(assignment.student as any)?.email}</TableCell>
+                      <TableCell className="font-medium">
+                        {(assignment.student as any)?.full_name || "Unknown"}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {format(new Date(assignment.assigned_at), "MMM d, yyyy")}
+                        {(assignment.student as any)?.email}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {format(
+                          new Date(assignment.assigned_at),
+                          "MMM d, yyyy",
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={assignment.status === 'active' ? 'default' : 'secondary'} className="capitalize">
+                        <Badge
+                          variant={
+                            assignment.status === "active"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className="capitalize"
+                        >
                           {assignment.status}
                         </Badge>
                       </TableCell>

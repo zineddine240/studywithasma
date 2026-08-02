@@ -22,9 +22,7 @@ import {
   ComboboxItem,
   ComboboxEmpty,
 } from "@/components/ui/combobox";
-import { getAvailableCohortsByCourse } from "@/lib/cohorts/queries";
-import { Cohort } from "@/lib/types/cohorts";
-import { format } from "date-fns";
+
 
 // We'll fetch courses dynamically, so no hardcoded COURSE_OPTIONS here.
 
@@ -67,7 +65,6 @@ const requestAccessSchema = z.object({
   englishLevel: z.string().min(1, "Please select your English level."),
   targetBand: z.string().min(1, "Please select your target band."),
   reason: z.string().min(1, "Please select your reason."),
-  cohortId: z.string().optional(),
   message: z.string().optional(),
   agreement: z.literal(true, {
     message: "You must accept the agreement before submitting."
@@ -86,9 +83,6 @@ export default function RequestAccessForm({
   const [submitted, setSubmitted] = useState(false);
   const [courses, setCourses] = useState<{value: string, label: string}[]>([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
-  
-  const [cohorts, setCohorts] = useState<Cohort[]>([]);
-  const [isLoadingCohorts, setIsLoadingCohorts] = useState(false);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -135,31 +129,11 @@ export default function RequestAccessForm({
       englishLevel: "",
       targetBand: "",
       reason: "",
-      cohortId: "",
       message: "",
     },
   });
 
-  const selectedCourseSlug = control._formValues.course;
 
-  useEffect(() => {
-    async function fetchCohorts() {
-      if (!selectedCourseSlug) {
-        setCohorts([]);
-        return;
-      }
-      setIsLoadingCohorts(true);
-      try {
-        const available = await getAvailableCohortsByCourse(selectedCourseSlug);
-        setCohorts(available || []);
-      } catch (err) {
-        console.error("Failed to fetch cohorts:", err);
-      } finally {
-        setIsLoadingCohorts(false);
-      }
-    }
-    fetchCohorts();
-  }, [selectedCourseSlug]);
 
   const onSubmit = async (data: RequestAccessFormValues) => {
     try {
@@ -176,8 +150,6 @@ export default function RequestAccessForm({
           currentLevel: data.englishLevel,
           targetBand: data.targetBand,
           reason: data.reason,
-          selectedCohortId: data.cohortId,
-          selectedCohortName: cohorts.find(c => c.id === data.cohortId)?.name || "",
           additionalMessage: data.message,
         }),
       });
@@ -314,8 +286,6 @@ export default function RequestAccessForm({
                 value={field.value || null} 
                 onValueChange={(val) => {
                   field.onChange(val || "");
-                  // Reset cohort when course changes
-                  control._reset({ ...control._formValues, cohortId: "" });
                 }} 
                 disabled={isLoadingCourses}
               >
@@ -343,47 +313,7 @@ export default function RequestAccessForm({
         <FieldError errors={[errors.course]} />
       </Field>
 
-      {/* Cohort Selection */}
-      {selectedCourseSlug && (
-        <Field>
-          <FieldLabel htmlFor="cohortId">Preferred Group / Batch (Optional)</FieldLabel>
-          <FieldContent>
-            <Controller
-              control={control}
-              name="cohortId"
-              render={({ field }) => (
-                <Combobox value={field.value || null} onValueChange={(val) => field.onChange(val || "")} disabled={isLoadingCohorts}>
-                  <ComboboxInput
-                    placeholder={isLoadingCohorts ? "Loading groups..." : "Select a group"}
-                    className="w-full bg-background"
-                  />
-                  <ComboboxContent className="w-[var(--anchor-width)] min-w-[300px]">
-                    <ComboboxList>
-                      {cohorts.length === 0 ? (
-                        <ComboboxEmpty>{isLoadingCohorts ? "Loading..." : "No groups are currently available for this course."}</ComboboxEmpty>
-                      ) : (
-                        cohorts.map((cohort) => (
-                          <ComboboxItem key={cohort.id} value={cohort.id}>
-                            <div className="flex flex-col gap-1 py-1">
-                              <span className="font-bold text-foreground">{cohort.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                Starts {format(new Date(cohort.start_date), "MMM d, yyyy")}
-                                {cohort.schedules && cohort.schedules.length > 0 && ` • ${cohort.schedules[0].day_of_week}s at ${cohort.schedules[0].start_time}`}
-                              </span>
-                              <span className="text-xs text-primary font-medium">{cohort.enrolled_students_count !== undefined ? `${cohort.max_students - cohort.enrolled_students_count} places remaining` : ""}</span>
-                            </div>
-                          </ComboboxItem>
-                        ))
-                      )}
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
-              )}
-            />
-          </FieldContent>
-          <FieldError errors={[errors.cohortId]} />
-        </Field>
-      )}
+
 
       {/* Row: English Level + Target Band */}
       <div className="grid sm:grid-cols-2 gap-5">

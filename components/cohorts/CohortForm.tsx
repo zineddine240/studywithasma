@@ -17,18 +17,14 @@ import { createCohort, updateCohort } from "@/lib/cohorts/actions";
 
 const cohortSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  slug: z.string().min(1, "Slug is required"),
+  slug: z.string().optional(),
   course_id: z.string().min(1, "Course is required"),
-  course_type: z.string().min(1, "Course type is required"),
   description: z.string().optional(),
   start_date: z.string().min(1, "Start date is required"),
   end_date: z.string().optional(),
-  registration_deadline: z.string().optional(),
   max_students: z.coerce.number().min(1, "Must be at least 1"),
   status: z.string().min(1, "Status is required"),
-  is_visible_for_registration: z.boolean().default(false),
-  google_meet_url: z.string().optional(),
-  zoom_url: z.string().optional(),
+  whatsapp_group_url: z.string().optional(),
   timezone: z.string().default("UTC"),
   schedules: z.array(
     z.object({
@@ -59,16 +55,12 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       course_id: initialData?.course_id || "",
-      course_type: initialData?.course_type || "academic",
       description: initialData?.description || "",
       start_date: initialData?.start_date ? initialData.start_date.split('T')[0] : "",
       end_date: initialData?.end_date ? initialData.end_date.split('T')[0] : "",
-      registration_deadline: initialData?.registration_deadline ? initialData.registration_deadline.substring(0, 16) : "",
       max_students: initialData?.max_students || 20,
       status: initialData?.status || "draft",
-      is_visible_for_registration: initialData?.is_visible_for_registration ?? false,
-      google_meet_url: initialData?.google_meet_url || "",
-      zoom_url: initialData?.zoom_url || "",
+      whatsapp_group_url: initialData?.whatsapp_group_url || "",
       timezone: initialData?.timezone || "UTC",
       schedules: initialData?.schedules || [{ day_of_week: "Monday", start_time: "18:00", end_time: "20:00" }]
     }
@@ -85,14 +77,11 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
       // separate schedules from main data
       const { schedules, ...cohortData } = data;
       
-      // format dates to ISO if needed, or leave as string if postgres accepts it
-      if (!cohortData.end_date) cohortData.end_date = undefined;
-      if (!cohortData.registration_deadline) {
-        cohortData.registration_deadline = undefined;
-      } else if (cohortData.registration_deadline.length === 16) {
-        // convert datetime-local "YYYY-MM-DDThh:mm" to ISO
-        cohortData.registration_deadline = new Date(cohortData.registration_deadline).toISOString();
+      // Auto-generate slug if missing
+      if (!cohortData.slug) {
+        cohortData.slug = cohortData.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `group-${Date.now()}`;
       }
+      if (!cohortData.end_date) cohortData.end_date = undefined;
 
       const res = isEditing && initialData?.id
         ? await updateCohort(initialData.id, cohortData, schedules)
@@ -129,13 +118,13 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
         </Field>
 
         <Field>
-          <FieldLabel>Slug *</FieldLabel>
+          <FieldLabel>Slug (Auto-generated if blank)</FieldLabel>
           <FieldContent><Input placeholder="august-evening-batch" {...register("slug")} /></FieldContent>
           <FieldError errors={[errors.slug]} />
         </Field>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-6">
+      <div>
         <Field>
           <FieldLabel>Associated Course *</FieldLabel>
           <FieldContent>
@@ -154,27 +143,6 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
           </FieldContent>
           <FieldError errors={[errors.course_id]} />
         </Field>
-
-        <Field>
-          <FieldLabel>Course Type *</FieldLabel>
-          <FieldContent>
-            <Controller
-              control={control}
-              name="course_type"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="academic">Academic IELTS</SelectItem>
-                    <SelectItem value="general">General Training IELTS</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </FieldContent>
-          <FieldError errors={[errors.course_type]} />
-        </Field>
       </div>
 
       <Field>
@@ -183,21 +151,16 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
         <FieldError errors={[errors.description]} />
       </Field>
 
-      <div className="grid sm:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 gap-6">
         <Field>
           <FieldLabel>Start Date *</FieldLabel>
           <FieldContent><Input type="date" {...register("start_date")} /></FieldContent>
           <FieldError errors={[errors.start_date]} />
         </Field>
         <Field>
-          <FieldLabel>End Date</FieldLabel>
+          <FieldLabel>End Date (Optional)</FieldLabel>
           <FieldContent><Input type="date" {...register("end_date")} /></FieldContent>
           <FieldError errors={[errors.end_date]} />
-        </Field>
-        <Field>
-          <FieldLabel>Registration Deadline</FieldLabel>
-          <FieldContent><Input type="datetime-local" {...register("registration_deadline")} /></FieldContent>
-          <FieldError errors={[errors.registration_deadline]} />
         </Field>
       </div>
 
@@ -231,23 +194,13 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
           </FieldContent>
           <FieldError errors={[errors.status]} />
         </Field>
-        <Field>
-          <FieldLabel>Visibility</FieldLabel>
-          <div className="mt-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-5 h-5 rounded border-gray-300 accent-primary" {...register("is_visible_for_registration")} />
-              <span className="font-medium">Visible on Registration Form</span>
-            </label>
-          </div>
-          <FieldError errors={[errors.is_visible_for_registration]} />
-        </Field>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
         <Field>
-          <FieldLabel>Google Meet URL</FieldLabel>
-          <FieldContent><Input placeholder="https://meet.google.com/..." {...register("google_meet_url")} /></FieldContent>
-          <FieldError errors={[errors.google_meet_url]} />
+          <FieldLabel>WhatsApp Group URL</FieldLabel>
+          <FieldContent><Input placeholder="https://chat.whatsapp.com/..." {...register("whatsapp_group_url")} /></FieldContent>
+          <FieldError errors={[errors.whatsapp_group_url]} />
         </Field>
         <Field>
           <FieldLabel>Timezone</FieldLabel>

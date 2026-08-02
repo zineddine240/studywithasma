@@ -113,8 +113,6 @@ export async function POST(request: Request) {
           reason,
           additional_message: additionalMessage,
           status: "pending",
-          requested_cohort_id: selectedCohortId,
-          cohort_assignment_status: selectedCohortId ? "requested" : null,
         });
       } catch (dbErr) {
         console.error("Supabase storage optional error:", dbErr);
@@ -130,7 +128,6 @@ export async function POST(request: Request) {
       `📱 <b>Phone/WhatsApp:</b> ${phone}`,
       `🌍 <b>Country:</b> ${country}`,
       `📚 <b>Course:</b> ${selectedCourse}`,
-      `👥 <b>Requested Cohort:</b> ${selectedCohortName}`,
       `📊 <b>Current level:</b> ${currentLevel}`,
       `🎯 <b>Target band:</b> ${targetBand}`,
       "",

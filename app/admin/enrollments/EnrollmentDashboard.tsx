@@ -488,7 +488,7 @@ export default function EnrollmentDashboard({
                               size="sm"
                               onClick={() => {
                                 setSelectedRequest(request);
-                                setAssignedCohortId(request.requested_cohort?.id || "none");
+                                setAssignedCohortId("none");
                                 setIsApproveOpen(true);
                               }}
                               className="h-8 px-2 text-xs font-bold text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
