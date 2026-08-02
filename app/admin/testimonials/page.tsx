@@ -3,14 +3,22 @@ import { Card } from "@/components/ui/card"
 import Link from 'next/link'
 import { PageHeader } from '@/components/admin/PageHeader'
 import { TestimonialsTableClient } from './TestimonialsTableClient'
+import { getPagination, getTotalPages } from "@/lib/utils/pagination";
 
-export default async function TestimonialsPage() {
+export default async function TestimonialsPage(props: { searchParams: Promise<{ page?: string }> }) {
+  const searchParams = await props.searchParams;
+  const page = searchParams.page ? parseInt(searchParams.page, 10) : 1;
+  const { from, to, limit } = getPagination(page, 10);
+
   const supabase = await createClient()
 
-  const { data: testimonials } = await supabase
+  const { data: testimonials, count } = await supabase
     .from('testimonials')
-    .select('*')
+    .select('*', { count: "exact" })
     .order('created_at', { ascending: false })
+    .range(from, to);
+
+  const totalPages = getTotalPages(count, limit);
 
   return (
     <div className="space-y-6">
@@ -38,7 +46,7 @@ export default async function TestimonialsPage() {
           </p>
         </Card>
       ) : (
-        <TestimonialsTableClient initialData={testimonials} />
+        <TestimonialsTableClient initialData={testimonials} currentPage={page} totalPages={totalPages} />
       )}
     </div>
   )

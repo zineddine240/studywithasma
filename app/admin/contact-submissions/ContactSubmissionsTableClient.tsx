@@ -40,11 +40,17 @@ const statusConfig: Record<
 interface ContactSubmissionsTableClientProps {
   initialData: ContactSubmission[];
   error: string | null;
+  currentPage: number;
+  totalPages: number;
 }
+
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export function ContactSubmissionsTableClient({
   initialData,
   error,
+  currentPage,
+  totalPages,
 }: ContactSubmissionsTableClientProps) {
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -252,6 +258,8 @@ export function ContactSubmissionsTableClient({
           setSelectedSubmission,
         }}
       />
+
+      <AdminPagination currentPage={currentPage} totalPages={totalPages} />
 
       <Dialog open={!!selectedSubmission} onOpenChange={(open) => !open && setSelectedSubmission(null)}>
         {selectedSubmission && (

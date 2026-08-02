@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { Save, Plus, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { createCohort, updateCohort } from "@/lib/cohorts/actions";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format, parseISO } from "date-fns";
 
 const cohortSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -133,7 +135,11 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
               name="course_id"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select course">
+                      {courses.find(c => c.id === field.value)?.title || "Select course"}
+                    </SelectValue>
+                  </SelectTrigger>
                   <SelectContent>
                     {courses.map(c => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
                   </SelectContent>
@@ -154,12 +160,36 @@ export default function CohortForm({ initialData, courses, isEditing }: CohortFo
       <div className="grid sm:grid-cols-2 gap-6">
         <Field>
           <FieldLabel>Start Date *</FieldLabel>
-          <FieldContent><Input type="date" {...register("start_date")} /></FieldContent>
+          <FieldContent>
+            <Controller
+              control={control}
+              name="start_date"
+              render={({ field }) => (
+                <DatePicker
+                  date={field.value ? parseISO(field.value) : undefined}
+                  setDate={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                  placeholder="Select start date"
+                />
+              )}
+            />
+          </FieldContent>
           <FieldError errors={[errors.start_date]} />
         </Field>
         <Field>
           <FieldLabel>End Date (Optional)</FieldLabel>
-          <FieldContent><Input type="date" {...register("end_date")} /></FieldContent>
+          <FieldContent>
+            <Controller
+              control={control}
+              name="end_date"
+              render={({ field }) => (
+                <DatePicker
+                  date={field.value ? parseISO(field.value) : undefined}
+                  setDate={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                  placeholder="Select end date"
+                />
+              )}
+            />
+          </FieldContent>
           <FieldError errors={[errors.end_date]} />
         </Field>
       </div>
