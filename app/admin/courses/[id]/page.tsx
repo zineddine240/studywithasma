@@ -8,13 +8,19 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { updateCourseAction, deleteCourseAction, createModuleAction, deleteModuleAction } from "@/app/admin/actions"
+import { updateCourseAction, deleteCourseAction, createModuleAction, deleteModuleAction, updateModuleAction } from "@/app/admin/actions"
 import Link from "next/link"
-import { ArrowLeft, Plus, Trash2, Layers, Loader2 } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, Layers, Loader2, Pencil, Paperclip } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { use, useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
+
+interface ModuleAttachment {
+  id: string
+  title: string
+  file_url: string
+}
 
 interface Module {
   id: string
@@ -22,6 +28,7 @@ interface Module {
   name: string
   description: string
   slug: string
+  module_attachments?: ModuleAttachment[]
 }
 
 interface Course {
@@ -74,7 +81,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
       const { data: modules } = await supabase
         .from("modules")
-        .select("*")
+        .select("*, module_attachments(*)")
         .eq("course_id", id)
         .order("number", { ascending: true })
 
@@ -155,6 +162,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
               setCourse(prev => prev ? {
                 ...prev,
                 modules: [...prev.modules, newModule].sort((a, b) => a.number - b.number),
+              } : prev)
+            }}
+            onUpdated={(updatedModule) => {
+              setCourse(prev => prev ? {
+                ...prev,
+                modules: prev.modules.map(m => m.id === updatedModule.id ? updatedModule : m),
               } : prev)
             }}
             deletingModule={deletingModule}
@@ -309,18 +322,48 @@ function CourseDetailsForm({ course }: { course: Course }) {
   )
 }
 
-function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule }: {
+function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule, onUpdated }: {
   courseId: string
   modules: Module[]
   onDelete: (id: string) => void
   onCreated: (m: Module) => void
   deletingModule: string | null
+  onUpdated: (m: Module) => void
 }) {
   const [showForm, setShowForm] = useState(false)
+  const [editingModule, setEditingModule] = useState<Module | null>(null)
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ModFormValues>({
     resolver: zodResolver(modSchema),
   })
+
+  const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, formState: { errors: errorsEdit, isSubmitting: isSubmittingEdit } } = useForm<ModFormValues>({
+    resolver: zodResolver(modSchema),
+  })
+
+  function handleEditClick(mod: Module) {
+    setEditingModule(mod)
+    resetEdit({ name: mod.name, description: mod.description })
+  }
+
+  async function onEditSubmit(values: ModFormValues) {
+    if (!editingModule) return
+    const slug = values.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+    const result = await updateModuleAction(editingModule.id, {
+      name: values.name,
+      description: values.description,
+      slug,
+      course_id: courseId
+    })
+    
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success("Module updated!")
+      onUpdated({ ...editingModule, name: values.name, description: values.description, slug })
+      setEditingModule(null)
+    }
+  }
 
   async function onSubmit(values: ModFormValues) {
     const nextNumber = modules.length > 0 ? Math.max(...modules.map(m => m.number)) + 1 : 1
@@ -365,25 +408,95 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule 
 
       <div className="space-y-3">
         {modules.map((mod) => (
-          <div key={mod.id} className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/30">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
-              {mod.number}
+          editingModule?.id === mod.id ? (
+            <form key={mod.id} onSubmit={handleSubmitEdit(onEditSubmit)} className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-4" noValidate>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                  {mod.number}
+                </div>
+                <h3 className="text-sm font-semibold text-foreground">Editing Module</h3>
+              </div>
+              <Field>
+                <FieldLabel htmlFor={`edit-name-${mod.id}`}>Module Name</FieldLabel>
+                <FieldContent>
+                  <Input id={`edit-name-${mod.id}`} {...registerEdit("name")} />
+                </FieldContent>
+                <FieldError errors={[errorsEdit.name]} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor={`edit-desc-${mod.id}`}>Description</FieldLabel>
+                <FieldContent>
+                  <Textarea id={`edit-desc-${mod.id}`} className="min-h-20" {...registerEdit("description")} />
+                </FieldContent>
+                <FieldError errors={[errorsEdit.description]} />
+              </Field>
+              <div className="flex gap-2 justify-end">
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditingModule(null)} className="cursor-pointer">Cancel</Button>
+                <Button type="submit" size="sm" disabled={isSubmittingEdit} className="cursor-pointer">
+                  {isSubmittingEdit ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div key={mod.id} className="flex flex-col p-4 rounded-xl border border-border bg-muted/30 gap-3">
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
+                  {mod.number}
+                </div>
+                <div className="grow min-w-0">
+                  <p className="font-medium text-foreground text-sm">{mod.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{mod.description}</p>
+                  
+                  {mod.module_attachments && mod.module_attachments.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {mod.module_attachments.map((att) => (
+                        <div key={att.id} className="inline-flex items-center rounded-md bg-background border border-border overflow-hidden">
+                          <a 
+                            href={att.file_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border-r border-border max-w-[200px]"
+                            title="View File"
+                          >
+                            <Paperclip className="w-3 h-3 shrink-0" />
+                            <span className="truncate" title={att.title}>{att.title}</span>
+                          </a>
+                          <Link
+                            href={`/admin/attachments/${att.id}`}
+                            className="inline-flex items-center justify-center px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                            title="Edit Attachment"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={() => handleEditClick(mod)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={deletingModule === mod.id}
+                    onClick={() => onDelete(mod.id)}
+                  >
+                    {deletingModule === mod.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="grow min-w-0">
-              <p className="font-medium text-foreground text-sm">{mod.name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{mod.description}</p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-              disabled={deletingModule === mod.id}
-              onClick={() => onDelete(mod.id)}
-            >
-              {deletingModule === mod.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            </Button>
-          </div>
+          )
         ))}
       </div>
 

@@ -315,6 +315,41 @@ export async function createAttachmentAction(formData: FormData) {
   }
 }
 
+export async function updateAttachmentAction(id: string, formData: FormData) {
+  try {
+    const { supabase } = await verifyAdminOrTeacher()
+    
+    const title = formData.get('title') as string
+    const file_url = formData.get('file_url') as string | null
+    const module_id = formData.get('module_id') as string
+
+    if (!title || !module_id) {
+      return { error: 'Title and Module are required' }
+    }
+
+    const payload: any = {
+      title,
+      module_id
+    }
+
+    if (file_url) {
+      payload.file_url = file_url
+    }
+
+    const { error } = await supabase
+      .from('module_attachments')
+      .update(payload)
+      .eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/attachments')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Failed to update attachment' }
+  }
+}
+
 export async function deleteAttachmentAction(id: string) {
   try {
     const { supabase } = await verifyAdminOrTeacher()

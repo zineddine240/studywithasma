@@ -4,8 +4,9 @@ import { useMemo, useState, useTransition, useOptimistic } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { toast } from "sonner";
-import { Loader2, Trash2, Paperclip } from "lucide-react";
+import { Loader2, Trash2, Paperclip, Pencil } from "lucide-react";
 import { deleteAttachmentAction } from "../actions";
+import Link from "next/link";
 
 export type AttachmentRow = {
   id: string;
@@ -105,6 +106,13 @@ export function AttachmentsTableClient({ initialData }: AttachmentsTableClientPr
           const isDeleting = isPending && deletingId === id;
           return (
             <div className="flex items-center gap-2 justify-end">
+              <Link
+                href={`/admin/attachments/${id}`}
+                className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors outline-none cursor-pointer"
+                title="Edit Attachment"
+              >
+                <Pencil className="w-4 h-4" />
+              </Link>
               <button
                 disabled={isPending}
                 onClick={() => handleDelete(id)}
