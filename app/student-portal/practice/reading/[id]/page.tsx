@@ -26,7 +26,7 @@ export default async function ReadingTestPage({
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-8">
+    <div className="w-full h-full pb-4">
       <ReadingTestClient testData={test.content_data} title={test.title} />
     </div>
   );
