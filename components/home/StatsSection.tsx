@@ -18,7 +18,7 @@ const stats = [
   {
     icon: <BookOpenCheck className="w-8 h-8 text-amber-500" />,
     value: "35",
-    label: "Band Score 5.5 to 7"
+    label: "Successful students"
   },
   {
     icon: <Globe className="w-8 h-8 text-amber-500" />,
