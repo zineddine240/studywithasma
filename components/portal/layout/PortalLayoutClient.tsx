@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { PortalSidebar } from "./PortalSidebar";
 import { PortalTopBar } from "./PortalTopBar";
+import { usePathname } from "next/navigation";
 
 export function PortalLayoutClient({
   children,
@@ -13,6 +14,7 @@ export function PortalLayoutClient({
 }) {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -44,7 +46,7 @@ export function PortalLayoutClient({
         />
         
         <div className="flex-1 overflow-auto w-full custom-scrollbar">
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+          <div className={pathname?.includes("/practice/reading/") ? "h-full w-full" : "p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto"}>
             {children}
           </div>
         </div>
