@@ -2,7 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import CohortForm from "@/components/cohorts/CohortForm";
 
-export default async function EditCohortPage({ params }: { params: { id: string } }) {
+export default async function EditCohortPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();

@@ -28,9 +28,13 @@ export type Testimonial = {
 
 interface TestimonialsTableClientProps {
   initialData: Testimonial[];
+  currentPage: number;
+  totalPages: number;
 }
 
-export function TestimonialsTableClient({ initialData }: TestimonialsTableClientProps) {
+import { AdminPagination } from "@/components/admin/AdminPagination";
+
+export function TestimonialsTableClient({ initialData, currentPage, totalPages }: TestimonialsTableClientProps) {
   const [isPending, startTransition] = useTransition();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
@@ -192,6 +196,7 @@ export function TestimonialsTableClient({ initialData }: TestimonialsTableClient
   return (
     <>
       <DataTable columns={columns} data={optimisticTestimonials} />
+      <AdminPagination currentPage={currentPage} totalPages={totalPages} />
 
       <Dialog open={!!selectedTestimonial} onOpenChange={(open) => !open && setSelectedTestimonial(null)}>
         {selectedTestimonial && (

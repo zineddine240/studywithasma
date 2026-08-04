@@ -63,7 +63,7 @@ export default async function AdminCohortsPage() {
             Groups Management
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage groups of students, schedules, and Meet links.
+            Manage groups of students, schedules, and WhatsApp links.
           </p>
         </div>
 
@@ -99,9 +99,6 @@ export default async function AdminCohortsPage() {
                 <TableRow key={cohort.id}>
                   <TableCell>
                     <div className="font-bold text-foreground">{cohort.name}</div>
-                    {!cohort.is_visible_for_registration && (
-                      <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-2">Hidden</span>
-                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">{cohort.course?.title || "No Course"}</div>

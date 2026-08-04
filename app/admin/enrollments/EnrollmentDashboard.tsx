@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import {
   Check,
@@ -28,6 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +53,7 @@ const DURATION_OPTIONS = [
   { value: "3", label: "3 Months" },
   { value: "6", label: "6 Months" },
   { value: "permanent", label: "Permanent / No Expiry" },
+  { value: "custom", label: "Specific Expiry Date (Custom Date Range)" },
 ];
 
 const EDIT_DURATION_OPTIONS = [
@@ -59,6 +62,7 @@ const EDIT_DURATION_OPTIONS = [
   { value: "3", label: "+3 Months from Today" },
   { value: "6", label: "+6 Months from Today" },
   { value: "permanent", label: "Permanent / No Expiry" },
+  { value: "custom", label: "Specific Expiry Date (Custom Date Range)" },
 ];
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,16 +125,21 @@ interface StudentItem {
   group_name?: string;
 }
 
+import { AdminPagination } from "@/components/admin/AdminPagination";
+import { searchStudentsAction } from "./search-student-action";
+
 export default function EnrollmentDashboard({
   initialRequests,
   courses = [],
-  allStudents = [],
   allCohorts = [],
+  currentPage,
+  totalPages,
 }: {
   initialRequests: any[];
   courses?: CourseItem[];
-  allStudents?: StudentItem[];
   allCohorts?: any[];
+  currentPage: number;
+  totalPages: number;
 }) {
   const [requests, setRequests] = useState<EnrollmentRequest[]>(initialRequests);
   const [selectedRequest, setSelectedRequest] = useState<EnrollmentRequest | null>(null);
@@ -146,7 +155,8 @@ export default function EnrollmentDashboard({
   const [editCourseId, setEditCourseId] = useState("");
   const [editTargetBand, setEditTargetBand] = useState("");
   const [editGroupName, setEditGroupName] = useState("");
-  const [duration, setDuration] = useState<number | "permanent" | "keep">(1);
+  const [duration, setDuration] = useState<number | "permanent" | "keep" | "custom">(1);
+  const [customExpiryDate, setCustomExpiryDate] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [assignedCohortId, setAssignedCohortId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -156,9 +166,26 @@ export default function EnrollmentDashboard({
   const [directCourseId, setDirectCourseId] = useState("");
   const [directTargetBand, setDirectTargetBand] = useState("6.5");
   const [directGroupName, setDirectGroupName] = useState("Self-Paced");
-  const [directDuration, setDirectDuration] = useState<number | "permanent">(1);
+  const [directDuration, setDirectDuration] = useState<number | "permanent" | "custom">(1);
+  const [directCustomExpiryDate, setDirectCustomExpiryDate] = useState("");
   const [directNotes, setDirectNotes] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<StudentItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (studentSearch.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const delay = setTimeout(async () => {
+      setIsSearching(true);
+      const res = await searchStudentsAction(studentSearch);
+      setSearchResults(res);
+      setIsSearching(false);
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [studentSearch]);
 
   // Helper to check if enrollment is expired
   const isEnrollmentExpired = (req: EnrollmentRequest): boolean => {
@@ -224,7 +251,8 @@ export default function EnrollmentDashboard({
         selectedRequest.course_id,
         selectedRequest.target_band || "6.5",
         duration === "keep" ? 1 : duration,
-        paymentNotes
+        paymentNotes,
+        customExpiryDate
       );
       if (res.error) throw new Error(res.error);
 
@@ -276,7 +304,8 @@ export default function EnrollmentDashboard({
         editTargetBand,
         editGroupName,
         duration,
-        paymentNotes
+        paymentNotes,
+        customExpiryDate
       );
       if (res.error) throw new Error(res.error);
 
@@ -336,7 +365,8 @@ export default function EnrollmentDashboard({
         directTargetBand,
         directGroupName,
         directDuration,
-        directNotes
+        directNotes,
+        directCustomExpiryDate
       );
       if (res.error) throw new Error(res.error);
 
@@ -348,12 +378,6 @@ export default function EnrollmentDashboard({
       setIsSubmitting(false);
     }
   };
-
-  const filteredStudents = allStudents.filter(
-    (s) =>
-      s.email.toLowerCase().includes(studentSearch.toLowerCase()) ||
-      (s.full_name && s.full_name.toLowerCase().includes(studentSearch.toLowerCase()))
-  );
 
   return (
     <div className="space-y-6">
@@ -370,7 +394,7 @@ export default function EnrollmentDashboard({
 
         <Button
           onClick={() => {
-            setDirectStudentId(allStudents[0]?.id || "");
+            setDirectStudentId("");
             setDirectCourseId(courses[0]?.id || "");
             setIsDirectEnrollOpen(true);
           }}
@@ -488,7 +512,7 @@ export default function EnrollmentDashboard({
                               size="sm"
                               onClick={() => {
                                 setSelectedRequest(request);
-                                setAssignedCohortId(request.requested_cohort?.id || "none");
+                                setAssignedCohortId("none");
                                 setIsApproveOpen(true);
                               }}
                               className="h-8 px-2 text-xs font-bold text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
@@ -559,6 +583,8 @@ export default function EnrollmentDashboard({
           </TableBody>
         </Table>
       </div>
+
+      <AdminPagination currentPage={currentPage} totalPages={totalPages} />
 
       {/* ── VIEW MODAL ── */}
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
@@ -700,7 +726,7 @@ export default function EnrollmentDashboard({
               <Select
                 value={String(duration)}
                 onValueChange={(val) =>
-                  setDuration(val === "permanent" ? "permanent" : Number(val) || 1)
+                  setDuration(val === "permanent" ? "permanent" : val === "custom" ? "custom" : Number(val) || 1)
                 }
               >
                 <SelectTrigger className="h-11 rounded-xl">
@@ -716,6 +742,18 @@ export default function EnrollmentDashboard({
                   ))}
                 </SelectContent>
               </Select>
+
+              {duration === "custom" && (
+                <div className="mt-2 space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Select Expiry Date</label>
+                  <DatePicker
+                    date={customExpiryDate ? parseISO(customExpiryDate) : undefined}
+                    setDate={(date) => setCustomExpiryDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    placeholder="Select expiry date"
+                    className="h-10 rounded-xl bg-background"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -802,6 +840,8 @@ export default function EnrollmentDashboard({
                       ? "keep"
                       : val === "permanent"
                       ? "permanent"
+                      : val === "custom"
+                      ? "custom"
                       : Number(val) || "keep"
                   )
                 }
@@ -819,6 +859,18 @@ export default function EnrollmentDashboard({
                   ))}
                 </SelectContent>
               </Select>
+
+              {duration === "custom" && (
+                <div className="mt-2 space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Select Expiry Date</label>
+                  <DatePicker
+                    date={customExpiryDate ? parseISO(customExpiryDate) : undefined}
+                    setDate={(date) => setCustomExpiryDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    placeholder="Select expiry date"
+                    className="h-10 rounded-xl bg-background"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -885,30 +937,48 @@ export default function EnrollmentDashboard({
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            {/* Student Search & Select */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase">Select Registered Student</label>
-              <Select
-                value={directStudentId}
-                onValueChange={(val) => val && setDirectStudentId(val)}
-              >
-                <SelectTrigger className="h-11 rounded-xl">
-                  <SelectValue placeholder="Select student by name or email...">
-                    {(() => {
-                      const s = allStudents.find((st) => st.id === directStudentId);
-                      if (!s) return undefined;
-                      return `${s.full_name || "No name"} (${s.email})${s.is_enrolled ? " • [Enrolled]" : ""}`;
-                    })()}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {allStudents.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.full_name || "No name"} ({s.email}) {s.is_enrolled ? "• [Enrolled]" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Student Search Async */}
+            <div className="space-y-1.5 relative">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Search Registered Student</label>
+              <Input
+                placeholder="Type name or email to search..."
+                value={studentSearch}
+                onChange={(e) => {
+                  setStudentSearch(e.target.value);
+                  if (directStudentId) setDirectStudentId(""); // Clear selection if typing
+                }}
+                className="h-11 rounded-xl"
+              />
+              
+              {studentSearch.length >= 2 && !directStudentId && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-56 overflow-y-auto">
+                  {isSearching ? (
+                    <div className="p-3 text-sm text-muted-foreground text-center">Searching...</div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="p-3 text-sm text-muted-foreground text-center">No students found.</div>
+                  ) : (
+                    searchResults.map((s) => (
+                      <div
+                        key={s.id}
+                        className="p-3 text-sm cursor-pointer hover:bg-muted transition-colors border-b border-border/50 last:border-0"
+                        onClick={() => {
+                          setDirectStudentId(s.id);
+                          setStudentSearch(`${s.full_name || "Unknown"} (${s.email})`);
+                          setSearchResults([]);
+                        }}
+                      >
+                        <div className="font-semibold flex items-center gap-2">
+                          {s.full_name || "Unknown Student"}
+                          {s.is_enrolled && (
+                            <Badge variant="secondary" className="text-[10px]">Active</Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{s.email}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Select Course */}
@@ -957,7 +1027,7 @@ export default function EnrollmentDashboard({
               <Select
                 value={String(directDuration)}
                 onValueChange={(val) =>
-                  setDirectDuration(val === "permanent" ? "permanent" : Number(val) || 1)
+                  setDirectDuration(val === "permanent" ? "permanent" : val === "custom" ? "custom" : Number(val) || 1)
                 }
               >
                 <SelectTrigger className="h-11 rounded-xl">
@@ -973,6 +1043,18 @@ export default function EnrollmentDashboard({
                   ))}
                 </SelectContent>
               </Select>
+
+              {directDuration === "custom" && (
+                <div className="mt-2 space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Select Expiry Date</label>
+                  <DatePicker
+                    date={directCustomExpiryDate ? parseISO(directCustomExpiryDate) : undefined}
+                    setDate={(date) => setDirectCustomExpiryDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    placeholder="Select expiry date"
+                    className="h-10 rounded-xl bg-background"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">

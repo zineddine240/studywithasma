@@ -3,6 +3,7 @@ import { PortalCard } from "../shared/PortalCard";
 import { StatusBadge } from "../shared/StatusBadge";
 import { SectionHeader } from "../shared/SectionHeader";
 import { createClient } from "@/utils/supabase/server";
+import { getStudentActiveCohort } from "@/lib/cohorts/queries";
 import Link from "next/link";
 
 export async function NextLiveClassCard() {
@@ -11,16 +12,10 @@ export async function NextLiveClassCard() {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  let enrolledCourseId = null;
-  let moduleIds: string[] = [];
+  let cohortId = null;
   if (user) {
-    const { data: profile } = await supabase.from("profiles").select("enrolled_course_id").eq("id", user.id).single();
-    enrolledCourseId = profile?.enrolled_course_id;
-
-    if (enrolledCourseId) {
-      const { data: mods } = await supabase.from("modules").select("id").eq("course_id", enrolledCourseId);
-      moduleIds = (mods || []).map((m) => m.id);
-    }
+    const assignment = await getStudentActiveCohort(user.id);
+    cohortId = assignment?.cohort_id;
   }
 
   const query = supabase
@@ -33,9 +28,10 @@ export async function NextLiveClassCard() {
     .order("scheduled_at", { ascending: true })
     .limit(1);
 
-  if (enrolledCourseId) {
-    const moduleFilter = moduleIds.length > 0 ? `module_id.in.(${moduleIds.join(',')})` : 'module_id.is.null';
-    query.or(`course_id.eq.${enrolledCourseId},${moduleFilter}`);
+  if (cohortId) {
+    query.eq("cohort_id", cohortId);
+  } else {
+    query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
   const { data: nextLiveClass } = await query.single();

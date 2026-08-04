@@ -42,20 +42,12 @@ export default async function LiveClassesPage() {
     `)
     .order("scheduled_at", { ascending: true });
 
-  if (enrolledCourseId) {
-    const moduleFilter = moduleIds.length > 0 ? `module_id.in.(${moduleIds.join(',')})` : 'module_id.is.null';
-    
-    if (cohortId) {
-      // Sees specific cohort classes OR global classes for their course
-      query.or(`cohort_id.eq.${cohortId},and(cohort_id.is.null,or(course_id.eq.${enrolledCourseId},${moduleFilter}))`);
-    } else {
-      // No cohort, sees only global classes for their course
-      query.is("cohort_id", null);
-      query.or(`course_id.eq.${enrolledCourseId},${moduleFilter}`);
-    }
+  if (cohortId) {
+    // Student sees live classes specifically for their assigned cohort group
+    query.eq("cohort_id", cohortId);
   } else {
-    // No enrolled course
-    query.eq("id", "00000000-0000-0000-0000-000000000000"); // fetch none
+    // Student is not assigned to a cohort group yet, show no classes
+    query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
   const { data: liveClasses } = await query;
@@ -119,6 +111,18 @@ export default async function LiveClassesPage() {
           View your upcoming online classes and join your Google Meet or Zoom sessions.
         </p>
       </section>
+
+      {!cohortId && (
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 p-5 rounded-2xl flex items-center gap-4">
+          <AlertCircle className="w-6 h-6 shrink-0 text-amber-500" />
+          <div>
+            <h3 className="font-bold text-sm">No Cohort Group Assigned Yet</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              You are not assigned to a study cohort yet. Your teacher will assign you to a group batch shortly. Once assigned, your live class schedule will appear here.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Next Live Class ── */}
       {nextClassData && (

@@ -5,13 +5,32 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/utils/env";
 
+function computeExpiryDate(
+  duration: number | "permanent" | "keep" | "custom" | string,
+  customDate?: string
+): string | null | undefined {
+  if (duration === "keep") return undefined;
+  if (duration === "permanent") return null;
+  if (duration === "custom" && customDate) {
+    return new Date(customDate + "T23:59:59Z").toISOString();
+  }
+  if (typeof duration === "string" && duration.includes("-")) {
+    return new Date(duration + "T23:59:59Z").toISOString();
+  }
+  const months = Number(duration) || 1;
+  const d = new Date();
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString();
+}
+
 export async function approveEnrollment(
   requestId: string,
   studentId: string,
   courseId: string,
   targetBand: string,
-  durationMonths: number | "permanent",
-  paymentNotes: string
+  durationMonths: number | "permanent" | "custom" | string,
+  paymentNotes: string,
+  customExpiryDate?: string
 ) {
   const supabase = await createClient();
 
@@ -35,12 +54,7 @@ export async function approveEnrollment(
   }
 
   // 2. Calculate expiry
-  let expiryDate = null;
-  if (durationMonths !== "permanent") {
-    const d = new Date();
-    d.setMonth(d.getMonth() + durationMonths);
-    expiryDate = d.toISOString();
-  }
+  const expiryDate = computeExpiryDate(durationMonths, customExpiryDate);
 
   // 3. Create Admin Client to bypass RLS
   const adminClient = createAdminClient(
@@ -125,8 +139,9 @@ export async function updateEnrollmentAction(
   courseId: string,
   targetBand: string,
   groupName: string,
-  durationMonths: number | "permanent" | "keep",
-  paymentNotes: string
+  durationMonths: number | "permanent" | "keep" | "custom" | string,
+  paymentNotes: string,
+  customExpiryDate?: string
 ) {
   const supabase = await createClient();
 
@@ -160,13 +175,7 @@ export async function updateEnrollmentAction(
   };
 
   if (durationMonths !== "keep") {
-    if (durationMonths === "permanent") {
-      profileUpdate.enrollment_expiry = null;
-    } else {
-      const d = new Date();
-      d.setMonth(d.getMonth() + durationMonths);
-      profileUpdate.enrollment_expiry = d.toISOString();
-    }
+    profileUpdate.enrollment_expiry = computeExpiryDate(durationMonths, customExpiryDate);
   }
 
   const { error: profileError } = await adminClient
@@ -263,8 +272,9 @@ export async function createDirectEnrollmentAction(
   courseId: string,
   targetBand: string,
   groupName: string,
-  durationMonths: number | "permanent",
-  paymentNotes: string
+  durationMonths: number | "permanent" | "custom" | string,
+  paymentNotes: string,
+  customExpiryDate?: string
 ) {
   const supabase = await createClient();
 
@@ -291,12 +301,7 @@ export async function createDirectEnrollmentAction(
     SUPABASE_SERVICE_ROLE_KEY()
   );
 
-  let expiryDate = null;
-  if (durationMonths !== "permanent") {
-    const d = new Date();
-    d.setMonth(d.getMonth() + durationMonths);
-    expiryDate = d.toISOString();
-  }
+  const expiryDate = computeExpiryDate(durationMonths, customExpiryDate);
 
   const { error: profileError } = await adminClient
     .from("profiles")

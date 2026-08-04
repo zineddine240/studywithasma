@@ -21,16 +21,12 @@ export interface Cohort {
   name: string;
   slug: string;
   course_id: string | null;
-  course_type: "academic" | "general" | string;
   description?: string;
   start_date: string;
   end_date?: string;
-  registration_deadline?: string;
   max_students: number;
   status: CohortStatus;
-  is_visible_for_registration: boolean;
-  google_meet_url?: string;
-  zoom_url?: string;
+  whatsapp_group_url?: string;
   timezone: string;
   created_at: string;
   updated_at: string;
