@@ -144,6 +144,10 @@ export default function EnrollmentDashboard({
   const [requests, setRequests] = useState<EnrollmentRequest[]>(initialRequests);
   const [selectedRequest, setSelectedRequest] = useState<EnrollmentRequest | null>(null);
 
+  useEffect(() => {
+    setRequests(initialRequests);
+  }, [initialRequests]);
+
   // Modals state
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isApproveOpen, setIsApproveOpen] = useState(false);

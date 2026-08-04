@@ -78,13 +78,30 @@ export async function POST(request: Request) {
         const supabase = createClient(supabaseUrl, supabaseKey);
         let userId: string | null = null;
 
-        if (body.password) {
-          const { data: authData } = await supabase.auth.admin.createUser({
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", email)
+          .single();
+
+        if (existingProfile) {
+          userId = existingProfile.id;
+        } else if (body.password) {
+          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email,
             password: body.password,
             email_confirm: true,
             user_metadata: { full_name: fullName },
           });
+          
+          if (authError) {
+             console.error("Error creating user:", authError);
+             return NextResponse.json(
+               { success: false, message: authError.message },
+               { status: 400 }
+             );
+          }
+
           if (authData?.user) {
             userId = authData.user.id;
             await new Promise((resolve) => setTimeout(resolve, 500));
