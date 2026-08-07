@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import {
   Check,
@@ -134,13 +135,27 @@ export default function EnrollmentDashboard({
   allCohorts = [],
   currentPage,
   totalPages,
+  counts = { all: 0, pending: 0, approved: 0, expired: 0, rejected: 0 },
+  currentStatus = "all",
 }: {
   initialRequests: any[];
   courses?: CourseItem[];
   allCohorts?: any[];
   currentPage: number;
   totalPages: number;
+  counts?: {
+    all: number;
+    pending: number;
+    approved: number;
+    expired: number;
+    rejected: number;
+  };
+  currentStatus?: string;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [requests, setRequests] = useState<EnrollmentRequest[]>(initialRequests);
   const [selectedRequest, setSelectedRequest] = useState<EnrollmentRequest | null>(null);
 
@@ -199,25 +214,28 @@ export default function EnrollmentDashboard({
     return new Date(expiry) < new Date();
   };
 
-  // Search/Filter requests list
-  const [filterStatus, setFilterStatus] = useState("all");
+  const handleTabChange = (st: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (st === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", st);
+    }
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const filteredRequests = requests.filter((r) => {
-    if (filterStatus === "all") return true;
-    if (filterStatus === "pending") return r.status === "pending";
-    if (filterStatus === "approved") return r.status === "approved" && !isEnrollmentExpired(r);
-    if (filterStatus === "expired") return isEnrollmentExpired(r);
-    if (filterStatus === "rejected") return r.status === "rejected";
+    if (currentStatus === "all") return true;
+    if (currentStatus === "pending") return r.status === "pending";
+    if (currentStatus === "approved") return r.status === "approved" && !isEnrollmentExpired(r);
+    if (currentStatus === "expired") return isEnrollmentExpired(r);
+    if (currentStatus === "rejected") return r.status === "rejected";
     return true;
   });
 
   const getTabCount = (tab: string) => {
-    if (tab === "all") return requests.length;
-    if (tab === "pending") return requests.filter((r) => r.status === "pending").length;
-    if (tab === "approved") return requests.filter((r) => r.status === "approved" && !isEnrollmentExpired(r)).length;
-    if (tab === "expired") return requests.filter((r) => isEnrollmentExpired(r)).length;
-    if (tab === "rejected") return requests.filter((r) => r.status === "rejected").length;
-    return 0;
+    return counts[tab as keyof typeof counts] ?? 0;
   };
 
   // Open Edit Modal
@@ -414,9 +432,9 @@ export default function EnrollmentDashboard({
         {["all", "pending", "approved", "expired", "rejected"].map((st) => (
           <button
             key={st}
-            onClick={() => setFilterStatus(st)}
+            onClick={() => handleTabChange(st)}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold capitalize transition-colors ${
-              filterStatus === st
+              currentStatus === st
                 ? "bg-primary text-white"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}

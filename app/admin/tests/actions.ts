@@ -146,3 +146,95 @@ export async function createManualTestAction(data: any) {
     };
   }
 }
+
+export async function updateTestAction(id: string, data: any) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin" && profile?.role !== "teacher") {
+    return {
+      error: "Forbidden. You must be an admin or teacher to update tests.",
+    };
+  }
+
+  try {
+    const { error: updateError } = await supabase
+      .from("tests")
+      .update({
+        title: data.title,
+        content_type: data.type,
+        content_data: data.content_data,
+      })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Supabase Error:", updateError);
+      return { error: "Failed to update the test in the database." };
+    }
+
+    revalidatePath("/admin/tests");
+    revalidatePath(`/admin/tests/${id}`);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Update Test Error:", err);
+    return {
+      error: err.message || "An error occurred while updating the test.",
+    };
+  }
+}
+
+export async function deleteTestAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin" && profile?.role !== "teacher") {
+    return {
+      error: "Forbidden. You must be an admin or teacher to delete tests.",
+    };
+  }
+
+  try {
+    const { error: deleteError } = await supabase
+      .from("tests")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) {
+      console.error("Supabase Error:", deleteError);
+      return { error: "Failed to delete the test from the database." };
+    }
+
+    revalidatePath("/admin/tests");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Delete Test Error:", err);
+    return {
+      error: err.message || "An error occurred while deleting the test.",
+    };
+  }
+}
+

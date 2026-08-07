@@ -6,12 +6,11 @@ import { TestsTableClient } from './TestsTableClient'
 export default async function TestsAdminPage() {
   const supabase = await createClient()
 
-  // Fetch the 10 most recent tests
+  // Fetch all tests ordered by creation date
   const { data: tests } = await supabase
     .from('tests')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(10)
 
   return (
     <div className="space-y-6">

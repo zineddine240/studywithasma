@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { TestDetailActions } from "../TestDetailActions";
 
 interface Question {
   question: string;
@@ -40,6 +41,7 @@ export default async function TestDetailsPage({
           { label: "Tests", href: "/admin/tests" },
           { label: "Test Details" },
         ]}
+        action={<TestDetailActions test={test} />}
       />
 
       <div className="grid lg:grid-cols-3 gap-8">
