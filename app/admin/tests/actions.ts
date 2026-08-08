@@ -238,3 +238,141 @@ export async function deleteTestAction(id: string) {
   }
 }
 
+export async function generateTestFromDocumentAction(formData: FormData) {
+  const file = formData.get("file") as File;
+  const type = (formData.get("type") as string) || "reading";
+
+  if (!file || file.size === 0) {
+    return { error: "Please upload a document or image file." };
+  }
+
+  // 1. Verify user is admin/teacher
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin" && profile?.role !== "teacher") {
+    return {
+      error: "Forbidden. You must be an admin or teacher to process documents.",
+    };
+  }
+
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY() });
+
+  const bytes = await file.arrayBuffer();
+  const base64Data = Buffer.from(bytes).toString("base64");
+  let mimeType = file.type;
+
+  if (!mimeType) {
+    if (file.name.endsWith(".pdf")) mimeType = "application/pdf";
+    else if (file.name.endsWith(".png")) mimeType = "image/png";
+    else if (file.name.endsWith(".jpg") || file.name.endsWith(".jpeg")) mimeType = "image/jpeg";
+    else if (file.name.endsWith(".webp")) mimeType = "image/webp";
+    else if (file.name.endsWith(".txt")) mimeType = "text/plain";
+  }
+
+  let contents: any[] = [];
+
+  if (file.name.endsWith(".docx")) {
+    const buffer = Buffer.from(bytes);
+    const textContent = buffer.toString("utf-8").replace(/<[^>]+>/g, " ");
+    contents = [
+      `Here is the raw extracted text content from the document:\n\n${textContent}`,
+    ];
+  } else {
+    contents = [
+      {
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType || "application/pdf",
+        },
+      },
+    ];
+  }
+
+  const prompt = `
+    You are an expert IELTS test analyzer and parser.
+    Examine the attached document carefully and convert its content into a fully structured practice test payload matching our exact data model.
+
+    Target Test Type: "${type}"
+
+    Structure the JSON output strictly according to this schema:
+
+    {
+      "title": "Clear, descriptive title extracted or derived from the document",
+      "duration_minutes": 60,
+      "parts": [
+        {
+          "title": "Part 1",
+          "passage": "Full passage text extracted from document. Preserve formatting and paragraphs with \\n.",
+          "questionGroups": [
+            {
+              "type": "multiple_choice" | "tf_ng" | "yn_ng" | "summary_completion" | "note_completion" | "flow_chart_completion" | "drag_and_drop" | "matching",
+              "title": "Questions 1-7",
+              "instruction": "Do the following statements agree with the information given in Reading Passage 1?",
+              "content": "For completion question types only: the passage snippet or summary containing blanks like [Q1], [Q2], [Q3]",
+              "options": ["Option A", "Option B", "Option C"],
+              "questions": [
+                {
+                  "number": 1,
+                  "question": "Question prompt text",
+                  "options": ["Option A", "Option B", "Option C", "Option D"],
+                  "correct_answer": "Exact correct answer string derived from text or answer key",
+                  "explanation": "Brief explanation of why this answer is correct based on the passage"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    IMPORTANT RULES:
+    1. Parse ALL passages and ALL questions found in the document into the correct "parts" and "questionGroups".
+    2. Choose the correct "type" for each group:
+       - 'multiple_choice' for standard A, B, C, D choices
+       - 'tf_ng' for True / False / Not Given
+       - 'yn_ng' for Yes / No / Not Given
+       - 'summary_completion' for text with blanks to fill
+       - 'note_completion' for note completion
+       - 'matching' for matching headings or statements
+       - 'drag_and_drop' for word bank completion
+    3. Ensure question numbers are sequentially assigned (e.g. 1, 2, 3...).
+    4. For fill-in-the-blank questions, ensure the "content" field contains tokens like [Q1], [Q2] matching the question numbers.
+    5. Output ONLY valid JSON matching this schema. Do not output markdown codeblocks (\`\`\`json) or extra text.
+  `;
+
+  contents.push(prompt);
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: contents,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const text = response.text;
+    if (!text) {
+      throw new Error("No response generated from Gemini.");
+    }
+
+    const testPayload = JSON.parse(text);
+    return { success: true, payload: testPayload };
+  } catch (err: any) {
+    console.error("AI Document Parsing Error:", err);
+    return { error: err.message || "Failed to process document with AI." };
+  }
+}

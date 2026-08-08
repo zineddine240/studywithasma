@@ -185,6 +185,64 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
     return () => observer.disconnect();
   }, [isLoaded, isSubmitted, activePart, flatQuestions]);
 
+  // --- Auto-scroll right panel container during Drag & Drop ---
+  useEffect(() => {
+    let animationFrameId: number | null = null;
+    let currentY: number | null = null;
+
+    const autoScroll = () => {
+      if (currentY !== null && rightPanelRef.current) {
+        const container = rightPanelRef.current;
+        const rect = container.getBoundingClientRect();
+        const topEdge = rect.top;
+        const bottomEdge = rect.bottom;
+        const threshold = 120; // Proximity zone in px
+
+        if (currentY < topEdge + threshold && currentY > topEdge - 50) {
+          const intensity = Math.max(0.2, (topEdge + threshold - currentY) / threshold);
+          container.scrollTop -= Math.round(18 * intensity);
+        } else if (currentY > bottomEdge - threshold && currentY < bottomEdge + 50) {
+          const intensity = Math.max(0.2, (currentY - (bottomEdge - threshold)) / threshold);
+          container.scrollTop += Math.round(18 * intensity);
+        }
+      }
+
+      if (currentY !== null) {
+        animationFrameId = requestAnimationFrame(autoScroll);
+      } else {
+        animationFrameId = null;
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      currentY = e.clientY;
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(autoScroll);
+      }
+    };
+
+    const handleDragEnd = () => {
+      currentY = null;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    };
+
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("dragend", handleDragEnd);
+    window.addEventListener("drop", handleDragEnd);
+
+    return () => {
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("dragend", handleDragEnd);
+      window.removeEventListener("drop", handleDragEnd);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
+
   // --- Handlers ---
   const handleAnswerChange = (qIndex: number, value: string) => {
     if (isSubmitted) return;
@@ -243,7 +301,16 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
   const checkAnswer = (userAns: string, correctAns: string, altAnswers?: string[]) => {
     if (!userAns) return false;
     const u = cleanText(userAns);
-    if (u === cleanText(correctAns)) return true;
+    const c = cleanText(correctAns);
+    if (u === c) return true;
+
+    // Support matching letter prefixes (e.g. "D" matching "D. experts...")
+    const userPrefix = cleanText(userAns.split('.')[0] || "");
+    if (userPrefix && userPrefix === c) return true;
+
+    const correctPrefix = cleanText(correctAns.split('.')[0] || "");
+    if (correctPrefix && u === correctPrefix) return true;
+
     if (altAnswers) {
       for (const alt of altAnswers) {
         if (u === cleanText(alt)) return true;
@@ -749,24 +816,61 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
                               )}
 
                               {group.type === 'matching' && (
-                                <div className="flex items-center gap-3">
-                                  <select
-                                    value={userAnswer}
-                                    onChange={(e) => handleAnswerChange(qIndex, e.target.value)}
-                                    disabled={isSubmitted}
-                                    className={`px-3 py-2 rounded-lg border-2 text-sm font-semibold bg-background ${
-                                      isSubmitted
-                                        ? (isCorrect ? "border-emerald-500 bg-emerald-500/10 text-emerald-800" : "border-rose-500 bg-rose-500/10 text-rose-800")
-                                        : "border-border text-foreground focus:border-primary"
+                                <div className="mt-3 w-full max-w-full">
+                                  <div
+                                    onDragOver={(e) => !isSubmitted && e.preventDefault()}
+                                    onDrop={(e) => {
+                                      if (isSubmitted) return;
+                                      e.preventDefault();
+                                      const data = e.dataTransfer.getData("text/plain");
+                                      if (data) handleAnswerChange(qIndex, data);
+                                    }}
+                                    onClick={() => {
+                                      if (isSubmitted) return;
+                                      if (selectedOptionChip) {
+                                        handleAnswerChange(qIndex, selectedOptionChip);
+                                        setSelectedOptionChip(null);
+                                      }
+                                    }}
+                                    className={`min-h-[44px] w-full max-w-full rounded-xl border-2 border-dashed p-3 text-sm transition-all flex items-center justify-between gap-3 cursor-pointer select-none ${
+                                      userAnswer
+                                        ? isSubmitted
+                                          ? isCorrect
+                                            ? "border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100 font-semibold"
+                                            : "border-rose-500 bg-rose-500/10 text-rose-900 dark:text-rose-100 font-semibold"
+                                          : "border-primary/40 bg-primary/5 text-foreground font-semibold"
+                                        : selectedOptionChip
+                                        ? "border-primary bg-primary/10 ring-2 ring-primary/20 animate-pulse text-primary"
+                                        : "border-border/80 bg-muted/20 text-muted-foreground hover:border-primary/50"
                                     }`}
                                   >
-                                    <option value="">Select Match...</option>
-                                    {(group.options || []).map((opt, optIdx) => (
-                                      <option key={optIdx} value={opt.split('.')[0].trim()}>
-                                        {opt}
-                                      </option>
-                                    ))}
-                                  </select>
+                                    {userAnswer ? (
+                                      <div className="flex items-center justify-between gap-2.5 w-full min-w-0">
+                                        <span className="text-sm font-semibold leading-relaxed break-words whitespace-normal flex-1 min-w-0">
+                                          {userAnswer}
+                                        </span>
+                                        {!isSubmitted && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleAnswerChange(qIndex, "");
+                                            }}
+                                            className="text-xs text-muted-foreground hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shrink-0 font-bold"
+                                            title="Clear answer"
+                                          >
+                                            ✕
+                                          </button>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground italic">
+                                        {selectedOptionChip
+                                          ? "Click to insert selected option here"
+                                          : "Drag & drop an option here or click an option above to insert"}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               )}
 

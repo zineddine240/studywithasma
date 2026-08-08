@@ -31,7 +31,7 @@ type TestBasicFormValues = z.infer<typeof testBasicSchema>;
 
 interface ManualTestFormProps {
   initialData?: {
-    id: string;
+    id?: string;
     title: string;
     content_type: string;
     content_data: any;
