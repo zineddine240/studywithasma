@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { PortalCard } from "@/components/portal/shared/PortalCard";
 import { SectionHeader } from "@/components/portal/shared/SectionHeader";
+import { toast } from "sonner";
 import {
   SpeakingPracticeRequest,
   SpeakingCorrectionResponse,
@@ -137,6 +138,10 @@ export default function SpeakingPracticePage() {
       setSubmitError(null);
       setResult(null);
 
+      if (typeof window === "undefined" || !navigator?.mediaDevices?.getUserMedia) {
+        throw new Error("Audio recording is not supported in this browser environment.");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = getBestSupportedAudioType();
 
@@ -165,20 +170,32 @@ export default function SpeakingPracticePage() {
       if (audioUrl) URL.revokeObjectURL(audioUrl);
       setAudioUrl(null);
     } catch (err: any) {
-      console.error(err);
+      console.error("Microphone Access Error:", err);
+      let errorMsg = "Could not access the microphone. Please check your hardware connections.";
+
       if (
         err.name === "NotAllowedError" ||
         err.name === "PermissionDeniedError"
       ) {
-        setPermissionError(
-          "Microphone access denied. Please allow microphone access in your browser settings to use this feature.",
-        );
-      } else {
-        setPermissionError(
-          err.message ||
-            "Could not access the microphone. Please check your hardware or browser support.",
-        );
+        errorMsg = "Microphone access denied. Please allow microphone permissions in your browser settings to record.";
+      } else if (
+        err.name === "NotFoundError" ||
+        err.name === "DevicesNotFoundError" ||
+        err.message?.includes("Requested device not found") ||
+        err.message?.includes("not found")
+      ) {
+        errorMsg = "No microphone device found. Please connect a microphone or headset and try again.";
+      } else if (
+        err.name === "NotReadableError" ||
+        err.name === "TrackStartError"
+      ) {
+        errorMsg = "Microphone is currently being used by another program.";
+      } else if (err.message) {
+        errorMsg = err.message;
       }
+
+      setPermissionError(errorMsg);
+      toast.error(errorMsg);
     }
   };
 
@@ -360,14 +377,14 @@ export default function SpeakingPracticePage() {
 
           <PortalCard className="space-y-6 text-center py-10">
             {permissionError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 text-left mb-6 mx-auto max-w-2xl">
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl flex items-start gap-3 text-left mb-6 mx-auto max-w-2xl">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <p className="font-medium text-sm">{permissionError}</p>
               </div>
             )}
 
             {submitError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 text-left mb-6 mx-auto max-w-2xl">
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl flex items-start gap-3 text-left mb-6 mx-auto max-w-2xl">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <p className="font-medium text-sm">{submitError}</p>
               </div>
