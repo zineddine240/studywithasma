@@ -3,10 +3,26 @@
 import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { Edit, Trash2, Eye, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Edit, Trash2, Eye, Loader2, MoreHorizontal, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +46,7 @@ interface TestsTableClientProps {
 }
 
 export function TestsTableClient({ data }: TestsTableClientProps) {
+  const router = useRouter();
   const [deletingTest, setDeletingTest] = useState<TestRow | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -64,19 +81,46 @@ export function TestsTableClient({ data }: TestsTableClientProps) {
       cell: ({ row }) => {
         const title = row.getValue("title") as string;
         const type = row.original.content_type;
-        const id = row.original.id;
+        const test = row.original;
+        
         return (
-          <div>
-            <Link
-              href={`/admin/tests/${id}`}
-              className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-all block focus:outline-hidden"
-            >
-              {title}
-            </Link>
-            <div className="text-xs text-muted-foreground mt-0.5 capitalize">
-              Type: {type.replace("_", " ")}
-            </div>
-          </div>
+          <ContextMenu>
+            <ContextMenuTrigger className="block w-full">
+              <div>
+                <Link
+                  href={`/admin/tests/${test.id}`}
+                  className="text-sm font-semibold text-foreground hover:text-primary hover:underline transition-all block focus:outline-hidden"
+                >
+                  {title}
+                </Link>
+                <div className="text-xs text-muted-foreground mt-0.5 capitalize">
+                  Type: {type.replace("_", " ")}
+                </div>
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent className="w-48">
+              <ContextMenuItem onClick={() => router.push(`/admin/tests/${test.id}`)} className="cursor-pointer">
+                <Eye className="w-4 h-4 mr-2" />
+                View details
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => router.push(`/admin/tests/${test.id}/preview`)} className="cursor-pointer">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Preview test
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem onClick={() => router.push(`/admin/tests/${test.id}/edit`)} className="cursor-pointer text-primary focus:text-primary">
+                <Edit className="w-4 h-4 mr-2" />
+                Edit test
+              </ContextMenuItem>
+              <ContextMenuItem 
+                onClick={() => handleDeletePrompt(test)}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete test
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         );
       },
     },
@@ -102,31 +146,38 @@ export function TestsTableClient({ data }: TestsTableClientProps) {
       header: "",
       cell: ({ row }) => {
         const test = row.original;
+
         return (
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/admin/tests/${test.id}`}
-              className="inline-flex items-center justify-center rounded-lg bg-secondary hover:bg-muted text-foreground px-3 py-1.5 text-xs font-semibold transition-all focus:outline-hidden gap-1"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              View details
-            </Link>
-            <Link
-              href={`/admin/tests/${test.id}/edit`}
-              className="inline-flex items-center justify-center rounded-lg border border-primary/20 hover:bg-primary/10 text-primary px-2.5 py-1.5 text-xs font-semibold transition-all focus:outline-hidden gap-1"
-            >
-              <Edit className="w-3.5 h-3.5" />
-              Edit
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeletePrompt(test)}
-              className="h-8 px-2.5 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete
-            </Button>
+          <div className="flex items-center justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="h-8 w-8 p-0 inline-flex items-center justify-center rounded-md hover:bg-muted focus-visible:ring-1 border-0 bg-transparent text-foreground">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => router.push(`/admin/tests/${test.id}`)} className="cursor-pointer">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View details
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push(`/admin/tests/${test.id}/preview`)} className="cursor-pointer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Preview test
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push(`/admin/tests/${test.id}/edit`)} className="cursor-pointer text-primary focus:text-primary">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit test
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleDeletePrompt(test)}
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete test
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         );
       },

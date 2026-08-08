@@ -1,38 +1,33 @@
 "use client";
 
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { PenTool, Plus, Trash2, Loader2, Edit3 } from "lucide-react";
+import Link from "next/link";
+import { PenTool, Plus, Trash2, Loader2, Edit3, BookOpen, Clock, Layers, ChevronsUpDown, ExternalLink } from "lucide-react";
+import { TestPartItem, QuestionGroupItem, StructuredTestData } from "@/lib/types/test";
+import { QuestionGroupEditor } from "./components/QuestionGroupEditor";
 import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { createManualTestAction, updateTestAction } from "./actions";
 
-// Schema for a single question
-const questionSchema = z.object({
-  question: z.string().min(1, "Question is required"),
-  optionA: z.string().min(1, "Option A is required"),
-  optionB: z.string().min(1, "Option B is required"),
-  optionC: z.string().min(1, "Option C is required"),
-  optionD: z.string().min(1, "Option D is required"),
-  correctOption: z.enum(["A", "B", "C", "D"]),
-  explanation: z.string().min(1, "Explanation is required"),
-});
-
-// Schema for the manual test form
-const manualTestSchema = z.object({
+// Basic Info Schema
+const testBasicSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   type: z.enum(["reading", "writing", "level_test"]),
-  passage: z.string().min(10, "Passage must be at least 10 characters"),
-  questions: z.array(questionSchema).optional(),
+  duration_minutes: z.number().min(5, "Time limit must be at least 5 minutes"),
 });
 
-type ManualTestFormValues = z.infer<typeof manualTestSchema>;
+type TestBasicFormValues = z.infer<typeof testBasicSchema>;
 
 interface ManualTestFormProps {
   initialData?: {
@@ -43,104 +38,215 @@ interface ManualTestFormProps {
   };
 }
 
-function getInitialFormValues(initialData?: any): ManualTestFormValues {
-  if (!initialData) {
-    return {
-      type: "reading",
-      title: "",
-      passage: "",
-      questions: [
-        { question: "", optionA: "", optionB: "", optionC: "", optionD: "", correctOption: "A", explanation: "" },
-      ],
-    };
-  }
-
-  const content = initialData.content_data || {};
-  const type = (initialData.content_type || "reading") as "reading" | "writing" | "level_test";
-  const passage = content.passage || "";
-  const rawQuestions = content.questions || [];
-
-  const questions = rawQuestions.map((q: any) => {
-    const opts = q.options || ["", "", "", ""];
-    const optA = opts[0] || "";
-    const optB = opts[1] || "";
-    const optC = opts[2] || "";
-    const optD = opts[3] || "";
-
-    let correctOption: "A" | "B" | "C" | "D" = "A";
-    if (q.correct_answer) {
-      if (q.correct_answer === optB || q.correct_answer === "B") correctOption = "B";
-      else if (q.correct_answer === optC || q.correct_answer === "C") correctOption = "C";
-      else if (q.correct_answer === optD || q.correct_answer === "D") correctOption = "D";
-    }
-
-    return {
-      question: q.question || "",
-      optionA: optA,
-      optionB: optB,
-      optionC: optC,
-      optionD: optD,
-      correctOption,
-      explanation: q.explanation || "",
-    };
-  });
-
-  return {
-    title: initialData.title || "",
-    type,
-    passage,
-    questions:
-      questions.length > 0
-        ? questions
-        : [{ question: "", optionA: "", optionB: "", optionC: "", optionD: "", correctOption: "A" as const, explanation: "" }],
-  };
-}
-
 export default function ManualTestForm({ initialData }: ManualTestFormProps) {
   const router = useRouter();
   const isEditing = Boolean(initialData?.id);
 
+  // Extract content_data structure or initialize defaults
+  const rawContent: StructuredTestData = initialData?.content_data || {};
+
+  // Form State for Basic Info
   const {
     register,
     control,
     handleSubmit,
     watch,
-    reset,
     formState: { errors, isSubmitting },
-  } = useForm<ManualTestFormValues>({
-    resolver: zodResolver(manualTestSchema),
-    defaultValues: getInitialFormValues(initialData),
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    name: "questions",
-    control,
+  } = useForm<TestBasicFormValues>({
+    resolver: zodResolver(testBasicSchema),
+    defaultValues: {
+      title: initialData?.title || "",
+      type: (initialData?.content_type || "reading") as "reading" | "writing" | "level_test",
+      duration_minutes: rawContent.duration_minutes || 60,
+    },
   });
 
   const testType = watch("type");
-  const showQuestions = testType === "reading" || testType === "level_test";
 
-  const onSubmit = async (data: ManualTestFormValues) => {
-    const content_data: any = {
-      title: data.title,
-      passage: data.passage,
+  // Parts State (For Reading & Level Tests with Multi-Parts)
+  const defaultInitialParts: TestPartItem[] = rawContent.parts || [
+    {
+      title: "Part 1",
+      passage: rawContent.passage || "",
+      questionGroups: [
+        {
+          type: "multiple_choice",
+          title: "Questions 1-4",
+          instruction: "Choose the correct letter, A, B, C or D.",
+          questions: [
+            {
+              number: 1,
+              question: "Question 1",
+              options: ["Option A", "Option B", "Option C", "Option D"],
+              correct_answer: "Option A",
+              explanation: "",
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const [parts, setParts] = useState<TestPartItem[]>(defaultInitialParts);
+  const [activePartTab, setActivePartTab] = useState<string>("part-0");
+  const [groupCollapsedMap, setGroupCollapsedMap] = useState<Record<string, boolean>>({});
+
+  const toggleGroupCollapse = (partIdx: number, groupIdx: number) => {
+    const key = `part-${partIdx}-group-${groupIdx}`;
+    setGroupCollapsedMap((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const toggleAllGroupsInPart = (partIdx: number) => {
+    const currentGroups = parts[partIdx]?.questionGroups || [];
+    const keys = currentGroups.map((_, gIdx) => `part-${partIdx}-group-${gIdx}`);
+    const areAllCollapsed = keys.every((k) => groupCollapsedMap[k]);
+    const newMap = { ...groupCollapsedMap };
+    keys.forEach((k) => {
+      newMap[k] = !areAllCollapsed;
+    });
+    setGroupCollapsedMap(newMap);
+  };
+
+  // Writing Prompt text state if writing test
+  const [writingPrompt, setWritingPrompt] = useState<string>(rawContent.passage || "");
+
+  // Part Management Handlers
+  const handleAddPart = () => {
+    const nextPartNum = parts.length + 1;
+    const newPartIdx = parts.length;
+    const newPart: TestPartItem = {
+      title: `Part ${nextPartNum}`,
+      passage: "",
+      questionGroups: [
+        {
+          type: "multiple_choice",
+          title: `Questions`,
+          instruction: "Choose the correct answer.",
+          questions: [
+            {
+              number: 1,
+              question: "Sample Question",
+              options: ["Option A", "Option B", "Option C", "Option D"],
+              correct_answer: "Option A",
+              explanation: "",
+            },
+          ],
+        },
+      ],
+    };
+    const newParts = [...parts, newPart];
+    setParts(newParts);
+    setActivePartTab(`part-${newPartIdx}`);
+
+    setTimeout(() => {
+      const el = document.getElementById(`part-card-${newPartIdx}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 120);
+  };
+
+  const handleDeletePart = (partIdx: number) => {
+    if (parts.length <= 1) {
+      toast.error("A test must have at least 1 part.");
+      return;
+    }
+    const updated = parts.filter((_, i) => i !== partIdx);
+    setParts(updated);
+    setActivePartTab(`part-${Math.max(0, partIdx - 1)}`);
+  };
+
+  const handleUpdatePart = (partIdx: number, updatedPart: TestPartItem) => {
+    const newParts = [...parts];
+    newParts[partIdx] = updatedPart;
+    setParts(newParts);
+  };
+
+  // Group Handlers for a given part
+  const handleAddGroupToPart = (partIdx: number) => {
+    const currentPart = parts[partIdx];
+    const newGroupIdx = currentPart.questionGroups.length;
+    const newGroup: QuestionGroupItem = {
+      type: "multiple_choice",
+      title: `Questions`,
+      instruction: "Select the best answer.",
+      questions: [
+        {
+          number: 1,
+          question: "New Question",
+          options: ["Option A", "Option B", "Option C", "Option D"],
+          correct_answer: "Option A",
+          explanation: "",
+        },
+      ],
     };
 
-    if (showQuestions && data.questions) {
-      content_data.questions = data.questions.map((q) => {
-        const options = [q.optionA, q.optionB, q.optionC, q.optionD];
-        let correct_answer = q.optionA;
-        if (q.correctOption === "B") correct_answer = q.optionB;
-        if (q.correctOption === "C") correct_answer = q.optionC;
-        if (q.correctOption === "D") correct_answer = q.optionD;
+    handleUpdatePart(partIdx, {
+      ...currentPart,
+      questionGroups: [...currentPart.questionGroups, newGroup],
+    });
 
-        return {
-          question: q.question,
-          options,
-          correct_answer,
-          explanation: q.explanation,
-        };
-      });
+    const key = `part-${partIdx}-group-${newGroupIdx}`;
+    setGroupCollapsedMap((prev) => ({ ...prev, [key]: false }));
+
+    setTimeout(() => {
+      const el = document.getElementById(`group-card-${partIdx}-${newGroupIdx}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 120);
+  };
+
+  const handleUpdateGroupInPart = (partIdx: number, groupIdx: number, updatedGroup: QuestionGroupItem) => {
+    const currentPart = parts[partIdx];
+    const newGroups = [...currentPart.questionGroups];
+    newGroups[groupIdx] = updatedGroup;
+    handleUpdatePart(partIdx, { ...currentPart, questionGroups: newGroups });
+  };
+
+  const handleDeleteGroupInPart = (partIdx: number, groupIdx: number) => {
+    const currentPart = parts[partIdx];
+    if (currentPart.questionGroups.length <= 1) {
+      toast.error("Each part must have at least 1 question group.");
+      return;
+    }
+    const newGroups = currentPart.questionGroups.filter((_, i) => i !== groupIdx);
+    handleUpdatePart(partIdx, { ...currentPart, questionGroups: newGroups });
+  };
+
+  // Submit Handler
+  const onSubmit = async (data: TestBasicFormValues) => {
+    let content_data: any = {};
+
+    if (data.type === "writing") {
+      content_data = {
+        title: data.title,
+        passage: writingPrompt,
+        recommendedTime: data.duration_minutes,
+        minWords: 250,
+      };
+    } else {
+      // Re-number questions sequentially across parts for clean student numbering
+      let globalQNum = 1;
+      const renumberedParts = parts.map((part) => ({
+        ...part,
+        questionGroups: part.questionGroups.map((group) => ({
+          ...group,
+          questions: group.questions.map((q) => {
+            const num = globalQNum++;
+            return {
+              ...q,
+              number: num,
+              id: q.id || `q-${num}`,
+            };
+          }),
+        })),
+      }));
+
+      content_data = {
+        duration_minutes: data.duration_minutes,
+        parts: renumberedParts,
+      };
     }
 
     const payload = {
@@ -163,8 +269,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
         if (result?.error) {
           toast.error(result.error);
         } else if (result?.success) {
-          toast.success("Manual test created successfully!");
-          reset();
+          toast.success("Test created successfully!");
           router.push("/admin/tests");
         }
       }
@@ -174,218 +279,300 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
   };
 
   return (
-    <div className="mt-6 bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-muted/30 text-primary rounded-lg">
-          {isEditing ? <Edit3 className="w-6 h-6" /> : <PenTool className="w-6 h-6" />}
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">
-            {isEditing ? "Edit Test Details" : "Create Manual Test"}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {isEditing
-              ? "Modify test title, passage/prompt, and practice questions."
-              : "Draft tests and questions manually."}
-          </p>
-        </div>
-      </div>
+    <div className="mt-6 space-y-8">
+      {/* Header Banner */}
+      <Card className="border-border shadow-sm bg-card">
+        <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+          <div className="p-3 bg-primary/10 text-primary rounded-xl shrink-0">
+            {isEditing ? <Edit3 className="w-6 h-6" /> : <PenTool className="w-6 h-6" />}
+          </div>
+          <div>
+            <CardTitle className="text-xl font-extrabold text-foreground">
+              {isEditing ? "Edit Test Configuration" : "Create Test Configuration"}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Configure multi-part test sections, passages, and rich question types (QCM, Fill Blanks, Drag & Drop, Matching).
+            </p>
+          </div>
+        </CardHeader>
+      </Card>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
-        {/* Basic Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/40 p-6 rounded-xl border border-border/50">
-          <Field>
-            <FieldLabel htmlFor="type">Test Type</FieldLabel>
-            <FieldContent>
-              <Controller
-                control={control}
-                name="type"
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="type">
-                      <SelectValue placeholder="Select test type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="reading">IELTS Reading</SelectItem>
-                      <SelectItem value="writing">IELTS Writing</SelectItem>
-                      <SelectItem value="level_test">General English Level Test</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FieldContent>
-            <FieldError errors={[errors.type]} />
-          </Field>
+        {/* Basic Configuration */}
+        <Card className="border-border shadow-sm">
+          <CardHeader className="bg-muted/30 pb-4 border-b border-border">
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" />
+              General Settings & Duration
+            </CardTitle>
+          </CardHeader>
 
-          <Field>
-            <FieldLabel htmlFor="title">Title</FieldLabel>
-            <FieldContent>
-              <Input
-                id="title"
-                type="text"
-                placeholder="e.g., Reading Practice: Science & Tech"
-                {...register("title")}
-              />
-            </FieldContent>
-            <FieldError errors={[errors.title]} />
-          </Field>
-
-          <div className="md:col-span-2">
+          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             <Field>
-              <FieldLabel htmlFor="passage">
-                {testType === "writing" ? "Writing Prompt" : "Reading Passage"}
-              </FieldLabel>
+              <FieldLabel htmlFor="type">Test Module</FieldLabel>
               <FieldContent>
-                <Textarea
-                  id="passage"
-                  rows={6}
-                  placeholder={`Enter the full ${testType === "writing" ? "prompt" : "passage text"} here...`}
-                  {...register("passage")}
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger id="type">
+                        <SelectValue placeholder="Select test type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="reading">IELTS Reading (Multi-Part)</SelectItem>
+                        <SelectItem value="writing">IELTS Writing Practice</SelectItem>
+                        <SelectItem value="level_test">General English Level Test</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
               </FieldContent>
-              <FieldError errors={[errors.passage]} />
+              <FieldError errors={[errors.type]} />
             </Field>
-          </div>
-        </div>
 
-        {/* Dynamic Questions (Only for Reading & Level Test) */}
-        {showQuestions && (
+            <Field>
+              <FieldLabel htmlFor="title">Test Title</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="title"
+                  type="text"
+                  placeholder="e.g. Cambridge IELTS Reading Test 1"
+                  {...register("title")}
+                />
+              </FieldContent>
+              <FieldError errors={[errors.title]} />
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="duration_minutes">Duration (Minutes)</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="duration_minutes"
+                  type="number"
+                  placeholder="e.g. 60"
+                  {...register("duration_minutes", { valueAsNumber: true })}
+                />
+              </FieldContent>
+              <FieldError errors={[errors.duration_minutes]} />
+            </Field>
+          </CardContent>
+        </Card>
+
+        {/* Writing Test Prompt View */}
+        {testType === "writing" ? (
+          <Card className="border-border shadow-sm">
+            <CardHeader className="bg-muted/30 pb-4 border-b border-border">
+              <CardTitle className="text-base font-bold text-foreground">Writing Practice Prompt</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <Field>
+                <FieldLabel htmlFor="writingPrompt">Essay Topic or Task Prompt</FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    id="writingPrompt"
+                    rows={8}
+                    value={writingPrompt}
+                    onChange={(e) => setWritingPrompt(e.target.value)}
+                    placeholder="Enter the full essay prompt or task instructions here..."
+                  />
+                </FieldContent>
+              </Field>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Multi-Part Test Builder (Reading / Level Test) */
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-              <h3 className="text-lg font-bold text-foreground">Questions</h3>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  append({
-                    question: "",
-                    optionA: "",
-                    optionB: "",
-                    optionC: "",
-                    optionD: "",
-                    correctOption: "A",
-                    explanation: "",
-                  })
-                }
-                className="gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 hover:bg-primary/10 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                Add Question
-              </Button>
-            </div>
+            <Tabs value={activePartTab} onValueChange={setActivePartTab} className="w-full">
+              {/* Sticky Part Tabs Bar & Action Button */}
+              <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md pt-2 pb-4 px-4 -mx-4 border-b border-border mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">Parts:</span>
+                    <TabsList className="h-11 flex overflow-x-auto justify-start border border-border bg-muted/40 p-1 rounded-xl">
+                      {parts.map((part, pIdx) => {
+                        const displayTitle = part.title
+                          ? part.title.replace(/^Passage\s+/i, "Part ")
+                          : `Part ${pIdx + 1}`;
+                        return (
+                          <TabsTrigger
+                            key={pIdx}
+                            value={`part-${pIdx}`}
+                            className="px-5 py-2 font-bold text-sm flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs rounded-lg cursor-pointer"
+                          >
+                            <Layers className="w-4 h-4 text-primary" />
+                            {displayTitle}
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+                  </div>
 
-            {fields.map((field, index) => (
-              <div key={field.id} className="relative bg-card border border-border p-6 rounded-xl space-y-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-foreground bg-muted/30 px-3 py-1 rounded-md text-sm">
-                    Question {index + 1}
-                  </span>
-                  {fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(index)}
-                      className="text-destructive hover:bg-destructive/10 p-1.5 h-8 w-8 cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-
-                <Field>
-                  <FieldLabel>Question Text</FieldLabel>
-                  <FieldContent>
-                    <Input {...register(`questions.${index}.question` as const)} placeholder="Enter the question..." />
-                  </FieldContent>
-                  <FieldError errors={[errors.questions?.[index]?.question]} />
-                </Field>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/40 p-4 rounded-lg">
-                  <Field>
-                    <FieldLabel>Option A</FieldLabel>
-                    <FieldContent>
-                      <Input {...register(`questions.${index}.optionA` as const)} placeholder="First option" />
-                    </FieldContent>
-                    <FieldError errors={[errors.questions?.[index]?.optionA]} />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Option B</FieldLabel>
-                    <FieldContent>
-                      <Input {...register(`questions.${index}.optionB` as const)} placeholder="Second option" />
-                    </FieldContent>
-                    <FieldError errors={[errors.questions?.[index]?.optionB]} />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Option C</FieldLabel>
-                    <FieldContent>
-                      <Input {...register(`questions.${index}.optionC` as const)} placeholder="Third option" />
-                    </FieldContent>
-                    <FieldError errors={[errors.questions?.[index]?.optionC]} />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Option D</FieldLabel>
-                    <FieldContent>
-                      <Input {...register(`questions.${index}.optionD` as const)} placeholder="Fourth option" />
-                    </FieldContent>
-                    <FieldError errors={[errors.questions?.[index]?.optionD]} />
-                  </Field>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field>
-                    <FieldLabel>Correct Answer</FieldLabel>
-                    <FieldContent>
-                      <Controller
-                        control={control}
-                        name={`questions.${index}.correctOption` as const}
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select correct option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="A">Option A</SelectItem>
-                              <SelectItem value="B">Option B</SelectItem>
-                              <SelectItem value="C">Option C</SelectItem>
-                              <SelectItem value="D">Option D</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </FieldContent>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel>Explanation</FieldLabel>
-                    <FieldContent>
-                      <Input {...register(`questions.${index}.explanation` as const)} placeholder="Why is this answer correct?" />
-                    </FieldContent>
-                    <FieldError errors={[errors.questions?.[index]?.explanation]} />
-                  </Field>
+                  <Button
+                    type="button"
+                    onClick={handleAddPart}
+                    className="font-bold flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Part ({parts.length})
+                  </Button>
                 </div>
               </div>
-            ))}
+
+              {parts.map((part, pIdx) => {
+                const displayTitle = part.title
+                  ? part.title.replace(/^Passage\s+/i, "Part ")
+                  : `Part ${pIdx + 1}`;
+
+                let startQNumForPart = 1;
+                for (let i = 0; i < pIdx; i++) {
+                  parts[i].questionGroups.forEach((g) => {
+                    startQNumForPart += g.questions.length;
+                  });
+                }
+
+                let cumulativeQNum = startQNumForPart;
+
+                return (
+                  <TabsContent key={pIdx} value={`part-${pIdx}`} id={`part-card-${pIdx}`} className="space-y-6 scroll-mt-24">
+                    <Card className="border-border shadow-sm">
+                      <CardHeader className="bg-muted/30 pb-4 border-b border-border flex flex-row items-center justify-between">
+                        <CardTitle className="text-base font-bold text-foreground">
+                          {displayTitle} Settings
+                        </CardTitle>
+                        {parts.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeletePart(pIdx)}
+                            className="text-destructive hover:bg-destructive/10 h-8 px-2"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete Part
+                          </Button>
+                        )}
+                      </CardHeader>
+
+                      <CardContent className="p-6 space-y-6">
+                        <Field>
+                          <FieldLabel>Part Title</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              value={part.title}
+                              onChange={(e) =>
+                                handleUpdatePart(pIdx, { ...part, title: e.target.value })
+                              }
+                              placeholder="e.g. Part 1: Environmental Science"
+                            />
+                          </FieldContent>
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>Part Content / Passage</FieldLabel>
+                          <FieldContent>
+                            <Textarea
+                              rows={10}
+                              value={part.passage}
+                              onChange={(e) =>
+                                handleUpdatePart(pIdx, { ...part, passage: e.target.value })
+                              }
+                              placeholder="Enter part text or passage content here..."
+                            />
+                          </FieldContent>
+                        </Field>
+                      </CardContent>
+                    </Card>
+
+                    {/* Question Groups inside Part */}
+                    <div className="space-y-6">
+                      <div className="sticky top-[56px] z-30 bg-background/95 backdrop-blur-md border-b border-border py-3 px-4 -mx-4 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-extrabold text-foreground text-sm flex items-center gap-2">
+                            <Layers className="w-4 h-4 text-primary" />
+                            Question Groups in {part.title || `Part ${pIdx + 1}`} ({part.questionGroups.length})
+                          </h4>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleAllGroupsInPart(pIdx)}
+                            className="h-8 text-xs font-bold gap-1.5"
+                          >
+                            <ChevronsUpDown className="w-3.5 h-3.5" />
+                            {part.questionGroups.every((_, gIdx) => groupCollapsedMap[`part-${pIdx}-group-${gIdx}`])
+                              ? "Expand All"
+                              : "Collapse All"}
+                          </Button>
+                        </div>
+
+                        <Button
+                          type="button"
+                          onClick={() => handleAddGroupToPart(pIdx)}
+                          className="h-9 px-4 font-bold text-xs gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add Question Group
+                        </Button>
+                      </div>
+
+                      {part.questionGroups.map((group, gIdx) => {
+                        const groupStartNum = cumulativeQNum;
+                        cumulativeQNum += group.questions.length;
+                        const groupKey = `part-${pIdx}-group-${gIdx}`;
+
+                        return (
+                          <QuestionGroupEditor
+                            key={gIdx}
+                            group={group}
+                            groupIndex={gIdx}
+                            partIndex={pIdx}
+                            startQuestionNum={groupStartNum}
+                            isCollapsed={Boolean(groupCollapsedMap[groupKey])}
+                            onToggleCollapse={() => toggleGroupCollapse(pIdx, gIdx)}
+                            onUpdateGroup={(updatedGroup) =>
+                              handleUpdateGroupInPart(pIdx, gIdx, updatedGroup)
+                            }
+                            onDeleteGroup={() => handleDeleteGroupInPart(pIdx, gIdx)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
           </div>
         )}
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="animate-spin h-4 w-4" />
-              {isEditing ? "Saving Changes..." : "Saving..."}
-            </>
-          ) : isEditing ? (
-            "Save Changes"
-          ) : (
-            "Save Manual Test"
+        {/* Submit Action */}
+        <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md py-4 border-t border-border -mx-4 px-4 mt-8 flex justify-end gap-3">
+          {isEditing && initialData?.id && (
+            <Link
+              href={`/admin/tests/${initialData.id}/preview`}
+              className="h-10 px-6 rounded-lg text-sm font-bold flex items-center justify-center gap-2 border border-border bg-card hover:bg-muted transition-colors shadow-sm text-foreground"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Preview as Student
+            </Link>
           )}
-        </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-10 px-8 rounded-lg text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin h-5 w-5" />
+                Saving Test Configuration...
+              </>
+            ) : isEditing ? (
+              "Save Changes"
+            ) : (
+              "Save Test Configuration"
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   );

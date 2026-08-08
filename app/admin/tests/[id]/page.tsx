@@ -46,58 +46,143 @@ export default async function TestDetailsPage({
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              {isWriting ? "Writing Prompt" : "Reading Passage"}
-            </h2>
-            <div className="prose dark:prose-invert max-w-noshrink-0-foreground whitespace-pre-wrap leading-relaxed">
-              {content_data?.passage || "No content provided."}
+          {isWriting ? (
+            <div className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                Writing Prompt
+              </h2>
+              <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed">
+                {content_data?.passage || "No content provided."}
+              </div>
             </div>
-          </div>
-
-          {!isWriting && content_data?.questions && (
-            <div className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8 space-y-8">
-              <h2 className="text-xl font-bold mb-4">Questions & Answers</h2>
-
-              {content_data.questions.map((q: Question, idx: number) => (
-                <div
-                  key={idx}
-                  className="space-y-4 border-b border-border last:border-0 last:pb-0"
-                >
-                  <div className="flex gap-4">
-                    <span className="font-bold text-primary flex-shrink-0 mt-0.5">
-                      Q{idx + 1}.
-                    </span>
-                    <div>
-                      <p className="font-semibold text-foreground mb-4 leading-relaxed">
-                        {q.question}
-                      </p>
-                      <div className="space-y-2 mb-4">
-                        {q.options?.map((opt: string, optIdx: number) => (
-                          <div
-                            key={optIdx}
-                            className={`p-3 rounded-lg border text-sm ${opt === q.correct_answer ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100 font-medium" : "bg-muted/30 border-border text-muted-foreground"}`}
-                          >
-                            {opt}
-                          </div>
-                        ))}
-                      </div>
-
-                      {q.explanation && (
-                        <div className="bg-primary/5 border border-primary/10 p-4 rounded-xl">
-                          <p className="text-sm text-foreground/80">
-                            <span className="font-bold text-primary">
-                              Explanation:
-                            </span>{" "}
-                            {q.explanation}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+          ) : content_data?.parts ? (
+            content_data.parts.map((part: any, pIdx: number) => (
+              <div key={pIdx} className="space-y-6">
+                <div className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8">
+                  <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-primary">
+                    {part.title || `Part ${pIdx + 1}`} Content
+                  </h2>
+                  <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed">
+                    {part.passage || "No content provided."}
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {part.questionGroups?.map((group: any, gIdx: number) => (
+                  <div key={`group-${gIdx}`} className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8 space-y-6">
+                    <div className="border-b border-border pb-4 mb-4">
+                      <h2 className="text-lg font-bold">{group.title || `Question Group ${gIdx + 1}`}</h2>
+                      <p className="text-muted-foreground italic mt-1 text-sm">{group.instruction}</p>
+                    </div>
+
+                    {group.questions?.map((q: any, qIdx: number) => (
+                      <div
+                        key={`q-${qIdx}`}
+                        className="space-y-4 border-b border-border last:border-0 last:pb-0"
+                      >
+                        <div className="flex gap-4">
+                          <span className="font-bold text-primary flex-shrink-0 mt-0.5">
+                            Q{q.number || qIdx + 1}.
+                          </span>
+                          <div className="flex-1">
+                            {q.question && (
+                              <p className="font-semibold text-foreground mb-4 leading-relaxed">
+                                {q.question}
+                              </p>
+                            )}
+                            
+                            {q.options && q.options.length > 0 && (
+                              <div className="space-y-2 mb-4">
+                                {q.options.map((opt: string, optIdx: number) => (
+                                  <div
+                                    key={optIdx}
+                                    className={`p-3 rounded-lg border text-sm ${opt === q.correct_answer ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100 font-medium" : "bg-muted/30 border-border text-muted-foreground"}`}
+                                  >
+                                    {opt}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {(!q.options || q.options.length === 0) && q.correct_answer && (
+                              <div className="mb-4 p-3 rounded-lg border bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100 font-medium text-sm">
+                                Correct Answer: {q.correct_answer}
+                              </div>
+                            )}
+
+                            {q.explanation && (
+                              <div className="bg-primary/5 border border-primary/10 p-4 rounded-xl mt-4">
+                                <p className="text-sm text-foreground/80">
+                                  <span className="font-bold text-primary">
+                                    Explanation:
+                                  </span>{" "}
+                                  {q.explanation}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))
+          ) : (
+            <>
+              {/* Fallback for old single-passage schema */}
+              <div className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  Part Content
+                </h2>
+                <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed">
+                  {content_data?.passage || "No content provided."}
+                </div>
+              </div>
+
+              {!isWriting && content_data?.questions && (
+                <div className="bg-card shadow-sm border border-border rounded-xl p-6 sm:p-8 space-y-8">
+                  <h2 className="text-xl font-bold mb-4">Questions & Answers</h2>
+                  {content_data.questions.map((q: Question, idx: number) => (
+                    <div
+                      key={idx}
+                      className="space-y-4 border-b border-border last:border-0 last:pb-0"
+                    >
+                      <div className="flex gap-4">
+                        <span className="font-bold text-primary flex-shrink-0 mt-0.5">
+                          Q{idx + 1}.
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-semibold text-foreground mb-4 leading-relaxed">
+                            {q.question}
+                          </p>
+                          <div className="space-y-2 mb-4">
+                            {q.options?.map((opt: string, optIdx: number) => (
+                              <div
+                                key={optIdx}
+                                className={`p-3 rounded-lg border text-sm ${opt === q.correct_answer ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100 font-medium" : "bg-muted/30 border-border text-muted-foreground"}`}
+                              >
+                                {opt}
+                              </div>
+                            ))}
+                          </div>
+
+                          {q.explanation && (
+                            <div className="bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                              <p className="text-sm text-foreground/80">
+                                <span className="font-bold text-primary">
+                                  Explanation:
+                                </span>{" "}
+                                {q.explanation}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
 

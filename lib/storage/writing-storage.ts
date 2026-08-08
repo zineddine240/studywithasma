@@ -1,6 +1,6 @@
 "use client";
 
-import { WritingTestStatus } from "../mock/writing-tests";
+export type WritingTestStatus = "Not Started" | "Draft" | "Submitted" | "Completed";
 
 const DRAFT_PREFIX = "writing-draft-";
 const STATUS_PREFIX = "writing-status-";
@@ -13,9 +13,7 @@ export const getWritingDraft = (testId: string): string => {
 export const saveWritingDraft = (testId: string, text: string): void => {
   if (typeof window === "undefined") return;
   localStorage.setItem(`${DRAFT_PREFIX}${testId}`, text);
-  
-  // If we save a draft and it's not empty, make sure status is Draft
-  // (Unless it was already Submitted or Completed, but usually if they are typing, it's a draft)
+
   if (text.trim().length > 0) {
     const currentStatus = getWritingStatus(testId);
     if (currentStatus === "Not Started") {

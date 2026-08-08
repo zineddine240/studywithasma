@@ -3,14 +3,26 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2, Send, AlertCircle, Clock } from "lucide-react";
-import { WritingTest } from "@/lib/mock/writing-tests";
 import { getWritingDraft, saveWritingDraft, saveWritingStatus } from "@/lib/storage/writing-storage";
 import { AcademicTaskVisual } from "./AcademicTaskVisual";
 import { CorrectionResults } from "./CorrectionResults";
 import { WritingCorrectionResponse } from "@/lib/ai/schemas";
 
+export interface WritingTestEditorItem {
+  id: string;
+  taskType?: string;
+  title: string;
+  topicSummary?: string;
+  prompt: string;
+  recommendedTime: number;
+  minWords: number;
+  visualData?: any;
+  tone?: string;
+  essayType?: string;
+}
+
 interface WritingTestEditorProps {
-  test: WritingTest;
+  test: WritingTestEditorItem;
 }
 
 export function WritingTestEditor({ test }: WritingTestEditorProps) {
@@ -89,7 +101,7 @@ export function WritingTestEditor({ test }: WritingTestEditorProps) {
       };
 
       const payload = {
-        practiceType: mapTaskType(test.taskType),
+        practiceType: mapTaskType(test.taskType || ""),
         topic: `${test.title}\n\n${test.prompt}`,
         studentAnswer: text,
         consent: true,

@@ -1,6 +1,7 @@
-"use client";
-
-import { VisualData } from "@/lib/mock/writing-tests";
+export interface VisualData {
+  type: "line-graph" | "bar-chart" | "table" | "pie-charts" | "process-diagram" | string;
+  data: any;
+}
 
 interface AcademicTaskVisualProps {
   visualData?: VisualData;
