@@ -50,7 +50,7 @@ export default function ModeToggleForms() {
       </div>
 
       <div className={activeTab === "upload" ? "block animate-in fade-in duration-200" : "hidden"}>
-        <DocumentUploadTestForm onPayloadGenerated={handlePayloadGenerated} />
+        <DocumentUploadTestForm />
       </div>
 
       <div className={activeTab === "manual" ? "block animate-in fade-in duration-200" : "hidden"}>

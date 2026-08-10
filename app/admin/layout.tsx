@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { AdminLayoutClient } from '@/components/admin/AdminLayoutClient'
+import { BackgroundQueueWorker } from '@/components/admin/BackgroundQueueWorker'
 
 export default async function AdminLayout({
   children,
@@ -41,6 +42,7 @@ export default async function AdminLayout({
       unreadContactCount={unreadContactCount ?? 0}
     >
       {children}
+      <BackgroundQueueWorker />
     </AdminLayoutClient>
   )
 }
