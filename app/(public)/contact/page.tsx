@@ -35,9 +35,9 @@ const infoItems = [
   },
   {
     icon: MessageCircle,
-    label: "Telegram",
-    value: "@studywithasma",
-    href: "https://t.me/studywithasma",
+    label: "WhatsApp",
+    value: "+213 797 32 87 45",
+    href: "https://wa.me/213797328745",
     external: true,
   },
   {
