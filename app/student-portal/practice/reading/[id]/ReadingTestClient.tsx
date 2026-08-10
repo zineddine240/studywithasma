@@ -42,7 +42,13 @@ interface TestData {
   parts?: Part[];
 }
 
-export default function ReadingTestClient({ testData, title }: { testData: TestData, title: string }) {
+interface ReadingTestClientProps {
+  testData: TestData;
+  title?: string;
+  userId: string;
+}
+
+export default function ReadingTestClient({ testData, title = "Reading Test", userId }: ReadingTestClientProps) {
   // Normalize data structure
   const parts: Part[] = testData.parts || [{
     title: 'Part 1',
@@ -82,6 +88,8 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [selectedOptionChip, setSelectedOptionChip] = useState<string | null>(null);
 
@@ -114,14 +122,21 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
 
   // --- Load Draft ---
   useEffect(() => {
-    const draft = localStorage.getItem(`ielts_reading_draft_${testId}`);
+    const draft = localStorage.getItem(`ielts_reading_draft_${userId}_${testId}`);
     if (draft) {
       try {
         const parsed = JSON.parse(draft);
         if (!parsed.isSubmitted) {
-          if (parsed.answers) setAnswers(parsed.answers);
+          if (parsed.hasStarted) setHasDraft(true);
+          if (parsed.answers) {
+            setAnswers(parsed.answers);
+            if (parsed.answers.some((a: string) => a !== "")) setHasDraft(true);
+          }
           if (parsed.flagged) setFlagged(parsed.flagged);
-          if (parsed.timeLeft !== undefined) setTimeLeft(parsed.timeLeft);
+          if (parsed.timeLeft !== undefined) {
+            setTimeLeft(parsed.timeLeft);
+            if (parsed.timeLeft < defaultDuration) setHasDraft(true);
+          }
           if (parsed.panelSizes) setPanelSizes(parsed.panelSizes);
         }
       } catch (e) {
@@ -129,18 +144,18 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
       }
     }
     setIsLoaded(true);
-  }, [testId]);
+  }, [testId, defaultDuration, userId]);
 
   // --- Save Draft ---
   useEffect(() => {
     if (!isLoaded || isSubmitted) return;
-    const draft = { answers, flagged, timeLeft, panelSizes, isSubmitted };
-    localStorage.setItem(`ielts_reading_draft_${testId}`, JSON.stringify(draft));
-  }, [answers, flagged, timeLeft, panelSizes, isSubmitted, isLoaded, testId]);
+    const draft = { answers, flagged, timeLeft, panelSizes, isSubmitted, hasStarted };
+    localStorage.setItem(`ielts_reading_draft_${userId}_${testId}`, JSON.stringify(draft));
+  }, [answers, flagged, timeLeft, panelSizes, isSubmitted, isLoaded, testId, userId, hasStarted]);
 
   // --- Timer ---
   useEffect(() => {
-    if (!isLoaded || isSubmitted || timeLeft <= 0) return;
+    if (!isLoaded || !hasStarted || isSubmitted || timeLeft <= 0) return;
     const timerId = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -152,7 +167,7 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
       });
     }, 1000);
     return () => clearInterval(timerId);
-  }, [isLoaded, isSubmitted, timeLeft]);
+  }, [isLoaded, hasStarted, isSubmitted, timeLeft]);
 
   // --- Intersection Observer for Active Question ---
   useEffect(() => {
@@ -330,7 +345,7 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
     setScore(calculatedScore);
     setIsSubmitted(true);
     setShowConfirm(false);
-    localStorage.removeItem(`ielts_reading_draft_${testId}`);
+    localStorage.removeItem(`ielts_reading_draft_${userId}_${testId}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -470,7 +485,52 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
     );
   };
 
+  const handleStartTest = () => {
+    setHasStarted(true);
+  };
+
   return (
+    <>
+      {!hasStarted && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-md p-4">
+          <div className="bg-card border border-border rounded-2xl shadow-xl max-w-md w-full p-8 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+              <BookOpen className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                {hasDraft ? "Ready to continue?" : "Ready to start?"}
+              </h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {hasDraft 
+                  ? "Your previous draft has been restored. The timer will resume as soon as you click continue." 
+                  : "The timer will begin as soon as you click start. Make sure you are in a quiet environment and have enough time to complete the test."}
+              </p>
+            </div>
+            <div className="bg-muted/50 border border-border rounded-xl p-4 flex flex-col gap-3 text-sm text-left">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-muted-foreground">Test</span>
+                <span className="font-bold text-foreground line-clamp-1 ml-4">{title}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-muted-foreground">Type</span>
+                <span className="font-bold text-foreground">Reading Practice</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-muted-foreground">Time Limit</span>
+                <span className="font-bold text-primary">{formatTime(defaultDuration)}</span>
+              </div>
+            </div>
+            <button
+              onClick={handleStartTest}
+              className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-sm"
+            >
+              {hasDraft ? "Continue Test" : "Start Test"}
+            </button>
+          </div>
+        </div>
+      )}
+
     <div className={isFullscreen 
       ? "fixed inset-0 z-[100] flex flex-col bg-background" 
       : "flex flex-col h-[calc(100vh-65px)] border-0 bg-background"
@@ -1018,5 +1078,6 @@ export default function ReadingTestClient({ testData, title }: { testData: TestD
       )}
 
     </div>
+    </>
   );
 }

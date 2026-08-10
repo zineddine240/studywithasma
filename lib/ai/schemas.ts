@@ -16,6 +16,7 @@ export const WritingPracticeRequestSchema = z.object({
     .string()
     .min(20, "Answer is too short.")
     .max(5000, "Answer is too long (max 5000 characters)."),
+  imageUrls: z.array(z.string().url()).optional(),
   consent: z.literal(true, {
     message: "You must consent to submit your writing.",
   }),

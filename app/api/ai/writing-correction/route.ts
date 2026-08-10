@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { practiceType, topic, studentAnswer } = validationResult.data;
+    const { practiceType, topic, studentAnswer, imageUrls } = validationResult.data;
 
     // 4. Construct AI Prompt
     const systemInstruction = `
@@ -95,10 +95,35 @@ export async function POST(req: Request) {
     }
     `;
 
+    // 4.5 Process Images if any
+    const imageParts: any[] = [];
+    if (imageUrls && imageUrls.length > 0) {
+      for (const url of imageUrls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const arrayBuffer = await res.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const mimeType = res.headers.get("content-type") || "image/jpeg";
+            imageParts.push({
+              inlineData: {
+                data: buffer.toString("base64"),
+                mimeType,
+              },
+            });
+          }
+        } catch (e) {
+          console.error("Failed to fetch image for AI:", url, e);
+        }
+      }
+    }
+
+    const contents: any[] = [...imageParts, { text: studentAnswer }];
+
     // 5. Call Gemini API
     const response = await aiClient.models.generateContent({
       model: geminiModel,
-      contents: studentAnswer,
+      contents: contents,
       config: {
         systemInstruction: systemInstruction,
         responseMimeType: "application/json",

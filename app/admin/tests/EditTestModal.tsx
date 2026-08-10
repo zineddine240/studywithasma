@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import * as z from "zod";
-import { Plus, Trash2, Loader2, Edit3 } from "lucide-react";
+import { Plus, Trash2, Loader2, Edit3, Upload, File as FileIcon, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,6 +69,38 @@ export function EditTestModal({ test, open, onOpenChange }: EditTestModalProps) 
     },
   });
 
+  const [writingInstructions, setWritingInstructions] = useState("");
+  const [writingMinWords, setWritingMinWords] = useState(150);
+  const [writingImageUrl, setWritingImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  // Drag and Drop Handlers
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        setImageFile(file);
+      } else {
+        toast.error("Please drop an image file.");
+      }
+    }
+  };
+
   const { fields, append, remove } = useFieldArray({
     name: "questions",
     control,
@@ -116,6 +149,10 @@ export function EditTestModal({ test, open, onOpenChange }: EditTestModalProps) 
           { question: "", optionA: "", optionB: "", optionC: "", optionD: "", correctOption: "A" as const, explanation: "" }
         ],
       });
+      setWritingInstructions(content.instructions || "");
+      setWritingImageUrl(content.imageUrl || "");
+      setWritingMinWords(content.minWords || 150);
+      setImageFile(null);
     }
   }, [test, open, reset]);
 
@@ -126,6 +163,38 @@ export function EditTestModal({ test, open, onOpenChange }: EditTestModalProps) 
       title: data.title,
       passage: data.passage,
     };
+
+    if (data.type === "writing") {
+      content_data.instructions = writingInstructions;
+      content_data.minWords = writingMinWords;
+      let finalImageUrl = writingImageUrl;
+
+      if (imageFile) {
+        setUploadingImage(true);
+        const supabase = createClient();
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('test_attachments')
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          setUploadingImage(false);
+          toast.error(uploadError.message || "Failed to upload image.");
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('test_attachments')
+          .getPublicUrl(filePath);
+
+        finalImageUrl = publicUrl;
+        setUploadingImage(false);
+      }
+      content_data.imageUrl = finalImageUrl;
+    }
 
     if (showQuestions && data.questions) {
       content_data.questions = data.questions.map((q) => {
@@ -232,6 +301,95 @@ export function EditTestModal({ test, open, onOpenChange }: EditTestModalProps) 
                 <FieldError errors={[errors.passage]} />
               </Field>
             </div>
+
+            {testType === "writing" && (
+              <div className="md:col-span-2 space-y-6">
+                <Field>
+                  <FieldLabel htmlFor="writingInstructions">Instructions (Optional)</FieldLabel>
+                  <FieldContent>
+                    <Textarea
+                      id="writingInstructions"
+                      rows={2}
+                      value={writingInstructions}
+                      onChange={(e) => setWritingInstructions(e.target.value)}
+                      placeholder="e.g. You should spend about 20 minutes on this task. Write at least 150 words."
+                    />
+                  </FieldContent>
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="writingMinWords">Minimum Word Count</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="writingMinWords"
+                      type="number"
+                      value={writingMinWords}
+                      onChange={(e) => setWritingMinWords(parseInt(e.target.value) || 0)}
+                      placeholder="e.g. 150"
+                    />
+                  </FieldContent>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Task Image (Optional)</FieldLabel>
+                  <FieldContent>
+                    {!writingImageUrl && !imageFile ? (
+                      <div 
+                        className={`mt-2 flex justify-center rounded-lg border-2 border-dashed px-6 py-6 transition-colors ${
+                          dragActive ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"
+                        }`}
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
+                      >
+                        <div className="text-center pointer-events-none">
+                          <Upload className={`mx-auto h-6 w-6 ${dragActive ? "text-primary" : "text-muted-foreground"}`} aria-hidden="true" />
+                          <div className="mt-4 flex text-sm leading-6 text-muted-foreground justify-center">
+                            <label
+                              htmlFor="edit-image-upload"
+                              className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:ring-2 focus-within:ring-primary hover:text-primary/80 pointer-events-auto"
+                            >
+                              <span>Upload an image</span>
+                              <input 
+                                id="edit-image-upload" 
+                                name="edit-image-upload" 
+                                type="file" 
+                                accept="image/*"
+                                className="sr-only" 
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files.length > 0) {
+                                    setImageFile(e.target.files[0]);
+                                  }
+                                }}
+                              />
+                            </label>
+                            <p className="pl-1">or drag and drop</p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2 flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                        <FileIcon className="w-5 h-5 text-primary shrink-0" />
+                        <div className="truncate text-sm font-medium text-foreground flex-1">
+                          {imageFile ? imageFile.name : (writingImageUrl ? "Uploaded Image" : "")}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageFile(null);
+                            setWritingImageUrl("");
+                          }}
+                          className="ml-2 text-destructive hover:underline text-xs flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" /> Remove
+                        </button>
+                      </div>
+                    )}
+                  </FieldContent>
+                </Field>
+              </div>
+            )}
           </div>
 
           {/* Questions */}
@@ -372,13 +530,13 @@ export function EditTestModal({ test, open, onOpenChange }: EditTestModalProps) 
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || uploadingImage}
               className="font-bold flex items-center gap-2"
             >
-              {isSubmitting ? (
+              {isSubmitting || uploadingImage ? (
                 <>
                   <Loader2 className="animate-spin h-4 w-4" />
-                  Saving Changes...
+                  {uploadingImage ? "Uploading Image..." : "Saving Changes..."}
                 </>
               ) : (
                 "Save Changes"

@@ -46,7 +46,7 @@ export function PortalLayoutClient({
         />
         
         <div className="flex-1 overflow-auto w-full custom-scrollbar">
-          <div className={pathname?.includes("/practice/reading/") ? "h-full w-full" : "p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto"}>
+          <div className={pathname?.includes("/practice/reading/") || pathname?.includes("/writing-practice/") ? "h-full w-full" : "p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto"}>
             {children}
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircle2, AlertCircle, Copy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle2, AlertCircle, Copy, Volume2, Square } from "lucide-react";
 import { PortalCard } from "@/components/portal/shared/PortalCard";
 import { SectionHeader } from "@/components/portal/shared/SectionHeader";
 import { WritingCorrectionResponse } from "@/lib/ai/schemas";
@@ -10,9 +11,42 @@ interface CorrectionResultsProps {
 }
 
 export function CorrectionResults({ result }: CorrectionResultsProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(result.correctedText);
     alert("Corrected text copied to clipboard!");
+  };
+
+  const handleListen = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      alert("Text-to-speech is not supported in your browser.");
+      return;
+    }
+
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(result.correctedText);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = () => setIsPlaying(false);
+    
+    setIsPlaying(true);
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
@@ -20,18 +54,33 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
       {/* 1. Corrected Text */}
       <PortalCard>
         <div className="flex justify-between items-center mb-4">
-          <SectionHeader
-            title="Corrected Version"
-            icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-          />
-          <p className="text-muted-foreground text-sm -mt-2 mb-4">Your text with all errors fixed.</p>
-          <button
-            onClick={handleCopy}
-            className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
-            title="Copy to clipboard"
-          >
-            <Copy className="w-5 h-5" />
-          </button>
+          <div>
+            <SectionHeader
+              title="Corrected Version"
+              icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+            />
+            <p className="text-muted-foreground text-sm -mt-2">Your text with all errors fixed.</p>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={handleListen}
+              className={`p-2 rounded-full transition-colors flex items-center justify-center ${
+                isPlaying 
+                  ? "bg-primary text-primary-foreground animate-pulse" 
+                  : "hover:bg-muted text-muted-foreground"
+              }`}
+              title={isPlaying ? "Stop listening" : "Listen to correction"}
+            >
+              {isPlaying ? <Square className="w-5 h-5 fill-current" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+            <button
+              onClick={handleCopy}
+              className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
+              title="Copy to clipboard"
+            >
+              <Copy className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         <div className="bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
           {result.correctedText}
@@ -117,7 +166,9 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
           <ul className="list-disc list-inside space-y-2 mt-4 text-sm text-foreground">
             {result.claritySuggestions.map((suggestion, idx) => (
               <li key={idx} className="leading-relaxed">
-                {suggestion}
+                {typeof suggestion === "string" 
+                  ? suggestion 
+                  : (suggestion as any)?.suggestedText || (suggestion as any)?.explanation || JSON.stringify(suggestion)}
               </li>
             ))}
           </ul>
@@ -136,7 +187,7 @@ export function CorrectionResults({ result }: CorrectionResultsProps) {
             {result.generalNotes.map((note, idx) => (
               <li key={idx} className="flex gap-2 font-medium">
                 <span className="text-primary shrink-0">•</span>
-                <span>{note}</span>
+                <span>{typeof note === "string" ? note : JSON.stringify(note)}</span>
               </li>
             ))}
           </ul>

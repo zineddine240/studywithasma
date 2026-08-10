@@ -9,6 +9,8 @@ export const metadata = {
 export default async function WritingPracticePage() {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data: tests, error } = await supabase
     .from("tests")
     .select("id, title, content_type, content_data, created_at")
@@ -30,7 +32,7 @@ export default async function WritingPracticePage() {
         </p>
       </div>
 
-      <WritingTestLibrary initialTests={tests || []} />
+      <WritingTestLibrary initialTests={tests || []} userId={user?.id || ""} />
     </div>
   );
 }

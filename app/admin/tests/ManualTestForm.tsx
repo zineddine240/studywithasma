@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PenTool, Plus, Trash2, Loader2, Edit3, BookOpen, Clock, Layers, ChevronsUpDown, ExternalLink } from "lucide-react";
+import { PenTool, Plus, Trash2, Loader2, Edit3, BookOpen, Clock, Layers, ChevronsUpDown, ExternalLink, Upload, File as FileIcon, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 import { TestPartItem, QuestionGroupItem, StructuredTestData } from "@/lib/types/test";
 import { QuestionGroupEditor } from "./components/QuestionGroupEditor";
 import { Field, FieldLabel, FieldContent, FieldError } from "@/components/ui/field";
@@ -63,31 +64,40 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
 
   const testType = watch("type");
 
-  // Parts State (For Reading & Level Tests with Multi-Parts)
-  const defaultInitialParts: TestPartItem[] = rawContent.parts || [
-    {
-      title: "Part 1",
-      passage: rawContent.passage || "",
-      questionGroups: [
-        {
-          type: "multiple_choice",
-          title: "Questions 1-4",
-          instruction: "Choose the correct letter, A, B, C or D.",
-          questions: [
-            {
-              number: 1,
-              question: "Question 1",
-              options: ["Option A", "Option B", "Option C", "Option D"],
-              correct_answer: "Option A",
-              explanation: "",
-            },
-          ],
-        },
-      ],
-    },
-  ];
+  // Parts State
+  const initialType = (initialData?.content_type || "reading");
+  const defaultInitialParts: any[] = rawContent.parts || (
+    initialType === "writing" ? [{
+      title: "Task 1",
+      prompt: rawContent.passage || "",
+      instructions: rawContent.instructions || "",
+      imageUrl: rawContent.imageUrl || "",
+      minWords: 150,
+    }] : [
+      {
+        title: "Part 1",
+        passage: rawContent.passage || "",
+        questionGroups: [
+          {
+            type: "multiple_choice",
+            title: "Questions 1-4",
+            instruction: "Choose the correct letter, A, B, C or D.",
+            questions: [
+              {
+                number: 1,
+                question: "Question 1",
+                options: ["Option A", "Option B", "Option C", "Option D"],
+                correct_answer: "Option A",
+                explanation: "",
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  );
 
-  const [parts, setParts] = useState<TestPartItem[]>(defaultInitialParts);
+  const [parts, setParts] = useState<any[]>(defaultInitialParts);
   const [activePartTab, setActivePartTab] = useState<string>("part-0");
   const [groupCollapsedMap, setGroupCollapsedMap] = useState<Record<string, boolean>>({});
 
@@ -98,23 +108,29 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
 
   const toggleAllGroupsInPart = (partIdx: number) => {
     const currentGroups = parts[partIdx]?.questionGroups || [];
-    const keys = currentGroups.map((_, gIdx) => `part-${partIdx}-group-${gIdx}`);
-    const areAllCollapsed = keys.every((k) => groupCollapsedMap[k]);
+    const keys = currentGroups.map((_: any, gIdx: number) => `part-${partIdx}-group-${gIdx}`);
+    const areAllCollapsed = keys.every((k: string) => groupCollapsedMap[k]);
     const newMap = { ...groupCollapsedMap };
-    keys.forEach((k) => {
+    keys.forEach((k: string) => {
       newMap[k] = !areAllCollapsed;
     });
     setGroupCollapsedMap(newMap);
   };
 
-  // Writing Prompt text state if writing test
-  const [writingPrompt, setWritingPrompt] = useState<string>(rawContent.passage || "");
+  const [imageFiles, setImageFiles] = useState<Record<number, File>>({});
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Part Management Handlers
   const handleAddPart = () => {
     const nextPartNum = parts.length + 1;
     const newPartIdx = parts.length;
-    const newPart: TestPartItem = {
+    const newPart: any = testType === "writing" ? {
+      title: `Task ${nextPartNum}`,
+      prompt: "",
+      instructions: "",
+      imageUrl: "",
+      minWords: 150,
+    } : {
       title: `Part ${nextPartNum}`,
       passage: "",
       questionGroups: [
@@ -156,7 +172,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
     setActivePartTab(`part-${Math.max(0, partIdx - 1)}`);
   };
 
-  const handleUpdatePart = (partIdx: number, updatedPart: TestPartItem) => {
+  const handleUpdatePart = (partIdx: number, updatedPart: any) => {
     const newParts = [...parts];
     newParts[partIdx] = updatedPart;
     setParts(newParts);
@@ -210,7 +226,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
       toast.error("Each part must have at least 1 question group.");
       return;
     }
-    const newGroups = currentPart.questionGroups.filter((_, i) => i !== groupIdx);
+    const newGroups = currentPart.questionGroups.filter((_: any, i: number) => i !== groupIdx);
     handleUpdatePart(partIdx, { ...currentPart, questionGroups: newGroups });
   };
 
@@ -219,20 +235,57 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
     let content_data: any = {};
 
     if (data.type === "writing") {
+      setUploadingImage(true);
+      const supabase = createClient();
+      
+      const finalParts = await Promise.all(parts.map(async (part, idx) => {
+        let finalImageUrl = part.imageUrl;
+        const file = imageFiles[idx];
+        
+        if (file) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('test_attachments')
+            .upload(filePath, file);
+
+          if (uploadError) {
+            toast.error(`Failed to upload image for ${part.title}`);
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('test_attachments')
+              .getPublicUrl(filePath);
+            finalImageUrl = publicUrl;
+          }
+        }
+        
+        return {
+          title: part.title || `Task ${idx + 1}`,
+          prompt: part.prompt || "",
+          instructions: part.instructions || "",
+          imageUrl: finalImageUrl || "",
+          minWords: part.minWords || 150,
+        };
+      }));
+      setUploadingImage(false);
+
       content_data = {
-        title: data.title,
-        passage: writingPrompt,
-        recommendedTime: data.duration_minutes,
-        minWords: 250,
+        duration_minutes: data.duration_minutes,
+        parts: finalParts,
+        passage: finalParts[0]?.prompt || "",
+        imageUrl: finalParts[0]?.imageUrl || "",
+        instructions: finalParts[0]?.instructions || "",
       };
     } else {
       // Re-number questions sequentially across parts for clean student numbering
       let globalQNum = 1;
       const renumberedParts = parts.map((part) => ({
         ...part,
-        questionGroups: part.questionGroups.map((group) => ({
+        questionGroups: part.questionGroups?.map((group: any) => ({
           ...group,
-          questions: group.questions.map((q) => {
+          questions: group.questions?.map((q: any) => {
             const num = globalQNum++;
             return {
               ...q,
@@ -360,29 +413,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
         </Card>
 
         {/* Writing Test Prompt View */}
-        {testType === "writing" ? (
-          <Card className="border-border shadow-sm">
-            <CardHeader className="bg-muted/30 pb-4 border-b border-border">
-              <CardTitle className="text-base font-bold text-foreground">Writing Practice Prompt</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <Field>
-                <FieldLabel htmlFor="writingPrompt">Essay Topic or Task Prompt</FieldLabel>
-                <FieldContent>
-                  <Textarea
-                    id="writingPrompt"
-                    rows={8}
-                    value={writingPrompt}
-                    onChange={(e) => setWritingPrompt(e.target.value)}
-                    placeholder="Enter the full essay prompt or task instructions here..."
-                  />
-                </FieldContent>
-              </Field>
-            </CardContent>
-          </Card>
-        ) : (
-          /* Multi-Part Test Builder (Reading / Level Test) */
-          <div className="space-y-6">
+               <div className="space-y-6">
             <Tabs value={activePartTab} onValueChange={setActivePartTab} className="w-full">
               {/* Sticky Part Tabs Bar & Action Button */}
               <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md pt-2 pb-4 px-4 -mx-4 border-b border-border mb-6">
@@ -426,8 +457,8 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
 
                 let startQNumForPart = 1;
                 for (let i = 0; i < pIdx; i++) {
-                  parts[i].questionGroups.forEach((g) => {
-                    startQNumForPart += g.questions.length;
+                  parts[i].questionGroups?.forEach((g: any) => {
+                    startQNumForPart += (g.questions?.length || 0);
                   });
                 }
 
@@ -449,101 +480,195 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
                             className="text-destructive hover:bg-destructive/10 h-8 px-2"
                           >
                             <Trash2 className="w-4 h-4 mr-1" />
-                            Delete Part
+                            Delete {testType === "writing" ? "Task" : "Part"}
                           </Button>
                         )}
                       </CardHeader>
 
                       <CardContent className="p-6 space-y-6">
                         <Field>
-                          <FieldLabel>Part Title</FieldLabel>
+                          <FieldLabel>{testType === "writing" ? "Task Title" : "Part Title"}</FieldLabel>
                           <FieldContent>
                             <Input
-                              value={part.title}
+                              value={part.title || ""}
                               onChange={(e) =>
                                 handleUpdatePart(pIdx, { ...part, title: e.target.value })
                               }
-                              placeholder="e.g. Part 1: Environmental Science"
+                              placeholder={testType === "writing" ? "e.g. Task 1" : "e.g. Part 1: Environmental Science"}
                             />
                           </FieldContent>
                         </Field>
 
-                        <Field>
-                          <FieldLabel>Part Content / Passage</FieldLabel>
-                          <FieldContent>
-                            <Textarea
-                              rows={10}
-                              value={part.passage}
-                              onChange={(e) =>
-                                handleUpdatePart(pIdx, { ...part, passage: e.target.value })
-                              }
-                              placeholder="Enter part text or passage content here..."
-                            />
-                          </FieldContent>
-                        </Field>
+                        {testType === "writing" ? (
+                          <>
+                            <Field>
+                              <FieldLabel>Instructions (Optional)</FieldLabel>
+                              <FieldContent>
+                                <Textarea
+                                  rows={2}
+                                  value={part.instructions || ""}
+                                  onChange={(e) =>
+                                    handleUpdatePart(pIdx, { ...part, instructions: e.target.value })
+                                  }
+                                  placeholder="e.g. You should spend about 20 minutes on this task. Write at least 150 words."
+                                />
+                              </FieldContent>
+                            </Field>
+
+                            <Field>
+                              <FieldLabel>Task Image (Optional)</FieldLabel>
+                              <FieldContent>
+                                {!(part.imageUrl) && !imageFiles[pIdx] ? (
+                                  <div className="mt-2 flex justify-center rounded-lg border-2 border-dashed px-6 py-8 border-border hover:bg-muted/30">
+                                    <div className="text-center">
+                                      <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                                      <div className="mt-4 flex text-sm leading-6 text-muted-foreground justify-center">
+                                        <label className="relative cursor-pointer rounded-md font-semibold text-primary hover:text-primary/80">
+                                          <span>Upload an image</span>
+                                          <input 
+                                            type="file" 
+                                            accept="image/*"
+                                            className="sr-only" 
+                                            onChange={(e) => {
+                                              if (e.target.files && e.target.files.length > 0) {
+                                                setImageFiles(prev => ({...prev, [pIdx]: e.target.files![0]}));
+                                              }
+                                            }}
+                                          />
+                                        </label>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="mt-2 flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                                    <FileIcon className="w-5 h-5 text-primary shrink-0" />
+                                    <div className="truncate text-sm font-medium text-foreground flex-1">
+                                      {imageFiles[pIdx] ? imageFiles[pIdx].name : (part.imageUrl ? "Uploaded Image" : "")}
+                                    </div>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => {
+                                        const newFiles = {...imageFiles};
+                                        delete newFiles[pIdx];
+                                        setImageFiles(newFiles);
+                                        handleUpdatePart(pIdx, { ...part, imageUrl: "" });
+                                      }}
+                                      className="ml-2 text-destructive hover:underline text-xs flex items-center gap-1"
+                                    >
+                                      <X className="w-3 h-3" /> Remove
+                                    </button>
+                                  </div>
+                                )}
+                              </FieldContent>
+                            </Field>
+
+                            <Field>
+                              <FieldLabel>Essay Topic or Task Prompt</FieldLabel>
+                              <FieldContent>
+                                <Textarea
+                                  rows={8}
+                                  value={part.prompt || ""}
+                                  onChange={(e) =>
+                                    handleUpdatePart(pIdx, { ...part, prompt: e.target.value })
+                                  }
+                                  placeholder="Enter the full essay prompt or task instructions here..."
+                                />
+                              </FieldContent>
+                            </Field>
+
+                            <Field>
+                              <FieldLabel>Minimum Word Count</FieldLabel>
+                              <FieldContent>
+                                <Input
+                                  type="number"
+                                  value={part.minWords || 150}
+                                  onChange={(e) =>
+                                    handleUpdatePart(pIdx, { ...part, minWords: parseInt(e.target.value) || 0 })
+                                  }
+                                  placeholder="e.g. 150"
+                                />
+                              </FieldContent>
+                            </Field>
+                          </>
+                        ) : (
+                          <Field>
+                            <FieldLabel>Part Content / Passage</FieldLabel>
+                            <FieldContent>
+                              <Textarea
+                                rows={10}
+                                value={part.passage || ""}
+                                onChange={(e) =>
+                                  handleUpdatePart(pIdx, { ...part, passage: e.target.value })
+                                }
+                                placeholder="Enter part text or passage content here..."
+                              />
+                            </FieldContent>
+                          </Field>
+                        )}
                       </CardContent>
                     </Card>
 
-                    {/* Question Groups inside Part */}
-                    <div className="space-y-6">
-                      <div className="sticky top-[56px] z-30 bg-background/95 backdrop-blur-md border-b border-border py-3 px-4 -mx-4 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-extrabold text-foreground text-sm flex items-center gap-2">
-                            <Layers className="w-4 h-4 text-primary" />
-                            Question Groups in {part.title || `Part ${pIdx + 1}`} ({part.questionGroups.length})
-                          </h4>
+                    {/* Question Groups inside Part (Only for Reading/Level Test) */}
+                    {testType !== "writing" && (
+                      <div className="space-y-6">
+                        <div className="sticky top-[56px] z-30 bg-background/95 backdrop-blur-md border-b border-border py-3 px-4 -mx-4 flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <h4 className="font-extrabold text-foreground text-sm flex items-center gap-2">
+                              <Layers className="w-4 h-4 text-primary" />
+                              Question Groups in {part.title || `Part ${pIdx + 1}`} ({(part.questionGroups || []).length})
+                            </h4>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleAllGroupsInPart(pIdx)}
+                              className="h-8 text-xs font-bold gap-1.5"
+                            >
+                              <ChevronsUpDown className="w-3.5 h-3.5" />
+                              {(part.questionGroups || []).every((_: any, gIdx: number) => groupCollapsedMap[`part-${pIdx}-group-${gIdx}`])
+                                ? "Expand All"
+                                : "Collapse All"}
+                            </Button>
+                          </div>
+
                           <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleAllGroupsInPart(pIdx)}
-                            className="h-8 text-xs font-bold gap-1.5"
+                            onClick={() => handleAddGroupToPart(pIdx)}
+                            className="h-9 px-4 font-bold text-xs gap-1.5 cursor-pointer shadow-sm"
                           >
-                            <ChevronsUpDown className="w-3.5 h-3.5" />
-                            {part.questionGroups.every((_, gIdx) => groupCollapsedMap[`part-${pIdx}-group-${gIdx}`])
-                              ? "Expand All"
-                              : "Collapse All"}
+                            <Plus className="w-4 h-4" />
+                            Add Question Group
                           </Button>
                         </div>
 
-                        <Button
-                          type="button"
-                          onClick={() => handleAddGroupToPart(pIdx)}
-                          className="h-9 px-4 font-bold text-xs gap-1.5 cursor-pointer shadow-sm"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Add Question Group
-                        </Button>
+                        {(part.questionGroups || []).map((group: any, gIdx: number) => {
+                          const groupStartNum = cumulativeQNum;
+                          cumulativeQNum += group.questions.length;
+                          const groupKey = `part-${pIdx}-group-${gIdx}`;
+
+                          return (
+                            <QuestionGroupEditor
+                              key={gIdx}
+                              group={group}
+                              groupIndex={gIdx}
+                              partIndex={pIdx}
+                              startQuestionNum={groupStartNum}
+                              isCollapsed={Boolean(groupCollapsedMap[groupKey])}
+                              onToggleCollapse={() => toggleGroupCollapse(pIdx, gIdx)}
+                              onUpdateGroup={(updatedGroup) =>
+                                handleUpdateGroupInPart(pIdx, gIdx, updatedGroup)
+                              }
+                              onDeleteGroup={() => handleDeleteGroupInPart(pIdx, gIdx)}
+                            />
+                          );
+                        })}
                       </div>
-
-                      {part.questionGroups.map((group, gIdx) => {
-                        const groupStartNum = cumulativeQNum;
-                        cumulativeQNum += group.questions.length;
-                        const groupKey = `part-${pIdx}-group-${gIdx}`;
-
-                        return (
-                          <QuestionGroupEditor
-                            key={gIdx}
-                            group={group}
-                            groupIndex={gIdx}
-                            partIndex={pIdx}
-                            startQuestionNum={groupStartNum}
-                            isCollapsed={Boolean(groupCollapsedMap[groupKey])}
-                            onToggleCollapse={() => toggleGroupCollapse(pIdx, gIdx)}
-                            onUpdateGroup={(updatedGroup) =>
-                              handleUpdateGroupInPart(pIdx, gIdx, updatedGroup)
-                            }
-                            onDeleteGroup={() => handleDeleteGroupInPart(pIdx, gIdx)}
-                          />
-                        );
-                      })}
-                    </div>
+                    )}
                   </TabsContent>
                 );
               })}
             </Tabs>
           </div>
-        )}
 
         {/* Submit Action */}
         <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md py-4 border-t border-border -mx-4 px-4 mt-8 flex justify-end gap-3">
@@ -558,13 +683,13 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
           )}
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || uploadingImage}
             className="h-10 px-8 rounded-lg text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
           >
-            {isSubmitting ? (
+            {isSubmitting || uploadingImage ? (
               <>
                 <Loader2 className="animate-spin h-5 w-5" />
-                Saving Test Configuration...
+                {uploadingImage ? "Uploading Image..." : "Saving Test Configuration..."}
               </>
             ) : isEditing ? (
               "Save Changes"

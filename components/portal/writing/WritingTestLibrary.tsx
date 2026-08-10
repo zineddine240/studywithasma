@@ -15,9 +15,10 @@ interface DbTestRow {
 
 interface WritingTestLibraryProps {
   initialTests: DbTestRow[];
+  userId: string;
 }
 
-export function WritingTestLibrary({ initialTests }: WritingTestLibraryProps) {
+export function WritingTestLibrary({ initialTests, userId }: WritingTestLibraryProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statuses, setStatuses] = useState<Record<string, WritingTestStatus>>({});
   const [isClient, setIsClient] = useState(false);
@@ -41,7 +42,7 @@ export function WritingTestLibrary({ initialTests }: WritingTestLibraryProps) {
   useEffect(() => {
     const loadedStatuses: Record<string, WritingTestStatus> = {};
     formattedTests.forEach((test) => {
-      loadedStatuses[test.id] = getWritingStatus(test.id);
+      loadedStatuses[test.id] = getWritingStatus(test.id, userId);
     });
     setStatuses(loadedStatuses);
     setIsClient(true);

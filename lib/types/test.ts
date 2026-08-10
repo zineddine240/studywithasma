@@ -35,10 +35,23 @@ export interface TestPartItem {
   questionGroups: QuestionGroupItem[];
 }
 
+export interface WritingPartItem {
+  id?: string;
+  title: string;
+  prompt: string;
+  instructions?: string;
+  imageUrl?: string;
+  minWords?: number;
+  recommendedTime?: number;
+}
+
 export interface StructuredTestData {
   duration_minutes?: number;
-  parts?: TestPartItem[];
-  // Backward compatibility for simple 1-passage tests
+  parts?: TestPartItem[] | WritingPartItem[];
+  // Backward compatibility for simple 1-passage reading tests
   passage?: string;
   questions?: QuestionItem[];
+  // Backward compatibility for writing test specific fields
+  imageUrl?: string;
+  instructions?: string;
 }

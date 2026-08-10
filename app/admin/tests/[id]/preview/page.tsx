@@ -23,8 +23,9 @@ export default async function AdminTestPreviewPage({
     .select("*")
     .eq("id", id)
     .single();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (error || !test) {
+  if (error || !test || !user) {
     return notFound();
   }
 
@@ -68,9 +69,9 @@ export default async function AdminTestPreviewPage({
       {/* Test Container */}
       <div className="flex-1 overflow-y-auto bg-background relative">
         {isWriting ? (
-          <WritingTestEditor test={formattedWritingTest as any} />
+          <WritingTestEditor test={formattedWritingTest as any} userId={user.id} />
         ) : (
-          <ReadingTestClient testData={test.content_data} title={test.title} />
+          <ReadingTestClient testData={test.content_data} title={test.title} userId={user.id} />
         )}
       </div>
     </div>

@@ -21,13 +21,15 @@ export default async function ReadingTestPage({
     .eq("content_type", "reading")
     .single();
 
-  if (error || !test) {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (error || !test || !user) {
     return notFound();
   }
 
   return (
     <div className="w-full h-full pb-4">
-      <ReadingTestClient testData={test.content_data} title={test.title} />
+      <ReadingTestClient testData={test.content_data} title={test.title} userId={user.id} />
     </div>
   );
 }

@@ -44,15 +44,25 @@ export default async function WritingTestPage({ params }: PageProps) {
     id: test.id,
     taskType: "Writing Practice" as const,
     title: test.title,
-    topicSummary: content.passage ? (content.passage.length > 120 ? content.passage.slice(0, 120) + "..." : content.passage) : "Writing Practice Prompt",
-    prompt: content.passage || "No prompt provided.",
-    recommendedTime: content.recommendedTime || 40,
-    minWords: content.minWords || 250,
+    topicSummary: content.passage ? (content.passage.length > 120 ? content.passage.slice(0, 120) + "..." : content.passage) : "Writing Practice",
+    recommendedTime: content.duration_minutes || content.recommendedTime || 60,
+    parts: content.parts && content.parts.length > 0 ? content.parts : [{
+      title: "Task 1",
+      prompt: content.passage || "No prompt provided.",
+      instructions: content.instructions || "",
+      imageUrl: content.imageUrl || "",
+      minWords: content.minWords || 150,
+    }],
   };
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
-    <div className="w-full h-full min-h-screen">
-      <WritingTestEditor test={formattedTest as any} />
+    <div className="h-full">
+      <WritingTestEditor test={formattedTest} userId={user.id} />
     </div>
   );
 }
