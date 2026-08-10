@@ -16,6 +16,7 @@ interface TestData {
   title: string;
   passage?: string;
   questions: Question[];
+  duration_minutes?: number;
 }
 
 export default function LevelTestClient({ testData }: { testData: TestData }) {
@@ -24,7 +25,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
   const [currentStep, setCurrentStep] = useState(0); // 0 = Intro, 1...N = Questions, N+1 = Results
   const [answers, setAnswers] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState((testData.duration_minutes || 15) * 60); // minutes in seconds
 
   useEffect(() => {
     // Fisher-Yates Shuffle
@@ -102,7 +103,7 @@ export default function LevelTestClient({ testData }: { testData: TestData }) {
         <div className="grid sm:grid-cols-3 gap-4 mb-8 text-left">
           <div className="bg-muted/30 p-4 rounded-xl border border-border">
             <p className="text-xs font-bold text-primary uppercase mb-1">Duration</p>
-            <p className="font-bold text-foreground">~15 mins</p>
+            <p className="font-bold text-foreground">~{testData.duration_minutes || 15} mins</p>
           </div>
           <div className="bg-muted/30 p-4 rounded-xl border border-border">
             <p className="text-xs font-bold text-primary uppercase mb-1">Questions</p>

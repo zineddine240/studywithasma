@@ -45,7 +45,21 @@ export default async function ReadingPracticeListPage() {
         {tests && tests.length > 0 ? (
           tests.map((test) => {
             const data = test.content_data as any;
-            const qCount = data?.questions?.length || 0;
+            
+            let qCount = 0;
+            if (data?.parts) {
+              data.parts.forEach((p: any) => {
+                if (p.questionGroups) {
+                  p.questionGroups.forEach((g: any) => {
+                    qCount += g.questions?.length || 0;
+                  });
+                }
+              });
+            } else if (data?.questions) {
+              qCount = data.questions.length;
+            }
+
+            const durationMins = data?.duration_minutes || 60;
             return (
               <PortalCard key={test.id} className="flex flex-col">
                 <div className="flex items-start justify-between mb-4">
@@ -68,7 +82,7 @@ export default async function ReadingPracticeListPage() {
                   </div>
                   <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
                     <Clock className="w-4 h-4" />
-                    ~15 mins
+                    {durationMins} mins
                   </div>
                 </div>
 

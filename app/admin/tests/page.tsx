@@ -3,14 +3,35 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/admin/PageHeader'
 import { TestsTableClient } from './TestsTableClient'
 
-export default async function TestsAdminPage() {
+export default async function TestsAdminPage(
+  props: {
+    searchParams?: Promise<{
+      page?: string;
+      type?: string;
+    }>
+  }
+) {
+  const searchParams = await props.searchParams;
+  const page = searchParams?.page ? parseInt(searchParams.page) : 1;
+  const typeFilter = searchParams?.type || 'all';
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   const supabase = await createClient()
 
-  // Fetch all tests ordered by creation date
-  const { data: tests } = await supabase
+  // Fetch tests with pagination and optional type filtering
+  let query = supabase
     .from('tests')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (typeFilter !== 'all') {
+    query = query.eq('content_type', typeFilter);
+  }
+
+  const { data: tests, count } = await query;
+  const totalPages = count ? Math.ceil(count / limit) : 1;
 
   return (
     <div className="space-y-6">
@@ -27,7 +48,12 @@ export default async function TestsAdminPage() {
         }
       />
 
-      <TestsTableClient data={tests || []} />
+      <TestsTableClient 
+        data={tests || []} 
+        currentPage={page}
+        totalPages={totalPages}
+        currentType={typeFilter}
+      />
     </div>
   )
 }

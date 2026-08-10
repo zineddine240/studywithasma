@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Edit, Trash2, Eye, Loader2, MoreHorizontal, ExternalLink } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Edit, Trash2, Eye, Loader2, MoreHorizontal, ExternalLink, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,13 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -43,10 +50,15 @@ interface TestRow {
 
 interface TestsTableClientProps {
   data: TestRow[];
+  currentPage?: number;
+  totalPages?: number;
+  currentType?: string;
 }
 
-export function TestsTableClient({ data }: TestsTableClientProps) {
+export function TestsTableClient({ data, currentPage = 1, totalPages = 1, currentType = 'all' }: TestsTableClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [deletingTest, setDeletingTest] = useState<TestRow | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -72,6 +84,20 @@ export function TestsTableClient({ data }: TestsTableClientProps) {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleFilterChange = (value: string | null) => {
+    if (!value) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('type', value);
+    params.set('page', '1'); // reset to page 1 on filter
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const columns: ColumnDef<TestRow>[] = [
@@ -185,8 +211,54 @@ export function TestsTableClient({ data }: TestsTableClientProps) {
   ];
 
   return (
-    <>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select value={currentType} onValueChange={handleFilterChange}>
+            <SelectTrigger className="w-[180px] h-9">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="reading">Reading</SelectItem>
+              <SelectItem value="writing">Writing</SelectItem>
+              <SelectItem value="level_test">Level Test</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <DataTable columns={columns} data={data} />
+      
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2">
+          <p className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Delete Test Modal */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
@@ -228,6 +300,6 @@ export function TestsTableClient({ data }: TestsTableClientProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
