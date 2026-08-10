@@ -344,7 +344,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-muted-foreground">
               <p>
-                Any changes made here will be updated in real-time in the student portal under their respective course modules.
+                Any changes made here will be updated in real-time in the student portal under their respective course skills.
               </p>
               <div className="space-y-1">
                 <h4 className="font-semibold text-foreground">Anti-Download Suggestion</h4>

@@ -52,7 +52,7 @@ export async function CourseModulesList() {
   return (
     <PortalCard>
       <div className="flex items-center justify-between mb-4">
-        <SectionHeader title="Course Modules" icon={<BookOpen className="w-5 h-5" />} />
+        <SectionHeader title="Course Skills" icon={<BookOpen className="w-5 h-5" />} />
         <Link href="/student-portal/course" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
           Course Overview
         </Link>
@@ -67,7 +67,9 @@ export async function CourseModulesList() {
           >
             <div className="flex justify-between items-start mb-3">
               <h4 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 pr-2">
-                {module.title}
+                {module.title.toLowerCase().includes('introduction') || module.title.toLowerCase().includes('overview')
+                  ? 'Course Overview'
+                  : module.title}
               </h4>
               <StatusBadge status={module.status} />
             </div>
@@ -82,7 +84,7 @@ export async function CourseModulesList() {
           </Link>
         ))}
         {courseModules.length === 0 && (
-          <p className="text-sm text-slate-500 py-4">No modules found.</p>
+          <p className="text-sm text-slate-500 py-4">No skills found.</p>
         )}
       </div>
     </PortalCard>

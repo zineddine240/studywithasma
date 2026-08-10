@@ -113,11 +113,11 @@ export default function CourseDetailPageContent({
         </div>
       </section>
 
-      {/* ── Course Modules ── */}
+      {/* ── Course Skills ── */}
       <section className="py-14 sm:py-16 bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-8">
-            Course Modules
+            Course Skills
           </h2>
           <div className="space-y-4">
             {course.modules.map((mod) => (
@@ -133,8 +133,10 @@ export default function CourseDetailPageContent({
                   </div>
                   <div className="grow">
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-                      <h3 className="text-lg font-bold text-foreground">
-                        Module {mod.number}: {mod.name}
+                      <h3 className="text-xl font-bold text-foreground">
+                        {mod.name.toLowerCase().includes('introduction') || mod.name.toLowerCase().includes('overview')
+                          ? 'Course Overview'
+                          : `Skill ${mod.number > 1 ? mod.number - 1 : mod.number}: ${mod.name}`}
                       </h3>
                       <span className="text-xs font-semibold text-primary bg-secondary px-2.5 py-1 rounded-full">
                         {mod.lessonCount} Lessons

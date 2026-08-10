@@ -194,7 +194,7 @@ export default async function MyCoursePage() {
           {/* Modules List */}
           <PortalCard>
             <SectionHeader
-              title="Course Modules"
+              title="Course Skills"
               icon={<BookOpen className="w-5 h-5" />}
             />
 

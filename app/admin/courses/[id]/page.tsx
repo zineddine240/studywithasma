@@ -378,7 +378,7 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule,
     if (result.error) {
       toast.error(result.error)
     } else {
-      toast.success("Module added!")
+      toast.success("Skill added!")
       onCreated({ id: crypto.randomUUID(), number: nextNumber, name: values.name, description: values.description, slug })
       reset()
       setShowForm(false)
@@ -390,19 +390,19 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule,
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Layers className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Modules</h2>
+          <h2 className="text-lg font-semibold text-foreground">Skills</h2>
           <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{modules.length}</span>
         </div>
         {!showForm && (
           <Button type="button" variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowForm(true)}>
-            <Plus className="w-3.5 h-3.5" /> Add Module
+            <Plus className="w-3.5 h-3.5" /> Add Skill
           </Button>
         )}
       </div>
 
       {modules.length === 0 && !showForm && (
         <div className="text-center py-8 text-muted-foreground text-sm">
-          No modules yet. Add the first one above.
+          No skills yet. Add the first one above.
         </div>
       )}
 
@@ -412,12 +412,12 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule,
             <form key={mod.id} onSubmit={handleSubmitEdit(onEditSubmit)} className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-4" noValidate>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
-                  {mod.number}
+                  {mod.name.toLowerCase().includes('introduction') || mod.name.toLowerCase().includes('overview') ? 'O' : (mod.number > 1 ? mod.number - 1 : mod.number)}
                 </div>
-                <h3 className="text-sm font-semibold text-foreground">Editing Module</h3>
+                <h3 className="text-sm font-semibold text-foreground">Editing Skill</h3>
               </div>
               <Field>
-                <FieldLabel htmlFor={`edit-name-${mod.id}`}>Module Name</FieldLabel>
+                <FieldLabel htmlFor={`edit-name-${mod.id}`}>Skill Name</FieldLabel>
                 <FieldContent>
                   <Input id={`edit-name-${mod.id}`} {...registerEdit("name")} />
                 </FieldContent>
@@ -441,7 +441,7 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule,
             <div key={mod.id} className="flex flex-col p-4 rounded-xl border border-border bg-muted/30 gap-3">
               <div className="flex items-start gap-4">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
-                  {mod.number}
+                  {mod.name.toLowerCase().includes('introduction') || mod.name.toLowerCase().includes('overview') ? 'O' : (mod.number > 1 ? mod.number - 1 : mod.number)}
                 </div>
                 <div className="grow min-w-0">
                   <p className="font-medium text-foreground text-sm">{mod.name}</p>
@@ -502,9 +502,9 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule,
 
       {showForm && (
         <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4 p-4 rounded-xl border border-primary/30 bg-primary/5" noValidate>
-          <h3 className="text-sm font-semibold text-foreground">New Module #{modules.length + 1}</h3>
+          <h3 className="text-sm font-semibold text-foreground">New Skill #{modules.length + 1}</h3>
           <Field>
-            <FieldLabel htmlFor="mod-name">Module Name</FieldLabel>
+            <FieldLabel htmlFor="mod-name">Skill Name</FieldLabel>
             <FieldContent>
               <Input id="mod-name" placeholder="e.g. Listening" {...register("name")} />
             </FieldContent>
@@ -513,14 +513,14 @@ function ModuleManager({ courseId, modules, onDelete, onCreated, deletingModule,
           <Field>
             <FieldLabel htmlFor="mod-desc">Description</FieldLabel>
             <FieldContent>
-              <Textarea id="mod-desc" placeholder="Brief description of what this module covers." className="min-h-20" {...register("description")} />
+              <Textarea id="mod-desc" placeholder="Brief description of what this skill covers." className="min-h-20" {...register("description")} />
             </FieldContent>
             <FieldError errors={[errors.description]} />
           </Field>
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" size="sm" onClick={() => { setShowForm(false); reset() }} className="cursor-pointer">Cancel</Button>
             <Button type="submit" size="sm" disabled={isSubmitting} className="cursor-pointer">
-              {isSubmitting ? "Adding…" : "Add Module"}
+              {isSubmitting ? "Adding…" : "Add Skill"}
             </Button>
           </div>
         </form>

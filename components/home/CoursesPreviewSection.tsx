@@ -99,7 +99,7 @@ export default function CoursesPreviewSection({
                   <div>
                     <h4 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
                       <span className="w-8 h-px bg-primary/30" />
-                      Course Modules
+                      Course Skills
                     </h4>
                     <motion.ul
                       className="space-y-3"
@@ -118,7 +118,9 @@ export default function CoursesPreviewSection({
                             {getModuleIcon(module.name)}
                           </span>
                           <span className="text-sm font-semibold">
-                            Module {module.number}: {module.name}
+                            {module.name.toLowerCase().includes('introduction') || module.name.toLowerCase().includes('overview') 
+                              ? 'Course Overview' 
+                              : `Skill ${module.number > 1 ? module.number - 1 : module.number}: ${module.name}`}
                           </span>
                         </motion.li>
                       ))}
