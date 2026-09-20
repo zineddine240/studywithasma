@@ -17,25 +17,17 @@ export default async function SpeakingPracticePage() {
     console.error("Error fetching speaking tests:", error);
   }
 
-  // Transform the database structure into the format expected by the client component
-  const practiceTypes: string[] = [];
-  const questionsRecord: Record<string, string[]> = {};
-
-  if (tests && tests.length > 0) {
-    tests.forEach((test) => {
-      const parts = test.content_data?.parts || [];
-      parts.forEach((part: any, index: number) => {
-        const typeName = `${test.title} - ${part.title || `Part ${index + 1}`}`;
-        practiceTypes.push(typeName);
-        questionsRecord[typeName] = part.questions || [];
-      });
-    });
-  }
+  // Format tests for the client component
+  const formattedTests = (tests || []).map(test => ({
+    id: test.id,
+    title: test.title,
+    parts: (test.content_data?.parts || []).map((part: any, index: number) => ({
+      title: part.title || `Part ${index + 1}`,
+      questions: part.questions || []
+    }))
+  }));
 
   return (
-    <SpeakingPracticeClient 
-      practiceTypes={practiceTypes} 
-      questions={questionsRecord} 
-    />
+    <SpeakingPracticeClient tests={formattedTests} />
   );
 }

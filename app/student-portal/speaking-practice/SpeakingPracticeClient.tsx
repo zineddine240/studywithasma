@@ -36,16 +36,25 @@ import { getBestSupportedAudioType } from "@/lib/audio";
 const MAX_DURATION_SEC = 180; // 3 minutes
 
 export interface SpeakingPracticeClientProps {
-  practiceTypes: string[];
-  questions: Record<string, string[]>;
+  tests: {
+    id: string;
+    title: string;
+    parts: {
+      title: string;
+      questions: string[];
+    }[];
+  }[];
 }
 
-export default function SpeakingPracticeClient({ practiceTypes, questions }: SpeakingPracticeClientProps) {
+export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClientProps) {
   // Practice Config
-  const [practiceType, setPracticeType] = useState<string>(practiceTypes[0] || "");
-  const [question, setQuestion] = useState<string>(
-    questions[practiceTypes[0]]?.[0] || ""
-  );
+  const [selectedTestId, setSelectedTestId] = useState<string>(tests[0]?.id || "");
+  const [selectedPartIndex, setSelectedPartIndex] = useState<number>(0);
+  
+  const currentTest = tests.find(t => t.id === selectedTestId) || tests[0];
+  const currentPart = currentTest?.parts[selectedPartIndex] || currentTest?.parts[0];
+  
+  const [question, setQuestion] = useState<string>(currentPart?.questions[0] || "");
 
   // Audio Recording State
   const [isRecording, setIsRecording] = useState(false);
@@ -66,12 +75,14 @@ export default function SpeakingPracticeClient({ practiceTypes, questions }: Spe
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlaybackRef = useRef<HTMLAudioElement | null>(null);
 
-  // Automatically update question when practice type changes
+  // Automatically update question when part changes
   useEffect(() => {
-    if (practiceType && questions[practiceType]) {
-      setQuestion(questions[practiceType][0] || "");
+    if (currentPart && currentPart.questions.length > 0) {
+      setQuestion(currentPart.questions[0]);
+    } else {
+      setQuestion("");
     }
-  }, [practiceType, questions]);
+  }, [selectedTestId, selectedPartIndex]);
 
   // Timer logic for recording
   useEffect(() => {
@@ -309,23 +320,48 @@ export default function SpeakingPracticeClient({ practiceTypes, questions }: Spe
               icon={<ListMusic className="w-5 h-5" />}
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-foreground mb-2">
-                  Practice Type
+                  Test
                 </label>
                 <Select
-                  value={practiceType}
-                  onValueChange={(val) => setPracticeType(val || "")}
+                  value={selectedTestId}
+                  onValueChange={(val) => {
+                    setSelectedTestId(val || "");
+                    setSelectedPartIndex(0);
+                  }}
                   disabled={isRecording || isSubmitting || audioBlob !== null}
                 >
                   <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
-                    <SelectValue placeholder="Select practice type" />
+                    <SelectValue placeholder="Select test" />
                   </SelectTrigger>
                   <SelectContent>
-                    {practiceTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
+                    {tests.map((test) => (
+                      <SelectItem key={test.id} value={test.id}>
+                        {test.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-foreground mb-2">
+                  Part
+                </label>
+                <Select
+                  value={selectedPartIndex.toString()}
+                  onValueChange={(val) => setSelectedPartIndex(parseInt(val) || 0)}
+                  disabled={isRecording || isSubmitting || audioBlob !== null}
+                >
+                  <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
+                    <SelectValue placeholder="Select part" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentTest?.parts.map((part, idx) => (
+                      <SelectItem key={idx} value={idx.toString()}>
+                        {part.title || `Part ${idx + 1}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -345,8 +381,8 @@ export default function SpeakingPracticeClient({ practiceTypes, questions }: Spe
                     <SelectValue placeholder="Select question" />
                   </SelectTrigger>
                   <SelectContent>
-                    {(questions[practiceType] || []).map((q) => (
-                      <SelectItem key={q} value={q}>
+                    {(currentPart?.questions || []).map((q, idx) => (
+                      <SelectItem key={idx} value={q}>
                         {q}
                       </SelectItem>
                     ))}
@@ -358,7 +394,7 @@ export default function SpeakingPracticeClient({ practiceTypes, questions }: Spe
             {/* Display large question card */}
             <div className="bg-muted/30 border border-border rounded-2xl p-6 text-center shadow-inner mt-4">
               <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">
-                {practiceType}
+                {currentTest?.title} - {currentPart?.title || `Part ${selectedPartIndex + 1}`}
               </span>
               <h2 className="text-2xl font-bold text-foreground">{question}</h2>
             </div>
