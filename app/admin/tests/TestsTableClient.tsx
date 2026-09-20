@@ -223,6 +223,7 @@ export function TestsTableClient({ data, currentPage = 1, totalPages = 1, curren
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="reading">Reading</SelectItem>
               <SelectItem value="writing">Writing</SelectItem>
+              <SelectItem value="speaking">Speaking</SelectItem>
               <SelectItem value="level_test">Level Test</SelectItem>
             </SelectContent>
           </Select>
