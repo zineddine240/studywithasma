@@ -278,7 +278,7 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (practiceTypes.length === 0) {
+  if (tests.length === 0) {
     return (
       <div className="max-w-5xl mx-auto space-y-8 pb-8">
         <section className="bg-card text-white p-6 sm:p-10 rounded-2xl relative overflow-hidden">
