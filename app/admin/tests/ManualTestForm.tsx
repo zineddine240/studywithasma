@@ -640,15 +640,15 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
                             {(part.questions || []).map((q: string, qIdx: number) => (
                               <div key={qIdx} className="flex gap-3 items-start">
                                 <span className="font-bold text-muted-foreground w-6 pt-2">{qIdx + 1}.</span>
-                                <Input 
+                                <Textarea 
                                   value={q}
                                   onChange={(e) => {
                                     const newParts = [...parts];
                                     newParts[pIdx].questions[qIdx] = e.target.value;
                                     setParts(newParts);
                                   }}
-                                  placeholder="Enter question text..."
-                                  className="flex-1"
+                                  placeholder="Enter question text (support multiline for cue cards)..."
+                                  className="flex-1 min-h-[120px] resize-y"
                                 />
                                 <Button
                                   type="button"
