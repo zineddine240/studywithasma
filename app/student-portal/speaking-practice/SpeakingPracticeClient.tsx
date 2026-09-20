@@ -392,11 +392,13 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
             </div>
 
             {/* Display large question card */}
-            <div className="bg-muted/30 border border-border rounded-2xl p-6 text-center shadow-inner mt-4">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">
+            <div className="bg-muted/30 border border-border rounded-2xl p-6 md:p-10 shadow-inner mt-4 mx-auto max-w-3xl">
+              <span className="text-sm font-bold text-primary uppercase tracking-wider mb-6 block text-left border-b border-border/50 pb-4">
                 {currentTest?.title} - {currentPart?.title || `Part ${selectedPartIndex + 1}`}
               </span>
-              <h2 className="text-2xl font-bold text-foreground">{question}</h2>
+              <div className="text-xl md:text-2xl font-medium text-foreground whitespace-pre-wrap text-left leading-relaxed">
+                {question}
+              </div>
             </div>
           </PortalCard>
 
