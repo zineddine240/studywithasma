@@ -21,10 +21,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createManualTestAction, updateTestAction } from "./actions";
 
-// Basic Info Schema
 const testBasicSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
-  type: z.enum(["reading", "writing", "level_test"]),
+  type: z.enum(["reading", "writing", "level_test", "speaking"]),
   duration_minutes: z.number().min(5, "Time limit must be at least 5 minutes"),
 });
 
@@ -66,15 +65,24 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
 
   // Parts State
   const initialType = (initialData?.content_type || "reading");
-  const defaultInitialParts: any[] = rawContent.parts || (
-    initialType === "writing" ? [{
-      title: "Task 1",
-      prompt: rawContent.passage || "",
-      instructions: rawContent.instructions || "",
-      imageUrl: rawContent.imageUrl || "",
-      minWords: 150,
-    }] : [
-      {
+  let defaultInitialParts: any[] = rawContent.parts;
+  
+  if (!defaultInitialParts) {
+    if (initialType === "writing") {
+      defaultInitialParts = [{
+        title: "Task 1",
+        prompt: rawContent.passage || "",
+        instructions: rawContent.instructions || "",
+        imageUrl: rawContent.imageUrl || "",
+        minWords: 150,
+      }];
+    } else if (initialType === "speaking") {
+      defaultInitialParts = [{
+        title: "Speaking Part 1",
+        questions: [""]
+      }];
+    } else {
+      defaultInitialParts = [{
         title: "Part 1",
         passage: rawContent.passage || "",
         questionGroups: [
@@ -93,9 +101,9 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
             ],
           },
         ],
-      },
-    ]
-  );
+      }];
+    }
+  }
 
   const [parts, setParts] = useState<any[]>(defaultInitialParts);
   const [activePartTab, setActivePartTab] = useState<string>("part-0");
@@ -124,32 +132,43 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
   const handleAddPart = () => {
     const nextPartNum = parts.length + 1;
     const newPartIdx = parts.length;
-    const newPart: any = testType === "writing" ? {
-      title: `Task ${nextPartNum}`,
-      prompt: "",
-      instructions: "",
-      imageUrl: "",
-      minWords: 150,
-    } : {
-      title: `Part ${nextPartNum}`,
-      passage: "",
-      questionGroups: [
-        {
-          type: "multiple_choice",
-          title: `Questions`,
-          instruction: "Choose the correct answer.",
-          questions: [
-            {
-              number: 1,
-              question: "Sample Question",
-              options: ["Option A", "Option B", "Option C", "Option D"],
-              correct_answer: "Option A",
-              explanation: "",
-            },
-          ],
-        },
-      ],
-    };
+    let newPart: any;
+    
+    if (testType === "writing") {
+      newPart = {
+        title: `Task ${nextPartNum}`,
+        prompt: "",
+        instructions: "",
+        imageUrl: "",
+        minWords: 150,
+      };
+    } else if (testType === "speaking") {
+      newPart = {
+        title: `Speaking Part ${nextPartNum}`,
+        questions: [""]
+      };
+    } else {
+      newPart = {
+        title: `Part ${nextPartNum}`,
+        passage: "",
+        questionGroups: [
+          {
+            type: "multiple_choice",
+            title: `Questions`,
+            instruction: "Choose the correct answer.",
+            questions: [
+              {
+                number: 1,
+                question: "Sample Question",
+                options: ["Option A", "Option B", "Option C", "Option D"],
+                correct_answer: "Option A",
+                explanation: "",
+              },
+            ],
+          },
+        ],
+      };
+    }
     const newParts = [...parts, newPart];
     setParts(newParts);
     setActivePartTab(`part-${newPartIdx}`);
@@ -278,6 +297,14 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
         imageUrl: finalParts[0]?.imageUrl || "",
         instructions: finalParts[0]?.instructions || "",
       };
+    } else if (data.type === "speaking") {
+      content_data = {
+        duration_minutes: data.duration_minutes,
+        parts: parts.map(part => ({
+          title: part.title,
+          questions: part.questions || []
+        }))
+      };
     } else {
       // Re-number questions sequentially across parts for clean student numbering
       let globalQNum = 1;
@@ -376,6 +403,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
                         <SelectItem value="reading">IELTS Reading (Multi-Part)</SelectItem>
                         <SelectItem value="writing">IELTS Writing Practice</SelectItem>
                         <SelectItem value="level_test">General English Level Test</SelectItem>
+                        <SelectItem value="speaking">IELTS Speaking</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -590,6 +618,54 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
                               </FieldContent>
                             </Field>
                           </>
+                        ) : testType === "speaking" ? (
+                          <div className="space-y-4 mt-2">
+                            <div className="flex items-center justify-between border-b border-border pb-2">
+                              <h3 className="font-bold text-foreground">Questions</h3>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const newParts = [...parts];
+                                  newParts[pIdx].questions = [...(newParts[pIdx].questions || []), ""];
+                                  setParts(newParts);
+                                }}
+                                className="h-8 text-xs font-bold gap-1.5"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                Add Question
+                              </Button>
+                            </div>
+                            {(part.questions || []).map((q: string, qIdx: number) => (
+                              <div key={qIdx} className="flex gap-3 items-start">
+                                <span className="font-bold text-muted-foreground w-6 pt-2">{qIdx + 1}.</span>
+                                <Input 
+                                  value={q}
+                                  onChange={(e) => {
+                                    const newParts = [...parts];
+                                    newParts[pIdx].questions[qIdx] = e.target.value;
+                                    setParts(newParts);
+                                  }}
+                                  placeholder="Enter question text..."
+                                  className="flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newParts = [...parts];
+                                    newParts[pIdx].questions.splice(qIdx, 1);
+                                    setParts(newParts);
+                                  }}
+                                  className="text-destructive hover:bg-destructive/10 px-2 h-10"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
                           <Field>
                             <FieldLabel>Part Content / Passage</FieldLabel>
@@ -609,7 +685,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
                     </Card>
 
                     {/* Question Groups inside Part (Only for Reading/Level Test) */}
-                    {testType !== "writing" && (
+                    {testType !== "writing" && testType !== "speaking" && (
                       <div className="space-y-6">
                         <div className="sticky top-[56px] z-30 bg-background/95 backdrop-blur-md border-b border-border py-3 px-4 -mx-4 flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-3">

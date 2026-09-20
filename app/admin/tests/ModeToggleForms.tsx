@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, PenTool, Upload } from "lucide-react";
-import GenerateTestForm from "./GenerateTestForm";
+import { PenTool, Upload } from "lucide-react";
 import ManualTestForm from "./ManualTestForm";
 import DocumentUploadTestForm from "./DocumentUploadTestForm";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ModeToggleForms() {
-  const [activeTab, setActiveTab] = useState<string>("ai");
+  const [activeTab, setActiveTab] = useState<string>("manual");
   const [manualInitialData, setManualInitialData] = useState<any | null>(null);
 
   const handlePayloadGenerated = (payload: any, type: string) => {
@@ -26,10 +25,6 @@ export default function ModeToggleForms() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Full-width tab bar */}
         <TabsList className="w-full h-10 mb-6">
-          <TabsTrigger value="ai" className="flex-1 gap-2 text-sm font-semibold">
-            <Sparkles className="w-4 h-4" />
-            AI Prompt
-          </TabsTrigger>
           <TabsTrigger value="upload" className="flex-1 gap-2 text-sm font-semibold">
             <Upload className="w-4 h-4" />
             Upload Document AI
@@ -45,10 +40,6 @@ export default function ModeToggleForms() {
       </Tabs>
 
       {/* Tab Contents rendered with CSS visibility so active form state is NEVER lost on tab switch */}
-      <div className={activeTab === "ai" ? "block animate-in fade-in duration-200" : "hidden"}>
-        <GenerateTestForm />
-      </div>
-
       <div className={activeTab === "upload" ? "block animate-in fade-in duration-200" : "hidden"}>
         <DocumentUploadTestForm />
       </div>

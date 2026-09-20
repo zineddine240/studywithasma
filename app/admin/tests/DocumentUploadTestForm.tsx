@@ -114,6 +114,7 @@ export default function DocumentUploadTestForm() {
                     <SelectItem value="reading">IELTS Reading</SelectItem>
                     <SelectItem value="writing">IELTS Writing</SelectItem>
                     <SelectItem value="level_test">General English Level Test</SelectItem>
+                    <SelectItem value="speaking">IELTS Speaking</SelectItem>
                   </SelectContent>
                 </Select>
               )}
