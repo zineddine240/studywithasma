@@ -353,7 +353,7 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
                 </label>
                 <Select
                   value={selectedPartIndex.toString()}
-                  onValueChange={(val) => setSelectedPartIndex(parseInt(val) || 0)}
+                  onValueChange={(val) => setSelectedPartIndex(parseInt(val ?? "0") || 0)}
                   disabled={isRecording || isSubmitting || audioBlob !== null}
                 >
                   <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
@@ -558,7 +558,7 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
           {/* Original context recap */}
           <PortalCard className="bg-muted/30 border-border">
             <span className="text-xs font-bold text-primary uppercase tracking-wider mb-1 block">
-              {practiceType}
+              {currentTest?.title} — {currentPart?.title || `Part ${selectedPartIndex + 1}`}
             </span>
             <h2 className="text-xl font-bold text-foreground mb-4">
               {question}
