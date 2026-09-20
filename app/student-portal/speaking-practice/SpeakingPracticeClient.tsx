@@ -229,7 +229,8 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
 
     try {
       const formData = new FormData();
-      formData.append("practiceType", practiceType);
+      const currentPracticeType = `${currentTest?.title} - ${currentPart?.title || `Part ${selectedPartIndex + 1}`}`;
+      formData.append("practiceType", currentPracticeType);
       formData.append("question", question);
       formData.append("audio", audioBlob, "recording.webm");
 
