@@ -65,7 +65,7 @@ export default function ManualTestForm({ initialData }: ManualTestFormProps) {
 
   // Parts State
   const initialType = (initialData?.content_type || "reading");
-  let defaultInitialParts: any[] = rawContent.parts;
+  let defaultInitialParts: any[] = rawContent.parts || [];
   
   if (!defaultInitialParts) {
     if (initialType === "writing") {
