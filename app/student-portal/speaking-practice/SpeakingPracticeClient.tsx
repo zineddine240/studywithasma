@@ -260,7 +260,7 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
   const handleCopyTranscript = () => {
     if (result) {
       navigator.clipboard.writeText(result.correctedTranscript);
-      alert("Corrected transcript copied to clipboard!");
+      toast.success("Corrected transcript copied to clipboard!");
     }
   };
 
@@ -335,7 +335,9 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
                   disabled={isRecording || isSubmitting || audioBlob !== null}
                 >
                   <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
-                    <SelectValue placeholder="Select test" />
+                    <SelectValue placeholder="Select test">
+                      {currentTest?.title || "Select test"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {tests.map((test) => (
@@ -357,7 +359,9 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
                   disabled={isRecording || isSubmitting || audioBlob !== null}
                 >
                   <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
-                    <SelectValue placeholder="Select part" />
+                    <SelectValue placeholder="Select part">
+                      {currentPart?.title || (currentTest?.parts?.length ? `Part ${selectedPartIndex + 1}` : undefined)}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {currentTest?.parts.map((part, idx) => (
@@ -379,7 +383,9 @@ export default function SpeakingPracticeClient({ tests }: SpeakingPracticeClient
                   disabled={isRecording || isSubmitting || audioBlob !== null}
                 >
                   <SelectTrigger className="w-full h-12.5 px-4 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all bg-card disabled:opacity-50">
-                    <SelectValue placeholder="Select question" />
+                    <SelectValue placeholder="Select question">
+                      {question || undefined}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {(currentPart?.questions || []).map((q, idx) => (
