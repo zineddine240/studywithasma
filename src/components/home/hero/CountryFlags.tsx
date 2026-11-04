@@ -27,3 +27,30 @@ export function ItalyFlag({ className = "w-7 h-7" }: { className?: string }) {
     </svg>
   );
 }
+
+export function NetherlandsFlag({ className = "w-7 h-7" }: { className?: string }) {
+  return (
+    <svg
+      className={`${className} rounded-full overflow-hidden shadow-xs shrink-0 border border-slate-200/60 dark:border-slate-700`}
+      viewBox="0 0 512 512"
+      aria-label="Netherlands flag"
+    >
+      <rect width="512" height="170.7" fill="#AE1C28" />
+      <rect y="170.7" width="512" height="170.7" fill="#FFFFFF" />
+      <rect y="341.3" width="512" height="170.7" fill="#21468B" />
+    </svg>
+  );
+}
+
+export function PolandFlag({ className = "w-7 h-7" }: { className?: string }) {
+  return (
+    <svg
+      className={`${className} rounded-full overflow-hidden shadow-xs shrink-0 border border-slate-200/60 dark:border-slate-700`}
+      viewBox="0 0 512 512"
+      aria-label="Poland flag"
+    >
+      <rect width="512" height="256" fill="#FFFFFF" />
+      <rect y="256" width="512" height="256" fill="#DC143C" />
+    </svg>
+  );
+}

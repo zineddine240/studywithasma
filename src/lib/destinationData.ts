@@ -1,3 +1,47 @@
+export interface ApplicationProcedure {
+  name: string;
+  code: string;
+  eligibleFor: string[];
+  deadlines: { label: string; date: string }[];
+}
+
+export interface FranceCampusInfo {
+  applicationCampaign: string;
+  campusFranceOpens: string;
+  mainIntake: string;
+  applicationPlatform: string;
+  higherEdSystem: string;
+  lmdStructure: { level: string; duration: string }[];
+  whyFrance: string[];
+  frenchLanguageRequirements: {
+    minimumLevel: string;
+    institutionLevel: string;
+    recommendedForHumanities: string;
+    acceptedCertifications: string[];
+    note: string;
+  };
+  applicationProcedures: ApplicationProcedure[];
+  standardTuitionFees?: {
+    licence: string;
+    master: string;
+    doctorate: string;
+    note: string;
+  };
+  applicationFees: {
+    full: string;
+    reduced: string;
+    reducedNote: string;
+    note: string;
+  };
+  visaInfo: {
+    type: string;
+    platform: string;
+    financialRequirement: string;
+    notes: string[];
+  };
+  officialResourcesExtra: { title: string; url: string; organization: string }[];
+}
+
 export interface Destination {
   id: string;
   slug: string;
@@ -54,6 +98,17 @@ export interface Destination {
     url: string;
     organization: string;
   }[];
+  // Optional France-specific rich content
+  campusFranceInfo?: FranceCampusInfo;
+  italyInfo?: {
+    dsuScholarship: {
+      title: string;
+      maxAmount: string;
+      benefits: string[];
+      example: string;
+      notes: string[];
+    };
+  };
 }
 
 export const DESTINATIONS: Destination[] = [
@@ -63,99 +118,196 @@ export const DESTINATIONS: Destination[] = [
     name: "France",
     shortName: "France",
     flag: "🇫🇷",
-    tagline: "Study in a safe, welcoming country known for subsidized tuition and hundreds of English-taught programs.",
-    popularFor: "English-Taught Master's & Affordable Public Education",
+    tagline: "Your Gateway to French Higher Education – 2027/2028 Intake",
+    popularFor: "Campus France Algérie – 2027/2028 Intake",
     heroImage: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1600&auto=format&fit=crop",
-    cardImage: "https://images.unsplash.com/photo-1509299349698-dd22323b5963?q=80&w=800&auto=format&fit=crop",
+    cardImage: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=800&auto=format&fit=crop",
     accentColor: "#2563EB",
     stats: {
-      avgTuition: "€2,770 - €15,000 / yr",
-      livingCost: "€800 - €1,300 / mo",
-      postStudyWork: "1 to 2 Years (APS / Carte Séjour)",
-      intakeMonths: "Sept / Oct (Main intake)",
+      avgTuition: "€178 – €3,950 / yr (Public)",
+      livingCost: "€800 – €1,500 / mo",
+      postStudyWork: "APS Visa (up to 2 years)",
+      intakeMonths: "Sept / Oct 2027",
     },
     overview:
-      "France is one of Europe's top destinations for international students, with over 1,500 programs taught entirely in English. From world-leading Business Schools (Grandes Écoles like HEC, INSEAD, ESSEC) to historic public research universities, students enjoy state-subsidized healthcare, transport discounts, and government housing assistance (CAF).",
+      "France is one of the leading destinations for international students, offering a diverse higher education system combining public universities, Grandes Écoles, engineering schools, business schools and specialised institutions. For Algerian students, applications are managed through the official Campus France Algérie – Études en France procedure. The 2027/2028 campaign opened on 1 October 2026.",
     highlights: [
-      "Over 1,500 programs fully taught in English across Master's and MBA levels.",
-      "French government housing allowance (CAF) reimburses up to 30-40% of monthly student rent.",
-      "Low tuition at public universities and top-tier global rankings for business and management.",
-      "Access to Schengen zone travel and 1-2 year post-study job search visa (APS / Recherche d'emploi).",
+      "Internationally recognised degrees across Licence, Master and Doctorat (LMD) levels.",
+      "Campus France Algérie manages all applications through the Études en France platform.",
+      "French government student subsidies: CAF housing allowance, €1–€3.30 student dining.",
+      "French and English-taught programmes in engineering, business, law, computer science and more.",
+      "Access to Schengen zone travel and post-study APS residence permit.",
+      "Student healthcare enrollment in the French national social security system (free for eligible students).",
     ],
     studyOpportunities: [
       {
-        level: "Master of Science (MSc) & MIM",
-        description: "1 to 2-year English-taught management, technology, and engineering degrees.",
-        topFields: ["Luxury Brand Management", "Data Analytics & AI", "International Business", "Computer Engineering"],
+        level: "Licence – Undergraduate Programmes",
+        description: "For Algerian Baccalaureate holders starting university in France. Application via DAP procedure.",
+        topFields: ["Computer Science & Mathematics", "Economics & Management", "Law & Political Science", "Biology & Life Sciences", "Engineering Sciences", "Languages & Literature"],
       },
       {
-        level: "Public University Master's",
-        description: "Research-driven academic master's programs with affordable national tuition rates.",
-        topFields: ["Applied Mathematics", "Economics", "Sustainable Development", "Life Sciences"],
+        level: "Master's Degree – Graduate Programmes",
+        description: "For Licence holders or equivalent. Application via Études en France (Hors DAP).",
+        topFields: ["Artificial Intelligence & Data Science", "International Business & Management", "Finance & Economics", "Computer Engineering", "Translation & Applied Linguistics", "Sustainable Development"],
+      },
+      {
+        level: "Grandes Écoles & Specialised Institutions",
+        description: "Prestigious business schools, engineering schools and specialised higher education institutions.",
+        topFields: ["Business & Management Schools", "Engineering Schools", "Architecture Schools", "Digital Technology & IT", "Art & Design Schools"],
       },
     ],
     entryRequirements: {
-      academic: "Undergraduate: High school diploma / Baccalaureate with strong grades. Master's: 3 or 4-year Bachelor degree (Licence or equivalent) with minimum 11-13/20 average.",
+      academic: "Licence 1: Algerian Baccalauréat or equivalent. Licence 2/3: Bac + previous transcripts + proof of academic year completion. Master's: Recognised Licence (Bac+3) or equivalent, transcripts, degree certificate, coherent academic project.",
       englishRequirements: {
-        exam: "IELTS Academic",
-        undergraduate: "Overall 6.0 (no band below 5.5)",
-        postgraduate: "Overall 6.5 (minimum 6.0 in all components)",
-        notes: "No French language requirement for 100% English-taught programs, though learning conversational French is highly encouraged.",
+        exam: "IELTS Academic (for English-taught programmes)",
+        undergraduate: "As required by the institution",
+        postgraduate: "As required by the institution",
+        notes: "English-language requirements are set by each institution. IELTS, TOEFL or other accepted certificates may be requested for English-taught programmes.",
       },
       documentsRequired: [
-        "Certified translated university transcripts and degree certificates",
-        "Official IELTS Academic score report",
+        "Algerian Baccalauréat certificate and transcripts",
+        "Previous university transcripts (certified and translated)",
+        "Degree certificate or provisional achievement certificate",
+        "Motivation letter (lettre de motivation)",
         "CV in European format",
-        "Motivation letter explaining academic & professional rationale",
-        "Two letters of recommendation",
-        "Passport scan and proof of financial resources (€615/month minimum)",
+        "French language certification (TCF DAP / DELF B2 / DALF C1)",
+        "Passport scan and proof of financial resources",
+        "Campus France application dossier (Études en France)",
       ],
     },
     estimatedCosts: {
-      academicYear: "2025 / 2026 Estimated Averages",
-      tuitionRange: "€2,770 to €3,770/year at public universities (higher for private Business Schools: €10,000 - €18,000/year)",
-      livingExpenses: "€800 to €1,300/month (Paris: ~€1,200+, regional cities: ~€800 - €950/month)",
-      healthInsurance: "Free enrollment in French national social security (Sécurité Sociale Étudiante)",
-      disclaimer: "France provides notable student subsidies (CAF housing allowance, student transit passes, campus dining for €1 - €3.30).",
+      academicYear: "2026 / 2027 Published Rates",
+      tuitionRange: "€178 – €398/yr (standard / exempt) or €2,902 – €3,950/yr (differentiated)",
+      livingExpenses: "Regional cities: €800–€1,000/month. Paris & surroundings: €1,100–€1,500+/month",
+      healthInsurance: "Free enrollment in French national social security (Sécurité Sociale Étudiante) for eligible international students",
+      disclaimer: "Campus France application fee: 20,000 DZD (full) / 10,000 DZD (reduced). Some students may benefit from full or partial tuition exemptions. CAF housing allowance and €1–€3.30 student dining available.",
     },
     applicationProcess: [
       {
         step: 1,
-        title: "Program Research & Language Readiness",
-        description: "Select certified English-taught programs via Campus France catalog and prepare for your IELTS exam.",
+        title: "Academic Assessment & Orientation",
+        description: "Evaluate your academic background, language level and professional objectives to identify suitable programmes.",
       },
       {
         step: 2,
-        title: "Campus France Dossier (Études en France)",
-        description: "Submit online application through the official Études en France platform or direct school portal.",
+        title: "French Language Preparation",
+        description: "Prepare for TCF, DELF or DALF certification. English-taught programmes may require IELTS.",
       },
       {
         step: 3,
-        title: "Academic Interview / School Review",
-        description: "Attend motivational interview with Campus France and university admissions committee.",
+        title: "University Selection & Document Preparation",
+        description: "Identify universities, prepare your CV, motivation letter, academic documents and certified translations.",
       },
       {
         step: 4,
-        title: "Admission Letter & Deposit",
-        description: "Receive formal admission attestation and make required tuition deposit.",
+        title: "Études en France Application",
+        description: "Create your profile on the Études en France platform and submit the correct procedure (DAP or Hors DAP).",
       },
       {
         step: 5,
+        title: "Campus France Interview",
+        description: "Attend your Campus France Algérie interview before the 15 March 2027 deadline.",
+      },
+      {
+        step: 6,
         title: "VLS-TS Long-Stay Student Visa",
-        description: "Apply for Long-Stay Visa via France-Visas with financial attestation and housing certificate.",
+        description: "Apply for your long-stay student visa via France-Visas with admission proof and financial documents.",
       },
     ],
     popularUniversities: [
       { name: "Sorbonne University", city: "Paris", type: "Historic World Top Tier University" },
       { name: "Université Paris-Saclay", city: "Paris-Saclay", type: "World #1 for Mathematics" },
       { name: "ESSEC Business School", city: "Cergy / Paris", type: "Top 5 Global Master in Management" },
-      { name: "Grenoble INP / UGA", city: "Grenoble", type: "Leading Science & Technology Cluster" },
       { name: "Sciences Po", city: "Paris", type: "Elite Social Sciences Institution" },
     ],
     officialResources: [
-      { title: "Campus France Official Catalog", url: "https://www.campusfrance.org", organization: "French Ministry of Higher Education" },
+      { title: "Études en France – Campus France Algérie", url: "https://algerie.campusfrance.org", organization: "Campus France Algérie" },
       { title: "France-Visas Official Portal", url: "https://france-visas.gouv.fr", organization: "Government of France" },
+      { title: "Institut Français Algérie", url: "https://www.if-algerie.com", organization: "Institut Français Algérie" },
+      { title: "Campus France Official Catalog", url: "https://www.campusfrance.org", organization: "French Ministry of Higher Education" },
     ],
+    campusFranceInfo: {
+      standardTuitionFees: {
+        licence: "€178/year",
+        master: "€254/year",
+        doctorate: "€398/year",
+        note: "These are standard national registration fees (2026/2027) applicable to students benefiting from an exemption from differentiated tuition fees. Algerian students may benefit from full or partial tuition fee exemptions, subject to eligibility and university approval. Exemptions are not automatic.",
+      },
+      applicationCampaign: "2027/2028",
+      campusFranceOpens: "1 October 2026",
+      mainIntake: "September / October 2027",
+      applicationPlatform: "Études en France – Campus France Algérie",
+      higherEdSystem:
+        "France's higher education follows the LMD structure: Licence (3 years), Master (2 years after Licence), Doctorat (3 years after Master). Institutions include public universities, Grandes Écoles, engineering schools, business schools and specialised institutions.",
+      lmdStructure: [
+        { level: "Licence (L)", duration: "3 years of higher education" },
+        { level: "Master (M)", duration: "2 years after the Licence" },
+        { level: "Doctorat (D)", duration: "3 additional years after a Master's degree" },
+      ],
+      whyFrance: [
+        "Internationally recognised degrees and qualifications.",
+        "Wide selection of public universities and specialised institutions.",
+        "Programmes available in both French and English.",
+        "Student discounts on public transport, restaurants and cultural activities.",
+        "Access to student housing assistance (CAF/APL), subject to eligibility.",
+        "Opportunities to work part-time under applicable regulations while studying.",
+      ],
+      frenchLanguageRequirements: {
+        minimumLevel: "B1 (Campus France procedure minimum)",
+        institutionLevel: "B2 (required by most French institutions)",
+        recommendedForHumanities: "C1 (strongly recommended for humanities and social sciences)",
+        acceptedCertifications: ["TCF (according to the applicable procedure)", "TCF DAP", "DELF B2", "DALF C1 / C2"],
+        note: "Language requirements are determined by the institution and programme. Meeting the Campus France minimum does not automatically guarantee admission.",
+      },
+      applicationProcedures: [
+        {
+          name: "DAP – Demande d'Admission Préalable",
+          code: "DAP",
+          eligibleFor: [
+            "First-year Licence (L1) at public universities",
+            "Eligible architecture school applications",
+          ],
+          deadlines: [
+            { label: "Application submission deadline", date: "15 December 2026" },
+            { label: "Campus France interview deadline", date: "15 March 2027" },
+          ],
+        },
+        {
+          name: "Hors DAP – Non-DAP Procedure",
+          code: "HORS DAP",
+          eligibleFor: [
+            "Licence 2 (L2) and Licence 3 (L3)",
+            "Licence Professionnelle",
+            "Master's programmes (M1 and M2)",
+            "Bachelor Universitaire de Technologie (BUT)",
+            "Eligible engineering and business schools",
+          ],
+          deadlines: [
+            { label: "Application submission deadline", date: "30 November 2026" },
+            { label: "Campus France interview deadline", date: "15 March 2027" },
+          ],
+        },
+      ],
+      applicationFees: {
+        full: "20,000 DZD",
+        reduced: "10,000 DZD",
+        reducedNote: "Subject to eligibility",
+        note: "The application fee is non-refundable and paid online after submitting the application, normally within 48 hours. Check the official Campus France Algérie fee schedule for exemption conditions.",
+      },
+      visaInfo: {
+        type: "VLS-TS (Visa de Long Séjour valant Titre de Séjour) – Student Category",
+        platform: "France-Visas (france-visas.gouv.fr)",
+        financialRequirement: "Approx. €877.50/month (financial sufficiency requirement)",
+        notes: [
+          "Apply after receiving your admission letter and Campus France attestation.",
+          "The VLS-TS student visa must be validated online after arrival in France via the ANEF platform.",
+          "Post-study: APS (Autorisation Provisoire de Séjour) available to graduates for job search.",
+        ],
+      },
+      officialResourcesExtra: [
+        { title: "ANEF Portal (Visa Validation)", url: "https://administration-etrangers-en-france.interieur.gouv.fr", organization: "French Ministry of Interior" },
+      ],
+    },
   },
   {
     id: "italy",
@@ -163,24 +315,26 @@ export const DESTINATIONS: Destination[] = [
     name: "Italy",
     shortName: "Italy",
     flag: "🇮🇹",
-    tagline: "Enjoy high-quality education, vibrant student life, and generous DSU scholarship opportunities.",
-    popularFor: "Affordable Public Tuition & DSU Regional Scholarships",
+    tagline: "Top-ranked universities, a rich culture and affordable higher education opportunities.",
+    popularFor: "Affordable Public University Education & DSU Regional Scholarships",
     heroImage: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=1600&auto=format&fit=crop",
     cardImage: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=800&auto=format&fit=crop",
     accentColor: "#15803D",
     stats: {
-      avgTuition: "€900 - €4,000 / yr (Public Universities)",
-      livingCost: "€700 - €1,100 / mo",
-      postStudyWork: "1 Year (Permesso per Ricerca Lavoro)",
+      avgTuition: "€157 / yr (Public Registration)",
+      livingCost: "€450 – €600 / mo",
+      postStudyWork: "Job-Seeking Permit (post-grad)",
       intakeMonths: "Sept / Oct (Main intake)",
     },
     overview:
-      "Italy is one of the most culturally inspiring and cost-effective higher education destinations in Europe. Home to the world's oldest university (University of Bologna, founded 1088) and premier engineering powerhouses like Politecnico di Milano, Italy offers more than 500 accredited degrees taught entirely in English. Public university tuition is scaled by family income (ISEE Parificato), and regional government scholarships (DSU) provide full tuition waivers, subsidized accommodation, and cash stipends.",
+      "Italy is one of the most culturally inspiring and cost-effective higher education destinations in Europe. Home to the world's oldest university (University of Bologna, founded 1088) and premier engineering powerhouses like Politecnico di Milano, Italy offers more than 500 accredited degrees taught entirely in English. Algerian students benefit from very affordable university registration costs (initial payment around €157) and can access comprehensive regional DSU scholarships offering tuition waivers, free housing, and living grants up to €8,000+ per year.",
     highlights: [
-      "Tuition fees at public universities typically range from €900 to €4,000/year, with generous income-based fee reductions (ISEE).",
-      "Regional DSU scholarships provide full tuition waivers, subsidized student dining, free dorms, and annual living stipends of up to €6,000 - €7,000.",
+      "Low initial university registration fee of approximately €157/year at public universities.",
+      "DSU Regional Scholarships provide up to €8,000+ per year in non-repayable grants, full tuition waivers, free/subsidised student housing, and cafeteria meal vouchers.",
+      "Budget-friendly student living costs estimated between €450–€600/month depending on city and shared accommodation.",
       "Over 500 undergraduate and postgraduate programs taught completely in English across engineering, design, medicine, business, and data science.",
-      "1-year post-study residence permit (Permesso di Soggiorno per Ricerca Lavoro o Imprenditorialità) for graduates to seek qualified work in Italy and the European Union.",
+      "Possibility of obtaining a residence permit for job seeking after graduation (Permesso per Ricerca Lavoro), subject to applicable requirements.",
+      "Internationally recognised degrees fully accredited across the European Higher Education Area (EHEA).",
     ],
     studyOpportunities: [
       {
@@ -195,12 +349,12 @@ export const DESTINATIONS: Destination[] = [
       },
     ],
     entryRequirements: {
-      academic: "Undergraduate: Minimum 12 years of formal schooling (high school diploma / Baccalaureate). Master's: 3 or 4-year Bachelor degree from a recognized university with relevant curriculum credit alignment.",
+      academic: "Undergraduate: Minimum 12 years of formal schooling (high school diploma / Baccalaureate). Master's: 3 or 4-year Bachelor degree from a recognized university.",
       englishRequirements: {
         exam: "IELTS Academic (or recognized equivalent)",
-        undergraduate: "Overall 6.0 (minimum 5.5 in each section)",
-        postgraduate: "Overall 6.0 – 6.5 (depending on faculty and university tier)",
-        notes: "No Italian language requirement for 100% English-taught programs. Basic conversational Italian is recommended for day-to-day life and internships.",
+        undergraduate: "Overall 5.5",
+        postgraduate: "Overall 5.5 (B2 level)",
+        notes: "No specific minimum score required for individual IELTS components (Listening, Reading, Writing and Speaking), subject to university admission requirements. An overall IELTS score of 5.5 may be accepted by Italian universities for English-taught programmes. Requirements vary depending on the university and chosen degree programme. Always verify specific admission requirements before applying.",
       },
       documentsRequired: [
         "Declaration of Value (DOV) from Italian Embassy or CIMEA Statement of Comparability & Verification",
@@ -210,21 +364,39 @@ export const DESTINATIONS: Destination[] = [
         "Statement of Purpose / Motivation Letter",
         "Two letters of academic or professional recommendation",
         "Universitaly pre-enrollment summary and confirmation",
-        "Proof of financial sufficiency (statutory visa threshold ~€6,000/year) and accommodation voucher",
+        "Proof of financial sufficiency and accommodation voucher",
       ],
     },
     estimatedCosts: {
-      academicYear: "2025 / 2026 Estimated Averages",
-      tuitionRange: "€900 to €4,000 per year at public universities (income-adjusted via ISEE); private universities range from €8,000 to €20,000/year",
-      livingExpenses: "€700 to €1,100 per month (Milan & Rome: ~€900–€1,200/mo; student cities like Bologna, Padua, or Turin: ~€650–€900/mo)",
-      healthInsurance: "Approx. €150 to €700 per year (registration with Italian National Health Service - SSN / Tessera Sanitaria)",
-      disclaimer: "Figures reflect 2025/2026 estimates. DSU regional scholarship recipients receive 100% tuition exemption, subsidized cafeteria access, and living cost grants.",
+      academicYear: "2026 / 2027 Estimated Costs",
+      tuitionRange: "€157 / year (indicative initial registration payment at public universities)",
+      livingExpenses: "€450 – €600 / month (budget-conscious student lifestyle)",
+      healthInsurance: "International students must arrange appropriate healthcare coverage and comply with Italian residence requirements (e.g. SSN registration approx. €150–€700/yr)",
+      disclaimer: "The €157 registration payment is an indicative initial university registration cost. Additional charges may apply depending on the institution and programme. DSU scholarships are not automatic; applicants must meet financial/academic eligibility requirements and submit documentation within regional deadlines. Scholarship amounts and benefits vary by region. Visa financial sufficiency requirements are separate from monthly living budgets.",
+    },
+    italyInfo: {
+      dsuScholarship: {
+        title: "DSU Regional Right-to-Study Scholarships",
+        maxAmount: "Up to €8,000+ / year",
+        benefits: [
+          "Annual financial grants of up to €8,000 or more in direct living support",
+          "Full or partial exemption from university tuition and regional fees",
+          "Free or subsidised student accommodation (subject to regional availability)",
+          "Subsidised or free daily meals at university cafeterias",
+        ],
+        example: "In Emilia-Romagna, the 2026/2027 ER.GO scholarship reaches €8,246.78 for eligible off-site students in the lowest income bracket.",
+        notes: [
+          "Eligible Algerian students can apply for regional DSU scholarships based on household income documents (ISEE Parificato).",
+          "Deadlines and submission procedures are set regionally (e.g. ER.GO, DiSCo Lazio, Edisu Piemonte, DSU Toscana).",
+          "Scholarships are not automatic and require academic progression and documentary proof of family financial standing.",
+        ],
+      },
     },
     applicationProcess: [
       {
         step: 1,
         title: "Program Selection & Deadline Verification",
-        description: "Identify accredited English-taught degrees and verify departmental application windows (typically December through April).",
+        description: "Identify accredited English-taught degrees and verify departmental application windows.",
       },
       {
         step: 2,
@@ -239,30 +411,29 @@ export const DESTINATIONS: Destination[] = [
       {
         step: 4,
         title: "Pre-Enrollment on Universitaly",
-        description: "Upon receiving your admission offer, complete pre-enrollment on the official Italian government Universitaly portal for embassy visa clearance.",
+        description: "Upon receiving your admission offer, complete pre-enrollment on Universitaly.",
       },
       {
         step: 5,
         title: "CIMEA / DOV & Regional DSU Application",
-        description: "Obtain CIMEA academic comparability certificate and submit your regional scholarship (DSU) application for tuition waiver.",
+        description: "Obtain academic comparability and apply for DSU scholarship grants.",
       },
       {
         step: 6,
         title: "Italian National Student Visa (Type D)",
-        description: "Lodge visa application with your Universitaly summary, health insurance, and verified financial proof.",
+        description: "Lodge visa application with Universitaly summary and financial proofs.",
       },
     ],
     popularUniversities: [
-      { name: "Politecnico di Milano", city: "Milan", type: "Italy's #1 Technical University & Global Top 20 for Engineering" },
-      { name: "University of Bologna (UNIBO)", city: "Bologna", type: "World's Oldest University (Founded 1088) with Extensive English Offerings" },
-      { name: "Sapienza University of Rome", city: "Rome", type: "Historic Capital Giant & Global Research Leader" },
-      { name: "Politecnico di Torino", city: "Turin", type: "Premier Automotive, Aerospace & Engineering Center" },
-      { name: "University of Padua", city: "Padua", type: "Historic Research Institution (Founded 1222)" },
+      { name: "Politecnico di Milano", city: "Milan", type: "Italy's #1 Technical University" },
+      { name: "University of Bologna (UNIBO)", city: "Bologna", type: "World's Oldest University (Founded 1088)" },
+      { name: "Sapienza University of Rome", city: "Rome", type: "Historic Capital Giant" },
+      { name: "Politecnico di Torino", city: "Turin", type: "Premier Automotive & Engineering Center" },
+      { name: "University of Padua", city: "Padua", type: "Historic Research Institution (1222)" },
     ],
     officialResources: [
       { title: "Universitaly Official Portal", url: "https://www.universitaly.it", organization: "Italian Ministry of University and Research (MUR)" },
-      { title: "Study in Italy Official Guide", url: "https://studyinitaly.esteri.it", organization: "Ministry of Foreign Affairs and International Cooperation" },
-      { title: "CIMEA - Academic Recognition Portal", url: "https://www.cimea.it/en", organization: "CIMEA Italy" },
+      { title: "Study in Italy Official Guide", url: "https://studyinitaly.esteri.it", organization: "Ministry of Foreign Affairs" },
     ],
   },
 ];

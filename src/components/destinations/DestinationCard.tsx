@@ -2,11 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Clock, GraduationCap, MapPin, Sparkles } from "lucide-react";
 import type { Destination } from "@/lib/destinationData";
-import { FranceFlag, ItalyFlag } from "@/components/home/hero/CountryFlags";
+import { FranceFlag, ItalyFlag, NetherlandsFlag, PolandFlag } from "@/components/home/hero/CountryFlags";
 
 const FLAG_MAP: Record<string, React.FC<{ className?: string }>> = {
   france: FranceFlag,
   italy: ItalyFlag,
+  netherlands: NetherlandsFlag,
+  poland: PolandFlag,
 };
 
 interface DestinationCardProps {

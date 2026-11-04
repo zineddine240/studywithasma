@@ -118,7 +118,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           setModules(formatted);
           
           if (lesson.module_id) {
-            const selectedModule = formatted.find(m => m.id === lesson.module_id);
+            const selectedModule = formatted.find((m: any) => m.id === lesson.module_id);
             if (selectedModule) {
               setSelectedCourseId(selectedModule.course_id);
             }

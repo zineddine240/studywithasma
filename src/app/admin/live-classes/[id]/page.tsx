@@ -128,7 +128,7 @@ export default function EditLiveClassPage({ params }: { params: Promise<{ id: st
           setModules(formatted);
           
           if (liveClass.module_id) {
-            const selectedModule = formatted.find(m => m.id === liveClass.module_id);
+            const selectedModule = formatted.find((m: any) => m.id === liveClass.module_id);
             if (selectedModule) {
               setSelectedCourseId(selectedModule.course_id);
             }
