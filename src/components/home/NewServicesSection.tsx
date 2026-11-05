@@ -1,15 +1,18 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  BookOpen,
   FileText,
   PenTool,
   Search,
   ShieldCheck,
   Users,
 } from "lucide-react";
+import { SectionTag } from "@/components/ui/section-tag";
+import { useGSAP } from "@gsap/react";
+import { gsap, isReducedMotion } from "@/lib/gsap";
 
 interface ServiceItem {
   title: string;
@@ -19,12 +22,6 @@ interface ServiceItem {
 }
 
 const SERVICES: ServiceItem[] = [
-  {
-    title: "IELTS Preparation",
-    description: "Structured lessons, live classes and band 7.5+ strategies.",
-    icon: BookOpen,
-    href: "/courses",
-  },
   {
     title: "Initial Consultation",
     description: "Discuss your goals, profile and eligibility.",
@@ -53,22 +50,80 @@ const SERVICES: ServiceItem[] = [
   },
   {
     title: "Application Guidance",
-    description:
-      "A step-by-step plan to submit your application successfully.",
+    description: "A step-by-step plan to submit your application successfully.",
     icon: ShieldCheck,
     href: "/contact",
   },
 ];
 
 export default function NewServicesSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (isReducedMotion()) return;
+
+      if (headerRef.current) {
+        gsap.fromTo(
+          headerRef.current.children,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.6,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 85%",
+              once: true,
+            },
+          },
+        );
+      }
+
+      if (gridRef.current) {
+        gsap.from(gridRef.current.children, {
+          opacity: 0,
+          y: 20,
+          stagger: 0.08,
+          duration: 0.5,
+          ease: "power2.out",
+          clearProps: "all",
+          scrollTrigger: {
+            trigger: gridRef.current,
+            start: "top 92%",
+            once: true,
+          },
+          onComplete: () => {
+            if (gridRef.current) {
+              gsap.set(gridRef.current.children, { clearProps: "all" });
+            }
+          },
+        });
+      }
+    },
+    { scope: sectionRef },
+  );
+
   return (
-    <section id="services" className="py-12 sm:py-16 bg-white">
+    <section ref={sectionRef} id="services" className="py-14 sm:py-20 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="space-y-2 mb-8 sm:mb-10 text-center sm:text-left">
-          <span className="inline-block text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-600">
-            OUR SERVICES
-          </span>
+        <div
+          ref={headerRef}
+          className="space-y-2 mb-10 sm:mb-12 text-center sm:text-left"
+        >
+          <div>
+            <SectionTag>
+              <span className="uppercase font-bold tracking-wider">
+                OUR SERVICES
+              </span>
+            </SectionTag>
+          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1536] tracking-tight">
             How We Can Help You
           </h2>
@@ -78,14 +133,17 @@ export default function NewServicesSection() {
           </p>
         </div>
 
-        {/* 6 Services Grid (Supports both wide 6-column row and responsive wrapping) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+        {/* 5 Services Grid */}
+        <div
+          ref={gridRef}
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6"
+        >
           {SERVICES.map((service, index) => {
             const Icon = service.icon;
             return (
               <div
                 key={index}
-                className="group bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-md hover:border-indigo-200 transition-all duration-200 flex flex-col justify-between"
+                className="group bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs hover:shadow-md hover:border-indigo-200 transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
                   {/* Purple Circular/Rounded Icon */}
@@ -93,7 +151,7 @@ export default function NewServicesSection() {
                     <Icon className="w-5 h-5 stroke-[2]" />
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 mb-2 leading-snug">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-2 leading-snug">
                     {service.title}
                   </h3>
 

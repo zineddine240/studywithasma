@@ -12,35 +12,32 @@ function RequestAccessContent() {
   const defaultCourse = validCourses.includes(courseParam) ? courseParam : "";
 
   return (
-    <main className="grow">
-      <section className="py-16 sm:py-24 bg-background relative overflow-hidden">
-        {/* Background blobs */}
-        <div className="absolute top-0 right-0 w-125 h-125 bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10" />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 ">
-          <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
+    <main className="grow bg-white">
+      <section className="py-14 sm:py-20 bg-[#FAFAFC] relative overflow-hidden border-b border-slate-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-5 gap-10 lg:gap-14 items-start">
             {/* ── Trust Reassurance Panel (Left) ── */}
-            <div className="lg:col-span-2 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="lg:col-span-2 space-y-6">
               <div>
                 <SectionTag>COURSE ENROLLMENT</SectionTag>
-                <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-foreground tracking-tight mb-4">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0B1536] tracking-tight mb-3">
                   Request Course Access
                 </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-base text-slate-600 leading-relaxed">
                   Fill in the form to request enrollment. We will review your
                   request and get back to you with the next steps within 24
                   hours.
                 </p>
               </div>
 
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm relative">
-                <div className="absolute -top-3 -right-3 text-6xl text-primary/10 font-serif leading-none">
-                  "
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs relative">
+                <div className="absolute -top-3 -right-3 text-6xl text-indigo-100 font-serif leading-none select-none">
+                  &ldquo;
                 </div>
-                <p className="text-sm font-medium text-foreground italic mb-4 leading-relaxed">
-                  "I was hesitant to join another online course, but Asma's
-                  personal feedback was exactly what I needed. Best decision I
-                  made for my IELTS prep!"
+                <p className="text-sm font-medium text-slate-800 italic mb-4 leading-relaxed">
+                  &ldquo;I was hesitant to join another online course, but
+                  Asma&apos;s personal feedback was exactly what I needed. Best
+                  decision I made for my IELTS prep!&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/20">
@@ -49,19 +46,15 @@ function RequestAccessContent() {
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">
-                      Ahmed H.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Band 8.0 Achiever
-                    </p>
+                    <p className="text-sm font-bold text-slate-900">Ahmed H.</p>
+                    <p className="text-xs text-slate-500">Band 8.0 Achiever</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium bg-muted/40 p-4 rounded-xl">
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-600 font-medium bg-white border border-slate-200/80 p-4 rounded-xl shadow-2xs">
                 <svg
-                  className="w-5 h-5 text-green-500"
+                  className="w-4 h-4 text-emerald-600 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -73,12 +66,14 @@ function RequestAccessContent() {
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                   />
                 </svg>
-                Your information is 100% secure and will never be shared.
+                <span>
+                  Your information is 100% secure and will never be shared.
+                </span>
               </div>
             </div>
 
             {/* ── Form Section (Right) ── */}
-            <div className="lg:col-span-3 bg-card rounded-[2rem] border border-border p-6 sm:p-10 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+            <div className="lg:col-span-3 bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-sm">
               <RequestAccessForm defaultCourse={defaultCourse} />
             </div>
           </div>

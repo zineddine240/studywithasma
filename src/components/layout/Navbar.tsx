@@ -1,14 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
   Search,
-  User,
+  User as UserIcon,
 } from "lucide-react";
+import type {
+  User,
+  UserResponse,
+  AuthChangeEvent,
+  Session,
+} from "@supabase/supabase-js";
 import { Logo } from "./Logo";
 import { createClient } from "@/utils/supabase/client";
 
@@ -22,25 +28,75 @@ const NAV_LINKS: NavLinkItem[] = [
   { label: "Home", href: "/" },
   { label: "IELTS Preparation", href: "/ielts", matchPattern: /^\/(ielts|courses|level-test)/ },
   { label: "Study Abroad", href: "/destinations", matchPattern: /^\/(study-abroad|destinations)/ },
-  { label: "Our Services", href: "/#services" },
+  { label: "Our Services", href: "/services", matchPattern: /^\/services/ },
   { label: "Resources", href: "/resources", matchPattern: /^\/resources/ },
   { label: "About Asma", href: "/about", matchPattern: /^\/about/ },
   { label: "Contact", href: "/contact", matchPattern: /^\/contact/ },
 ];
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
 
-  // Close mobile menu on route change
+  const navRef = useRef<HTMLElement>(null);
+  const navLinksRef = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    left: number;
+    width: number;
+    opacity: number;
+  }>({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+
+  // Calculate and update sliding indicator position
   useEffect(() => {
+    const updatePosition = () => {
+      const activeIndex = NAV_LINKS.findIndex((link) => {
+        if (link.href === "/") {
+          return pathname === "/";
+        }
+        return link.matchPattern
+          ? link.matchPattern.test(pathname)
+          : pathname === link.href;
+      });
+
+      if (activeIndex !== -1 && navLinksRef.current[activeIndex]) {
+        const el = navLinksRef.current[activeIndex];
+        if (el) {
+          setIndicatorStyle({
+            left: el.offsetLeft,
+            width: el.offsetWidth,
+            opacity: 1,
+          });
+        }
+      } else {
+        setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+      }
+    };
+
+    updatePosition();
+
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.ready.then(updatePosition);
+    }
+
+    window.addEventListener("resize", updatePosition);
+    return () => window.removeEventListener("resize", updatePosition);
+  }, [pathname]);
+
+  // Close mobile menu and search modal on route change during render
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setMobileMenuOpen(false);
     setSearchModalOpen(false);
-  }, [pathname]);
+  }
 
   // Keyboard shortcut Ctrl+K / Cmd+K for search
   useEffect(() => {
@@ -62,7 +118,7 @@ export default function Navbar() {
     const supabase = createClient();
     if (!supabase) return;
 
-    async function fetchUserRole(currentUser: any) {
+    async function fetchUserRole(currentUser: User | null) {
       if (!currentUser || !supabase) {
         setRole(null);
         return;
@@ -79,19 +135,24 @@ export default function Navbar() {
       }
     }
 
-    supabase.auth.getUser().then(({ data }: any) => {
-      const currentUser = data?.user ?? null;
-      setUser(currentUser);
-      fetchUserRole(currentUser);
-    }).catch(() => {});
+    supabase.auth
+      .getUser()
+      .then((res: UserResponse) => {
+        const currentUser = res.data?.user ?? null;
+        setUser(currentUser);
+        fetchUserRole(currentUser);
+      })
+      .catch(() => {});
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      fetchUserRole(currentUser);
-    });
+    } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        fetchUserRole(currentUser);
+      },
+    );
 
     return () => subscription.unsubscribe();
   }, []);
@@ -109,9 +170,12 @@ export default function Navbar() {
             <Logo className="h-8 sm:h-9 w-auto text-[#0B1536] group-hover:text-indigo-600 transition-colors" />
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            {NAV_LINKS.map((link) => {
+          {/* Desktop Navigation Links with Smooth Sliding Active Indicator */}
+          <nav
+            ref={navRef}
+            className="relative hidden lg:flex items-center space-x-6 xl:space-x-8 py-2 shrink-0"
+          >
+            {NAV_LINKS.map((link, index) => {
               const isActive =
                 link.href === "/"
                   ? pathname === "/"
@@ -122,20 +186,43 @@ export default function Navbar() {
               return (
                 <Link
                   key={link.label}
+                  ref={(el) => {
+                    navLinksRef.current[index] = el;
+                  }}
                   href={link.href}
-                  className={`relative py-1 text-sm transition-colors duration-150 ${
+                  onClick={() => {
+                    const el = navLinksRef.current[index];
+                    if (el) {
+                      setIndicatorStyle({
+                        left: el.offsetLeft,
+                        width: el.offsetWidth,
+                        opacity: 1,
+                      });
+                    }
+                  }}
+                  className={`relative py-1 text-sm select-none transition-colors duration-200 whitespace-nowrap shrink-0 ${
                     isActive
                       ? "text-slate-950 font-bold"
                       : "text-slate-600 hover:text-slate-950 font-medium"
                   }`}
                 >
                   <span>{link.label}</span>
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F59E0B] rounded-full" />
-                  )}
                 </Link>
               );
             })}
+
+            {/* Sliding Underline Bar */}
+            <span
+              aria-hidden="true"
+              className="absolute bottom-0 left-0 h-0.5 bg-[#F59E0B] rounded-full pointer-events-none will-change-transform"
+              style={{
+                transform: `translateX(${indicatorStyle.left}px)`,
+                width: `${indicatorStyle.width}px`,
+                opacity: indicatorStyle.opacity,
+                transition:
+                  "transform 300ms cubic-bezier(0.25, 1, 0.5, 1), width 300ms cubic-bezier(0.25, 1, 0.5, 1), opacity 150ms ease",
+              }}
+            />
           </nav>
 
           {/* Right Action Items: Search Icon & Get in Touch Button */}
@@ -157,7 +244,7 @@ export default function Navbar() {
                 href={role === "admin" ? "/admin" : "/student-portal"}
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors border border-indigo-200"
               >
-                <User className="w-3.5 h-3.5" />
+                <UserIcon className="w-3.5 h-3.5" />
                 <span>{role === "admin" ? "Admin" : "Portal"}</span>
               </Link>
             )}

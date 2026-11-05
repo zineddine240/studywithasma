@@ -7,22 +7,22 @@ import NewCtaSection from "@/components/home/NewCtaSection";
 export const metadata = {
   title: "Study With Asma | Study Abroad Guidance & IELTS Preparation",
   description:
-    "Explore top universities in Italy, France, the Netherlands and Poland with expert guidance, and master IELTS with Asma's intensive preparation.",
+    "Explore top universities in Italy, France, the Netherlands and Poland with expert guidance, and master IELTS with Asma's intensive live classes and personal feedback.",
 };
 
 export default function Home() {
   return (
     <main className="grow">
-      {/* 1. Hero Section & Value Propositions Pillars */}
+      {/* 1. Full Screen Hero Section & 4 Value Proposition Pillars */}
       <NewHeroSection />
 
       {/* 2. Choose Your Destination (Italy, France, Netherlands, Poland) */}
       <NewDestinationsSection />
 
-      {/* 3. Master IELTS with Confidence */}
+      {/* 3. Master IELTS with Confidence (Desk Flatlay Visual) */}
       <NewIeltsSection />
 
-      {/* 4. How We Can Help You (Our 5 Key Services) */}
+      {/* 4. How We Can Help You (Our 5 Key Advisory Services) */}
       <NewServicesSection />
 
       {/* 5. Closing Conversion Banner: Ready to start your journey? */}

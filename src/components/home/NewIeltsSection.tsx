@@ -1,18 +1,82 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { SectionTag } from "@/components/ui/section-tag";
+import { useGSAP } from "@gsap/react";
+import { gsap, isReducedMotion } from "@/lib/gsap";
 
 export default function NewIeltsSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const flatlayRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (isReducedMotion()) return;
+
+      if (leftColRef.current) {
+        gsap.fromTo(
+          leftColRef.current.children,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.6,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: leftColRef.current,
+              start: "top 85%",
+              once: true,
+            },
+          },
+        );
+      }
+
+      if (flatlayRef.current) {
+        gsap.fromTo(
+          flatlayRef.current,
+          { opacity: 0, scale: 0.95 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.7,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: flatlayRef.current,
+              start: "top 85%",
+              once: true,
+            },
+          },
+        );
+      }
+    },
+    { scope: sectionRef },
+  );
+
   return (
-    <section className="py-12 sm:py-16 bg-[#FAFAFC] overflow-hidden">
+    <section
+      ref={sectionRef}
+      className="py-12 sm:py-16 bg-[#FAFAFC] overflow-hidden"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Text & CTA */}
-          <div className="lg:col-span-5 space-y-4 sm:space-y-5">
-            <span className="inline-block text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-600">
-              IELTS PREPARATION
-            </span>
+          <div
+            ref={leftColRef}
+            className="lg:col-span-5 space-y-4 sm:space-y-5"
+          >
+            <div>
+              <SectionTag>
+                <span className="uppercase font-bold tracking-wider">
+                  IELTS PREPARATION
+                </span>
+              </SectionTag>
+            </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1536] tracking-tight leading-[1.18]">
               Master IELTS with Confidence
@@ -35,9 +99,8 @@ export default function NewIeltsSection() {
           </div>
 
           {/* Right Column: Desk Flatlay with Laptop, Open Notebook & IELTS Books */}
-          <div className="lg:col-span-7">
+          <div ref={flatlayRef} className="lg:col-span-7">
             <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl sm:rounded-3xl bg-linear-to-br from-slate-100 to-slate-200/80 border border-slate-200 shadow-sm p-4 sm:p-6 overflow-hidden flex items-center justify-between">
-              
               {/* Subtle Desk Texture / Laptop Keyboard on the Top Left */}
               <div className="absolute top-2 -left-12 sm:-left-8 w-44 sm:w-60 h-28 sm:h-36 bg-slate-800 rounded-xl shadow-md -rotate-12 border-2 border-slate-700 p-2 opacity-90 pointer-events-none">
                 <div className="w-full h-full bg-slate-900 rounded flex flex-col justify-between p-1">
@@ -136,7 +199,6 @@ export default function NewIeltsSection() {
                   </span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -144,4 +206,3 @@ export default function NewIeltsSection() {
     </section>
   );
 }
-

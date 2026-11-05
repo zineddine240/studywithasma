@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NewCtaSection from "@/components/home/NewCtaSection";
 import {
   ArrowLeft,
   ArrowRight,
@@ -210,29 +211,7 @@ export default function CourseDetailPageContent({
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="py-20 bg-background relative overflow-hidden text-center">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 ">
-          <div className="relative bg-[#183ce4] rounded-3xl sm:rounded-4xl p-10 sm:p-16 lg:p-20 text-white text-center shadow-2xl overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-extrabold text-white leading-tight">
-                Ready to Join This Course?
-              </h2>
-              <div className="pt-2 flex justify-center">
-                <Link
-                  href={`/request-access?course=${course.slug}`}
-                  className="inline-flex items-center gap-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-9 py-4 rounded-full text-base sm:text-lg shadow-xl shadow-amber-400/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all group"
-                >
-                  <span>Request Access</span>
-                  <span className="w-7 h-7 rounded-full bg-slate-950 text-white flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
-                    <ArrowRight className="w-4 h-4" />
-                  </span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <NewCtaSection />
     </main>
   );
 }

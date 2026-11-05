@@ -4,61 +4,29 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight,
-  ArrowUp,
   Plus,
   Minus,
   Award,
-  CheckCircle2,
   Users2,
-  GraduationCap,
 } from "lucide-react";
 import SectionTag from "@/components/ui/section-tag";
+import NewCtaSection from "@/components/home/NewCtaSection";
 
 const STATS = [
   {
     number: "Band 7.5+",
     label: "Average Student Score",
     icon: Award,
-    circleBg: "bg-amber-400 text-slate-950",
-  },
-  {
-    number: "98%",
-    label: "Visa Approval Rate",
-    icon: CheckCircle2,
-    circleBg: "bg-blue-600 text-white",
+    circleBg: "bg-amber-100 text-amber-700 border-amber-200",
   },
   {
     number: "1000+",
     label: "Students Placed Abroad",
     icon: Users2,
-    circleBg: "bg-amber-400 text-slate-950",
-  },
-  {
-    number: "€0 Tuition",
-    label: "Through DSU Grants",
-    icon: GraduationCap,
-    circleBg: "bg-blue-600 text-white",
+    circleBg: "bg-indigo-100 text-indigo-700 border-indigo-200",
   },
 ];
 
-const MILESTONES = [
-  {
-    year: "2016",
-    title: "Founded in Algiers",
-    desc: "Began dedicated IELTS exam training with personalized writing and speaking evaluations.",
-  },
-  {
-    year: "2020",
-    title: "Expanding to France & Italy",
-    desc: "Added comprehensive university admissions and Campus France and Universitaly advisory.",
-  },
-  {
-    year: "2024",
-    title: "Leading Study Platform",
-    desc: "Over 500 successful admissions and full DSU scholarships secured for Algerian students.",
-  },
-];
 
 const TABS_CONTENT = {
   mission: {
@@ -73,7 +41,7 @@ const TABS_CONTENT = {
   vision: {
     title: "Our Vision: Global Education Without Barriers",
     paragraphs: [
-      "We envision a future where talented Algerian students effortlessly access top-tier European universities, funded by merit and regional scholarships rather than financial burden.",
+      "We envision a future where talented students effortlessly access top-tier European universities, funded by merit and regional scholarships rather than financial burden.",
       "By combining rigorous British Council standards with localized mentorship, we eliminate the uncertainty and stress of international applications.",
     ],
     image:
@@ -99,7 +67,7 @@ const ABOUT_FAQS = [
   {
     question: "Do you assist with visa processing and interviews?",
     answer:
-      "Yes. We offer 1-on-1 mock interviews and thorough dossier validation for Campus France, TLScontact, and VFS Global embassy appointments.",
+      "Yes. We offer 1-on-1 mock interviews and thorough dossier validation for Campus France, TLScontact, and VFS Global appointments.",
   },
   {
     question: "Which countries do you cover for study abroad?",
@@ -120,37 +88,44 @@ const ABOUT_FAQS = [
 
 export default function AboutPageClient() {
   const [activeTab, setActiveTab] = useState<"mission" | "vision" | "goals">(
-    "mission",
+    "mission"
   );
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const currentTab = TABS_CONTENT[activeTab];
 
   return (
-    <main className="grow bg-background">
-      {/* ── 1. Hero Header & 4-Photo Mosaic Gallery (Porbe Layout) ── */}
-      <section className="pt-12 pb-20 lg:pt-16 lg:pb-28 border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 ">
+    <main className="grow bg-white">
+      {/* ── 1. Hero Header & Mosaic Gallery ── */}
+      <section className="pt-10 sm:pt-14 pb-14 sm:pb-20 bg-[#FAFAFC] border-b border-slate-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Headline & Brief Intro */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end mb-12 sm:mb-16">
-            <div className="lg:col-span-7">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-extrabold text-foreground tracking-tight leading-[1.1]">
-                Shaping Futures Through Study Abroad Excellence
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 items-end mb-10 sm:mb-14">
+            <div className="lg:col-span-7 space-y-3">
+              <SectionTag>ABOUT ASMA</SectionTag>
+              <h1 className="text-3xl sm:text-5xl lg:text-[52px] font-extrabold text-[#0B1536] tracking-tight leading-[1.12]">
+                Guiding Ambitious Students to Europe
               </h1>
             </div>
-            <div className="lg:col-span-5">
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <div className="lg:col-span-5 relative">
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
                 At Study With Asma, we are dedicated to shaping brighter futures
                 by delivering expert IELTS guidance and unmatched admissions
-                support for France and Italy.
+                support for top universities in France and Italy.
               </p>
+              {/* Handwritten script note */}
+              <div className="pt-2 select-none -rotate-2">
+                <span className="font-handwriting text-2xl sm:text-3xl font-bold text-indigo-700">
+                  Every student deserves a world-class education ♡
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* 4-Photo Mosaic Gallery (Matching Porbe's exact layout) */}
+          {/* 4-Photo Mosaic Gallery */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
             {/* Left Tall Photo (7 cols) */}
-            <div className="md:col-span-7 relative aspect-4/3 md:aspect-auto md:h-full min-h-[320px] rounded-3xl overflow-hidden shadow-xl border border-border">
+            <div className="md:col-span-7 relative aspect-4/3 md:aspect-auto md:h-full min-h-[300px] sm:min-h-[380px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 bg-slate-100">
               <Image
                 src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1000&auto=format&fit=crop"
                 alt="Students studying together on campus"
@@ -164,7 +139,7 @@ export default function AboutPageClient() {
             {/* Right Stacked Photos (5 cols) */}
             <div className="md:col-span-5 flex flex-col gap-4 sm:gap-6">
               {/* Top Wide Photo */}
-              <div className="relative aspect-16/9 rounded-3xl overflow-hidden shadow-md border border-border">
+              <div className="relative aspect-16/9 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 bg-slate-100">
                 <Image
                   src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=800&auto=format&fit=crop"
                   alt="Student in European university library"
@@ -176,22 +151,22 @@ export default function AboutPageClient() {
 
               {/* Bottom Two Photos Side-by-Side */}
               <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-sm border border-border">
+                <div className="relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-xs border border-slate-200/80 bg-slate-100">
                   <Image
-                    src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=500&auto=format&fit=crop"
-                    alt="Study materials"
+                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=500&auto=format&fit=crop"
+                    alt="Campus discussion"
                     fill
-                    sizes="200px"
+                    sizes="(max-width: 768px) 50vw, 20vw"
                     className="object-cover"
                   />
                 </div>
-                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-sm border border-border">
+                <div className="relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-xs border border-slate-200/80 bg-slate-100">
                   <Image
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=500&auto=format&fit=crop"
-                    alt="Asma, Mentor"
+                    src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?q=80&w=500&auto=format&fit=crop"
+                    alt="Graduation celebration"
                     fill
-                    sizes="200px"
-                    className="object-cover object-top"
+                    sizes="(max-width: 768px) 50vw, 20vw"
+                    className="object-cover"
                   />
                 </div>
               </div>
@@ -200,68 +175,39 @@ export default function AboutPageClient() {
         </div>
       </section>
 
-      {/* ── 2. Milestones / Timeline Row (Porbe 3-Column Layout with Up-Arrows) ── */}
-      <section className="py-20 lg:py-28 bg-background border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 ">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 text-center">
-            {MILESTONES.map((item) => (
-              <div
-                key={item.year}
-                className="space-y-4 flex flex-col items-center"
-              >
-                {/* Upward Arrow */}
-                <div className="w-8 h-8 flex items-center justify-center text-primary">
-                  <ArrowUp className="w-5 h-5" />
-                </div>
 
-                {/* Big Year Number */}
-                <div className="text-3xl sm:text-4xl font-serif font-extrabold text-foreground">
-                  {item.year}
-                </div>
-
-                {/* Title */}
-                <h3 className="text-base sm:text-lg font-serif font-bold text-foreground">
-                  {item.title}
-                </h3>
-
-                {/* Concise Description */}
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. Why Choose Us (Porbe 4 Circular Badges) ── */}
-      <section className="py-20 lg:py-28 bg-background border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0  text-center">
-          <div className="max-w-2xl mx-auto space-y-3 mb-16 sm:mb-20">
-            <SectionTag>WHY US</SectionTag>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-extrabold text-foreground tracking-tight">
-              Why Choose Us
+      {/* ── 3. Why Choose Us / Trust Badges ── */}
+      <section className="py-14 sm:py-20 bg-[#FAFAFC] border-b border-slate-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
+          <div className="max-w-2xl mb-10 sm:mb-12 space-y-2">
+            <SectionTag>WHY CHOOSE US</SectionTag>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1536] tracking-tight">
+              A Proven Track Record of Success
             </h2>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              We combine pedagogical discipline with thorough embassy and
+              university procedural mastery.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl">
             {STATS.map((stat) => {
               const Icon = stat.icon;
               return (
                 <div
                   key={stat.number}
-                  className="flex flex-col items-center text-center space-y-4 group"
+                  className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs hover:shadow-md transition-all flex flex-col items-center text-center space-y-3"
                 >
                   <div
-                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full ${stat.circleBg} flex items-center justify-center shadow-xl transition-transform duration-300 group-hover:scale-110`}
+                    className={`w-14 h-14 rounded-2xl ${stat.circleBg} border flex items-center justify-center transition-transform hover:scale-105`}
                   >
-                    <Icon className="w-9 h-9 sm:w-11 sm:h-11" />
+                    <Icon className="w-7 h-7 stroke-[2]" />
                   </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl sm:text-3xl font-serif font-extrabold text-foreground">
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-[#0B1536]">
                       {stat.number}
                     </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground font-medium">
+                    <div className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
                       {stat.label}
                     </div>
                   </div>
@@ -272,21 +218,25 @@ export default function AboutPageClient() {
         </div>
       </section>
 
-      {/* ── 4. Mission / Vision Section (Porbe Signature Royal Blue Block with Tabs) ── */}
-      <section className="py-20 lg:py-28 bg-[#183ce4] text-white relative overflow-hidden">
-        {/* Subtle radial lines */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:32px_32px] opacity-40 pointer-events-none" />
+      {/* ── 4. Mission / Vision Section (Modern Clean Bento with Tabs) ── */}
+      <section className="py-14 sm:py-20 bg-white border-b border-slate-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 space-y-2">
+            <SectionTag>OUR CORE PURPOSE</SectionTag>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1536] tracking-tight">
+              Mission, Vision &amp; Goals
+            </h2>
+          </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0  relative z-10">
           {/* Top Pill Tabs */}
-          <div className="flex items-center justify-center gap-3 mb-10">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8 sm:mb-10">
             <button
               type="button"
               onClick={() => setActiveTab("mission")}
-              className={`px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all ${
+              className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === "mission"
-                  ? "bg-amber-400 text-slate-950 shadow-md"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  ? "bg-[#F59E0B] text-slate-950 shadow-xs"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               Our Mission
@@ -294,10 +244,10 @@ export default function AboutPageClient() {
             <button
               type="button"
               onClick={() => setActiveTab("vision")}
-              className={`px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all ${
+              className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === "vision"
-                  ? "bg-amber-400 text-slate-950 shadow-md"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  ? "bg-[#F59E0B] text-slate-950 shadow-xs"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               Our Vision
@@ -305,21 +255,21 @@ export default function AboutPageClient() {
             <button
               type="button"
               onClick={() => setActiveTab("goals")}
-              className={`px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all ${
+              className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === "goals"
-                  ? "bg-amber-400 text-slate-950 shadow-md"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  ? "bg-[#F59E0B] text-slate-950 shadow-xs"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               Our Goals
             </button>
           </div>
 
-          {/* White Card inside Blue Block (Porbe Layout) */}
-          <div className="bg-card text-foreground rounded-3xl sm:rounded-4xl p-6 sm:p-10 lg:p-12 shadow-2xl border border-white/20">
+          {/* Clean Bento Card */}
+          <div className="bg-[#FAFAFC] rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Left Photo */}
-              <div className="lg:col-span-5 relative aspect-4/3 rounded-2xl overflow-hidden shadow-lg border border-border">
+              <div className="lg:col-span-5 relative aspect-4/3 rounded-xl sm:rounded-2xl overflow-hidden shadow-xs border border-slate-200/80 bg-slate-200">
                 <Image
                   src={currentTab.image}
                   alt={currentTab.title}
@@ -331,13 +281,13 @@ export default function AboutPageClient() {
 
               {/* Right Content */}
               <div className="lg:col-span-7 space-y-4 text-left">
-                <h3 className="text-2xl sm:text-3xl font-serif font-extrabold text-foreground leading-snug">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#0B1536] leading-snug">
                   {currentTab.title}
                 </h3>
                 {currentTab.paragraphs.map((p, idx) => (
                   <p
                     key={idx}
-                    className="text-sm sm:text-base text-muted-foreground leading-relaxed"
+                    className="text-xs sm:text-sm text-slate-600 leading-relaxed"
                   >
                     {p}
                   </p>
@@ -348,13 +298,13 @@ export default function AboutPageClient() {
         </div>
       </section>
 
-      {/* ── 5. Frequently Asked Questions (Porbe 1-Column Accordion on About) ── */}
-      <section className="py-20 lg:py-28 bg-background border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 ">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center space-y-3 mb-16 sm:mb-20">
+      {/* ── 5. About FAQ ── */}
+      <section className="py-14 sm:py-20 bg-[#FAFAFC]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center space-y-2 mb-10 sm:mb-12">
               <SectionTag>FAQ</SectionTag>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-extrabold text-foreground tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1536] tracking-tight">
                 Frequently Asked Questions
               </h2>
             </div>
@@ -365,39 +315,41 @@ export default function AboutPageClient() {
                 return (
                   <div
                     key={faq.question}
-                    className={`border rounded-2xl sm:rounded-3xl transition-all duration-200 overflow-hidden ${
+                    className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
                       isOpen
-                        ? "border-primary/40 bg-card shadow-sm"
-                        : "border-border/80 bg-card/60 hover:border-primary/30"
+                        ? "border-indigo-200 shadow-sm ring-1 ring-indigo-50"
+                        : "border-slate-200/80 hover:border-slate-300 shadow-2xs"
                     }`}
                   >
                     <button
                       type="button"
-                      onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                      className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 focus:outline-none cursor-pointer"
+                      onClick={() =>
+                        setOpenFaqIndex(isOpen ? null : index)
+                      }
+                      className="w-full p-5 sm:p-6 text-left flex items-start justify-between gap-4 cursor-pointer focus:outline-hidden"
                       aria-expanded={isOpen}
                     >
-                      <span className="font-serif font-bold text-sm sm:text-base text-foreground leading-snug">
-                        {index + 1}. {faq.question}
+                      <span className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                        {faq.question}
                       </span>
-                      <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      <span
+                        className={`p-1.5 rounded-full shrink-0 transition-colors ${
                           isOpen
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
                         {isOpen ? (
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-4 h-4 stroke-[2.5]" />
                         ) : (
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-4 h-4 stroke-[2.5]" />
                         )}
-                      </div>
+                      </span>
                     </button>
 
                     {isOpen && (
-                      <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-3 animate-in fade-in-0 duration-150">
-                        <p>{faq.answer}</p>
+                      <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 mt-2">
+                        <p className="pt-3">{faq.answer}</p>
                       </div>
                     )}
                   </div>
@@ -408,71 +360,8 @@ export default function AboutPageClient() {
         </div>
       </section>
 
-      {/* ── 6. Closing Banner (Porbe Design) ── */}
-      <section className="py-20 bg-background relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-0 ">
-          <div className="relative bg-[#183ce4] rounded-3xl sm:rounded-4xl p-10 sm:p-16 lg:p-20 text-white text-center shadow-2xl overflow-hidden">
-            {/* Ambient Lighting */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Floating Circular Student Avatars */}
-            <div className="hidden md:block absolute top-8 left-12 w-14 h-14 rounded-full overflow-hidden border-2 border-white/60 shadow-lg">
-              <Image
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
-                alt="Student"
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            </div>
-            <div className="hidden md:block absolute bottom-8 left-20 w-16 h-16 rounded-full overflow-hidden border-2 border-white/60 shadow-lg">
-              <Image
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop"
-                alt="Student"
-                fill
-                sizes="64px"
-                className="object-cover"
-              />
-            </div>
-            <div className="hidden md:block absolute top-10 right-14 w-16 h-16 rounded-full overflow-hidden border-2 border-white/60 shadow-lg">
-              <Image
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop"
-                alt="Student"
-                fill
-                sizes="64px"
-                className="object-cover"
-              />
-            </div>
-            <div className="hidden md:block absolute bottom-10 right-16 w-14 h-14 rounded-full overflow-hidden border-2 border-white/60 shadow-lg">
-              <Image
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop"
-                alt="Student"
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            </div>
-
-            <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-extrabold text-white tracking-tight leading-tight">
-                Are you prepared to soar and chase your dreams?
-              </h2>
-
-              <div className="pt-2 flex justify-center">
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-8 py-4 rounded-full text-sm sm:text-base shadow-xl shadow-slate-950/20 hover:-translate-y-0.5 transition-all group"
-                >
-                  <span>Book a Consultation</span>
-                  <span className="w-6 h-6 rounded-full bg-slate-950 text-white flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── 6. Closing CTA Banner ── */}
+      <NewCtaSection />
     </main>
   );
 }

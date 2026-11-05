@@ -436,6 +436,160 @@ export const DESTINATIONS: Destination[] = [
       { title: "Study in Italy Official Guide", url: "https://studyinitaly.esteri.it", organization: "Ministry of Foreign Affairs" },
     ],
   },
+  {
+    id: "netherlands",
+    slug: "netherlands",
+    name: "The Netherlands",
+    shortName: "Netherlands",
+    flag: "🇳🇱",
+    tagline: "Pioneering English-Taught Higher Education in Mainland Europe",
+    popularFor: "International environment, English-taught programs and innovative education.",
+    heroImage: "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?q=80&w=1200&auto=format&fit=crop",
+    cardImage: "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=800&auto=format&fit=crop",
+    accentColor: "from-blue-600 to-indigo-700",
+    stats: {
+      avgTuition: "€6,000 – €15,000 / yr",
+      livingCost: "€900 – €1,400 / mo",
+      postStudyWork: "1-Year Zoekjaar Visa",
+      intakeMonths: "Sept & Feb",
+    },
+    overview:
+      "The Netherlands was the first non-English-speaking country to offer university degree programs taught entirely in English. Known for interactive problem-based learning, world-renowned technical institutes, and a truly global student body.",
+    highlights: [
+      "Over 2,100 programs taught 100% in English across all academic disciplines",
+      "World-renowned institutions: TU Delft, University of Amsterdam, Wageningen",
+      "1-Year 'Orientation Year' (Zoekjaar) post-study work visa for graduates",
+      "Global business hub with headquarters of Philips, ASML, Booking.com, and Shell",
+    ],
+    studyOpportunities: [
+      {
+        level: "Bachelor's Degrees (HBO & WO)",
+        description: "3 to 4-year programs combining theory with applied research and industry internships.",
+        topFields: ["Computer Science & AI", "Engineering & Tech", "Business & Finance", "Environmental Science"],
+      },
+      {
+        level: "Master's Degrees",
+        description: "1 to 2-year rigorous specialized research programs with high international employer recognition.",
+        topFields: ["Data Science", "Supply Chain", "International Law", "Renewable Energy"],
+      },
+    ],
+    entryRequirements: {
+      academic: "Recognized secondary diploma or Bachelor's degree with strong GPA transcripts.",
+      englishRequirements: {
+        exam: "IELTS Academic or TOEFL iBT",
+        undergraduate: "6.0 – 6.5 Overall",
+        postgraduate: "6.5 – 7.0 Overall",
+        notes: "Strict thresholds apply; sub-scores below 6.0 are rarely exempted.",
+      },
+      documentsRequired: [
+        "Certified academic transcripts and diploma copies",
+        "Official IELTS Academic score report",
+        "Curriculum Vitae (CV) in European format",
+        "Statement of Purpose (Motivation Letter)",
+        "Letters of Recommendation (Academic/Professional)",
+      ],
+    },
+    estimatedCosts: {
+      academicYear: "2026/2027",
+      tuitionRange: "€6,000 – €15,000 / year (non-EU)",
+      livingExpenses: "€900 – €1,400 / month (housing, food, insurance)",
+      healthInsurance: "€50 – €120 / month",
+      disclaimer: "Tuition and housing costs vary substantially between major cities (Amsterdam, Utrecht) and university towns (Enschede, Groningen).",
+    },
+    applicationProcess: [
+      { step: 1, title: "Program Selection", description: "Search Studielink and university portals for target courses." },
+      { step: 2, title: "Studielink Registration", description: "Create an account on the national Dutch portal (Studielink.nl)." },
+      { step: 3, title: "Institutional Application", description: "Submit required portfolio, transcripts, and IELTS score directly to the university." },
+      { step: 4, title: "Admission & Visa Handling", description: "Universities apply directly for your MVV/VVR entry visa on your behalf." },
+    ],
+    popularUniversities: [
+      { name: "Delft University of Technology (TU Delft)", city: "Delft", type: "World Top 15 Engineering Powerhouse" },
+      { name: "University of Amsterdam (UvA)", city: "Amsterdam", type: "Premier Comprehensive Research University" },
+      { name: "Erasmus University Rotterdam", city: "Rotterdam", type: "Top European Business & Management School" },
+      { name: "Eindhoven University of Technology", city: "Eindhoven", type: "Brainport High-Tech Innovation Center" },
+    ],
+    officialResources: [
+      { title: "Study in NL Official Portal", url: "https://www.studyinnl.org", organization: "Nuffic Dutch Organization for Internationalization" },
+      { title: "Studielink National Portal", url: "https://www.studielink.nl", organization: "Dutch Ministry of Education" },
+    ],
+  },
+  {
+    id: "poland",
+    slug: "poland",
+    name: "Poland",
+    shortName: "Poland",
+    flag: "🇵🇱",
+    tagline: "Quality European Education, Affordable Tuition & Welcoming Student Life",
+    popularFor: "Quality education, low tuition fees and a welcoming student community.",
+    heroImage: "https://images.unsplash.com/photo-1519197924294-4ba991a11128?q=80&w=1200&auto=format&fit=crop",
+    cardImage: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=800&auto=format&fit=crop",
+    accentColor: "from-rose-600 to-red-700",
+    stats: {
+      avgTuition: "€2,000 – €4,500 / yr",
+      livingCost: "€450 – €750 / mo",
+      postStudyWork: "9 Months Graduate Visa",
+      intakeMonths: "Oct & Feb",
+    },
+    overview:
+      "Poland has become one of Central Europe's most attractive study destinations. Offering globally accredited medical, engineering, and business programs at a fraction of Western European tuition and living costs.",
+    highlights: [
+      "Extremely affordable living costs (€450–€750/month) with high standard of safety",
+      "Over 800 English-taught accredited Bachelor's and Master's degrees",
+      "Centuries of academic excellence: Jagiellonian University (1364) & University of Warsaw",
+      "Schengen Area membership allowing free travel across 29 European countries",
+    ],
+    studyOpportunities: [
+      {
+        level: "Bachelor's Degrees",
+        description: "3-year BA/BSc or 3.5-year Engineering degrees taught fully in English.",
+        topFields: ["General Medicine (MD)", "Computer Science", "International Management", "Civil Engineering"],
+      },
+      {
+        level: "Master's Degrees",
+        description: "1.5 to 2-year programs with focus on practical European employment preparation.",
+        topFields: ["Data Analytics", "Biotechnology", "European Studies", "Finance & Accounting"],
+      },
+    ],
+    entryRequirements: {
+      academic: "Secondary school certificate (Baccalaureate) or Bachelor's degree with apostille/legalization.",
+      englishRequirements: {
+        exam: "IELTS Academic, TOEFL, or recognized B2 certificate",
+        undergraduate: "6.0 Overall",
+        postgraduate: "6.5 Overall",
+        notes: "Some universities offer internal English language interviews or tests.",
+      },
+      documentsRequired: [
+        "Legalized/Apostilled diplomas and academic transcripts",
+        "Official IELTS Academic score report (B2 minimum)",
+        "Medical certificate of fitness for study",
+        "Passport copy and biometric photographs",
+        "Letter of eligibility (confirming degree qualifies for higher education)",
+      ],
+    },
+    estimatedCosts: {
+      academicYear: "2026/2027",
+      tuitionRange: "€2,000 – €4,500 / year (Medical programs €10,000–€14,000)",
+      livingExpenses: "€450 – €750 / month (dormitories/flats, groceries, transit)",
+      healthInsurance: "€15 – €30 / month (NFZ National Health Fund)",
+      disclaimer: "Living expenses in Warsaw and Krakow are slightly higher than in Wroclaw, Poznan, or Gdansk.",
+    },
+    applicationProcess: [
+      { step: 1, title: "Choose Program & University", description: "Select your desired English-taught course via NAWA or university recruitment portals." },
+      { step: 2, title: "Online Registration & Document Upload", description: "Create account on university recruitment system (IRK/ESK) and upload verified documents." },
+      { step: 3, title: "Tuition Payment & Acceptance Letter", description: "Pay first semester/year tuition to receive the official Letter of Acceptance." },
+      { step: 4, title: "Polish National Student Visa (Type D)", description: "Apply at the Polish Embassy or VFS Global center with proof of funds and admission letter." },
+    ],
+    popularUniversities: [
+      { name: "University of Warsaw", city: "Warsaw", type: "Poland's Top-Ranked Comprehensive University" },
+      { name: "Jagiellonian University", city: "Krakow", type: "Founded in 1364, historic excellence" },
+      { name: "Warsaw University of Technology", city: "Warsaw", type: "Premier Polytechnic and IT Institute" },
+      { name: "Wroclaw University of Science and Technology", city: "Wroclaw", type: "Leading Central European Engineering Hub" },
+    ],
+    officialResources: [
+      { title: "Ready, Study, GO! Poland", url: "https://study.gov.pl", organization: "Polish National Agency for Academic Exchange (NAWA)" },
+      { title: "Ministry of Science and Higher Education", url: "https://www.gov.pl/web/nauka", organization: "Republic of Poland" },
+    ],
+  },
 ];
 
 export function getAllDestinations(): Destination[] {
