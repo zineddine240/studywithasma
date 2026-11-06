@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   FileText,
   PenTool,
   Search,
@@ -22,6 +23,12 @@ interface ServiceItem {
 }
 
 const SERVICES: ServiceItem[] = [
+  {
+    title: "IELTS Preparation",
+    description: "Structured lessons, live classes and band 7.5+ strategies.",
+    icon: BookOpen,
+    href: "/courses",
+  },
   {
     title: "Initial Consultation",
     description: "Discuss your goals, profile and eligibility.",
@@ -132,17 +139,17 @@ export default function NewServicesSection() {
           </p>
         </div>
 
-        {/* 5 Services Grid */}
+        {/* 6 Services Grid */}
         <div
           ref={gridRef}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4"
         >
           {SERVICES.map((service, index) => {
             const Icon = service.icon;
             return (
               <div
                 key={index}
-                className="group bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs hover:shadow-md hover:border-indigo-200 transition-all duration-200 flex flex-col justify-between"
+                className="group bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-md hover:border-indigo-200 transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
                   {/* Purple Circular/Rounded Icon */}
@@ -150,7 +157,7 @@ export default function NewServicesSection() {
                     <Icon className="w-5 h-5 stroke-[2]" />
                   </div>
 
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-2 leading-snug">
+                  <h3 className="text-sm font-bold text-slate-900 mb-2 leading-snug">
                     {service.title}
                   </h3>
 
