@@ -7,12 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { SectionTag } from "@/components/ui/section-tag";
 import { useGSAP } from "@gsap/react";
 import { gsap, isReducedMotion } from "@/lib/gsap";
-import {
-  FranceFlag,
-  ItalyFlag,
-  NetherlandsFlag,
-  PolandFlag,
-} from "@/components/ui/CountryFlags";
+import { FranceFlag, ItalyFlag } from "@/components/ui/CountryFlags";
 
 interface CountryCardData {
   title: string;
@@ -24,15 +19,6 @@ interface CountryCardData {
 
 const COUNTRIES: CountryCardData[] = [
   {
-    title: "Study in Italy",
-    slug: "italy",
-    description:
-      "Top-ranked universities, a rich culture and affordable education options.",
-    image:
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=800&auto=format&fit=crop",
-    FlagComponent: ItalyFlag,
-  },
-  {
     title: "Study in France",
     slug: "france",
     description:
@@ -42,22 +28,13 @@ const COUNTRIES: CountryCardData[] = [
     FlagComponent: FranceFlag,
   },
   {
-    title: "Study in the Netherlands",
-    slug: "netherlands",
+    title: "Study in Italy",
+    slug: "italy",
     description:
-      "International environment, English-taught programs and innovative education.",
+      "Top-ranked universities, a rich culture and affordable education options.",
     image:
-      "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=800&auto=format&fit=crop",
-    FlagComponent: NetherlandsFlag,
-  },
-  {
-    title: "Study in Poland",
-    slug: "poland",
-    description:
-      "Quality education, low tuition fees and a welcoming student community.",
-    image:
-      "https://images.unsplash.com/photo-1519197924294-4ba991a11128?q=80&w=800&auto=format&fit=crop",
-    FlagComponent: PolandFlag,
+      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=800&auto=format&fit=crop",
+    FlagComponent: ItalyFlag,
   },
 ];
 
@@ -136,16 +113,16 @@ export default function NewDestinationsSection() {
             Choose Your Destination
           </h2>
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Discover the best study options in Italy, France, the Netherlands
-            and Poland. Each country offers unique opportunities, world-class
-            education and a rich cultural experience.
+            Discover the best study options in France and Italy. Each country
+            offers unique opportunities, world-class education and a rich
+            cultural experience.
           </p>
         </div>
 
-        {/* 4 Destinations Grid (1 row on large screens, matching mockup) */}
+        {/* 2 Destinations Grid */}
         <div
           ref={cardsContainerRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto sm:mx-0"
         >
           {COUNTRIES.map((country) => {
             const Flag = country.FlagComponent;
@@ -156,12 +133,12 @@ export default function NewDestinationsSection() {
               >
                 <div>
                   {/* Photo Header with Overlapping Circular Flag */}
-                  <div className="relative h-44 sm:h-48 w-full bg-slate-100 overflow-hidden">
+                  <div className="relative h-48 sm:h-56 w-full bg-slate-100 overflow-hidden">
                     <Image
                       src={country.image}
                       alt={country.title}
                       fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, 50vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {/* Circular Flag Badge overlapping bottom-left */}

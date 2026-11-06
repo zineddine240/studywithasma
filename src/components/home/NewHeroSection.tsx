@@ -113,9 +113,9 @@ export default function NewHeroSection() {
               </h1>
 
               <p className="text-slate-800 text-base sm:text-lg leading-relaxed max-w-lg font-medium">
-                Explore top universities in Italy, France, the Netherlands and
-                Poland. Get the right information, expert guidance, and support
-                at every step of your study abroad journey.
+                Explore top universities in France and Italy. Get the right
+                information, expert guidance, and support at every step of your
+                study abroad journey.
               </p>
 
               <div className="pt-2">
