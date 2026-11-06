@@ -1,8 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Clock, GraduationCap, MapPin, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  GraduationCap,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
 import type { Destination } from "@/lib/destinationData";
-import { FranceFlag, ItalyFlag, NetherlandsFlag, PolandFlag } from "@/components/ui/CountryFlags";
+import {
+  FranceFlag,
+  ItalyFlag,
+  NetherlandsFlag,
+  PolandFlag,
+} from "@/components/ui/CountryFlags";
 
 const FLAG_MAP: Record<string, React.FC<{ className?: string }>> = {
   france: FranceFlag,
@@ -16,13 +27,15 @@ interface DestinationCardProps {
   index: number;
 }
 
-export default function DestinationCard({ destination, index }: DestinationCardProps) {
+export default function DestinationCard({
+  destination,
+  index,
+}: DestinationCardProps) {
   const numberStr = String(index + 1).padStart(3, "0");
   const FlagComponent = FLAG_MAP[destination.slug];
 
   return (
     <div className="group bg-white rounded-3xl border border-slate-200/80 hover:border-indigo-300 shadow-2xs hover:shadow-md transition-all duration-300 p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6 sm:gap-8 overflow-hidden relative">
-      
       {/* Left: Numbering & Country Identity */}
       <div className="w-full md:w-1/4 space-y-2.5">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold tracking-widest uppercase border border-slate-200/80">
@@ -32,13 +45,15 @@ export default function DestinationCard({ destination, index }: DestinationCardP
           ) : (
             <span className="text-base">{destination.flag}</span>
           )}
-          <span className="text-[11px] font-mono font-semibold text-slate-500">{destination.shortName}</span>
+          <span className="text-[11px] font-mono font-semibold text-slate-500">
+            {destination.shortName}
+          </span>
         </div>
-        
+
         <h3 className="text-2xl sm:text-3xl font-extrabold text-[#0B1536] tracking-tight group-hover:text-indigo-600 transition-colors">
           {destination.name}
         </h3>
-        
+
         <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
           {destination.popularFor}
         </p>
@@ -55,7 +70,7 @@ export default function DestinationCard({ destination, index }: DestinationCardP
             className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 via-transparent to-transparent" />
-          
+
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
             <span className="font-semibold bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/20">
               {destination.stats.intakeMonths}
@@ -76,11 +91,15 @@ export default function DestinationCard({ destination, index }: DestinationCardP
         <div className="space-y-1.5 text-xs text-slate-700 pt-1">
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-slate-900">Tuition:</span>
-            <span className="text-slate-600">{destination.stats.avgTuition}</span>
+            <span className="text-slate-600">
+              {destination.stats.avgTuition}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-slate-900">Work Visa:</span>
-            <span className="text-slate-600">{destination.stats.postStudyWork}</span>
+            <span className="text-slate-600">
+              {destination.stats.postStudyWork}
+            </span>
           </div>
         </div>
 
@@ -94,7 +113,6 @@ export default function DestinationCard({ destination, index }: DestinationCardP
           </Link>
         </div>
       </div>
-
     </div>
   );
 }
