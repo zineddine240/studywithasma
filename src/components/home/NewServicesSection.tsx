@@ -86,24 +86,23 @@ export default function NewServicesSection() {
       }
 
       if (gridRef.current) {
-        gsap.from(gridRef.current.children, {
-          opacity: 0,
-          y: 20,
-          stagger: 0.08,
-          duration: 0.5,
-          ease: "power2.out",
-          clearProps: "all",
-          scrollTrigger: {
-            trigger: gridRef.current,
-            start: "top 92%",
-            once: true,
+        gsap.fromTo(
+          gridRef.current.children,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.08,
+            duration: 0.5,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: "top 95%",
+              once: true,
+            },
           },
-          onComplete: () => {
-            if (gridRef.current) {
-              gsap.set(gridRef.current.children, { clearProps: "all" });
-            }
-          },
-        });
+        );
       }
     },
     { scope: sectionRef },

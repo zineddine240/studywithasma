@@ -91,26 +91,23 @@ export default function NewDestinationsSection() {
       }
 
       if (cardsContainerRef.current) {
-        gsap.from(cardsContainerRef.current.children, {
-          opacity: 0,
-          y: 20,
-          stagger: 0.08,
-          duration: 0.5,
-          ease: "power2.out",
-          clearProps: "all",
-          scrollTrigger: {
-            trigger: cardsContainerRef.current,
-            start: "top 92%",
-            once: true,
+        gsap.fromTo(
+          cardsContainerRef.current.children,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.08,
+            duration: 0.5,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: cardsContainerRef.current,
+              start: "top 95%",
+              once: true,
+            },
           },
-          onComplete: () => {
-            if (cardsContainerRef.current) {
-              gsap.set(cardsContainerRef.current.children, {
-                clearProps: "all",
-              });
-            }
-          },
-        });
+        );
       }
     },
     { scope: sectionRef },

@@ -92,24 +92,32 @@ export default function NewCtaSection() {
         }}
       />
 
-      {/* Swooping Golden Dashed Flight Path with Airplane */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none opacity-40 overflow-visible"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M 100 240 Q 600 280 1100 80"
+      {/* Aerobatic Flight Loop & Airplane on the Right Side Only */}
+      <div className="absolute right-0 top-0 bottom-0 w-80 sm:w-96 md:w-[480px] lg:w-[560px] pointer-events-none hidden sm:block overflow-visible select-none">
+        <svg
+          className="w-full h-full"
+          viewBox="0 0 560 220"
           fill="none"
-          stroke="#F59E0B"
-          strokeWidth="2"
-          strokeDasharray="6 6"
-        />
-      </svg>
-      <div
-        ref={planeRef}
-        className="absolute top-14 right-12 sm:right-24 hidden md:block text-[#F59E0B] rotate-12 pointer-events-none"
-      >
-        <Plane className="w-6 h-6 fill-[#F59E0B]" />
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Loop-de-loop flight path */}
+          <path
+            d="M 20 200 C 80 190, 160 140, 230 90 C 265 50, 320 25, 360 55 C 400 85, 395 155, 355 175 C 315 195, 280 165, 295 120 C 310 75, 390 40, 490 28"
+            stroke="#F59E0B"
+            strokeWidth="2.5"
+            strokeDasharray="6 6"
+            strokeLinecap="round"
+            className="opacity-70"
+          />
+        </svg>
+
+        {/* Golden Airplane at the apex of the flight trail */}
+        <div
+          ref={planeRef}
+          className="absolute top-[16px] right-[28px] lg:right-[42px] text-[#F59E0B] rotate-[24deg]"
+        >
+          <Plane className="w-6 h-6 fill-[#F59E0B] stroke-[#F59E0B]" />
+        </div>
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

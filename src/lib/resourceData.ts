@@ -167,7 +167,7 @@ export const ARTICLES: ResourceArticle[] = [
       name: "Asma",
       role: "Senior IELTS Trainer & Education Consultant",
     },
-    heroImage: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1200&auto=format&fit=crop",
     featured: false,
     keyTakeaways: [
       "University automatic merit scholarships (typically £2,000 to £8,000 / €2,500 to €5,000) are assessed with your main admission application.",
