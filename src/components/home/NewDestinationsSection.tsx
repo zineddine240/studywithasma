@@ -12,7 +12,7 @@ import {
   ItalyFlag,
   NetherlandsFlag,
   PolandFlag,
-} from "@/components/home/hero/CountryFlags";
+} from "@/components/ui/CountryFlags";
 
 interface CountryCardData {
   title: string;

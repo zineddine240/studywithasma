@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import DestinationCard from "@/components/destinations/DestinationCard";
 import type { Destination } from "@/lib/destinationData";
 import SectionTag from "@/components/ui/section-tag";
-import { FranceFlag, ItalyFlag } from "@/components/home/hero/CountryFlags";
+import { FranceFlag, ItalyFlag } from "@/components/ui/CountryFlags";
 import NewCtaSection from "@/components/home/NewCtaSection";
 
 interface DestinationsPageClientProps {

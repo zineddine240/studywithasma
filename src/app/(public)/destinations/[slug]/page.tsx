@@ -24,7 +24,7 @@ import {
   ItalyFlag,
   NetherlandsFlag,
   PolandFlag,
-} from "@/components/home/hero/CountryFlags";
+} from "@/components/ui/CountryFlags";
 import { SectionTag } from "@/components/ui/section-tag";
 import NewCtaSection from "@/components/home/NewCtaSection";
 

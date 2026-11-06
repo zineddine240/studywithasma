@@ -156,30 +156,25 @@ export function MyForm() {
 - **Tone & Voice:** Active, confident, and direct ("Prepare for IELTS", "Secure DSU €7,000 yearly grants", "1-on-1 embassy mock interviews"). Avoid buzzwords like "unparalleled pedagogical methodology", "holistic horizons", "empowering your educational symphony".
 - **Generous Whitespace & Breathing Room:** Let high-quality typography, pastel badges, and photography carry the design. Never clutter clean cards with multi-bullet paragraph lists.
 
-# Page Layout Standards (Porbe Architecture)
+# Page Layout Standards (Academic Luxury Architecture)
 
 - **Home Page (`/`):**
-  - Hero with dashed orbital ring, tilted student photos, 6 floating badges, headline, amber button (`Register Now →`), and dark quick-pathway selector.
-  - 6-card soft grid for services with pastel icon circles and `Read More →`.
-  - Signature Royal Blue impact section with white text, amber button, circular stat badges (`500+`, `98%`), and overlapping student photos.
-  - 5-stage alternating timeline (`01 Search`, `02 Compare`, `03 Engage`, `04 Apply`, `05 Go Abroad`) with connecting dotted line, followed by wide media photo with central play action.
-  - Horizontal destination cards (`001 France`, `002 Italy`).
-  - Founder Quote banner with Asma's circular portrait and amber button.
-  - 4 circular stat badges (`Band 7.5+`, `98%`, `500+`, `€0 Tuition`).
-  - Royal blue blog section with 1 large article and 2 stacked cards.
-  - 2-column clean card FAQ grid.
-  - Closing CTA banner with floating circular student portraits and amber button.
+  - Full-screen panoramic campus hero with light sky handwritten script *"Your future starts here ♡"*, primary headline, register button, and 4 value proposition pill cards.
+  - Destination grid (`Choose Your Destination`) with 4 clean white cards (Italy, France, Netherlands, Poland) featuring overlapping circular flag badges and *"Learn More →"*.
+  - IELTS Prep section (`Master IELTS with Confidence`) with desk flatlay visual and course highlights.
+  - Services grid (`How We Can Help You`) with 5 light cards and pastel icon badges.
+  - Closing CTA banner (`Ready to start your journey?`) with clean navy background, handwritten *"Let's make it happen! ♡"*, amber contact button, and golden aerobatic flight loop with docked airplane on the right.
 
 - **About Us Page (`/about`):**
-  - Hero with 2-column header (Headline on left, 2-line intro on right) + 4-photo mosaic gallery (1 tall photo on left, 3 stacked photos on right).
-  - 3-column milestone timeline (`2016`, `2020`, `2024`) with upward arrows `↑`.
-  - 4 circular stat badges (`Band 7.5+`, `98%`, `500+`, `€0 Tuition`).
-  - Signature Royal Blue block with 3 pill tabs (`Our Mission`, `Our Vision`, `Our Goals`) and clean white photo/content card inside.
-  - Single-column FAQ accordion.
-  - Closing CTA banner with floating circular student portraits and amber button.
+  - Hero with 2-column header (Headline on left, 2-line intro on right) + photo gallery.
+  - Milestone timeline (`2016`, `2020`, `2024`) with upward arrows `↑`.
+  - Trust stat badges (`Band 7.5+`, `1000+ Students Placed Abroad`).
+  - Core Purpose block with pill tabs (`Our Mission`, `Our Vision`, `Our Goals`) and clean photo/content card inside.
+  - FAQ accordion.
+  - Closing CTA banner with aerobatic flight loop and golden airplane.
 
 - **Contact Us Page (`/contact`):**
-  - Centered `Get In Touch` header.
-  - Floating soft card with first/last name, email, phone number, message textarea, and dark `Submit Now` pill button.
-  - Single-column FAQ accordion.
-  - Closing CTA banner with floating circular student portraits and amber button.
+  - Centered `Get In Touch` header with direct inquiries info on the left.
+  - Clean white form card with first/last name, email, phone number, message textarea, and dark amber `Submit Inquiry` button.
+  - FAQ accordion.
+  - Closing CTA banner.
