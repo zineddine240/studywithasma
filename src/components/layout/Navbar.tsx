@@ -238,14 +238,22 @@ export default function Navbar() {
               <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </button>
 
-            {/* Authenticated user portal shortcut (if logged in) */}
-            {user && (
+            {/* Authenticated user shortcut OR Log In button */}
+            {user ? (
               <Link
                 href={role === "admin" ? "/admin" : "/student-portal"}
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors border border-indigo-200"
               >
                 <UserIcon className="w-3.5 h-3.5" />
                 <span>{role === "admin" ? "Admin" : "Portal"}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-950 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <UserIcon className="w-4 h-4 text-slate-500" />
+                <span>Log In</span>
               </Link>
             )}
 
@@ -315,9 +323,10 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 px-4 rounded-full text-xs font-semibold text-slate-600 hover:text-slate-900"
+                  className="w-full text-center py-2.5 px-4 rounded-full text-sm font-semibold border border-slate-200 text-slate-800 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                 >
-                  Student Sign In
+                  <UserIcon className="w-4 h-4 text-slate-500" />
+                  <span>Log In</span>
                 </Link>
               )}
 
