@@ -9,16 +9,14 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className = "" }: ThemeToggleProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch - only render after mount
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
-    // Placeholder with same dimensions so layout doesn't shift
     return (
       <div className={`w-9 h-9 rounded-full ${className}`} aria-hidden="true" />
     );
@@ -28,27 +26,19 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
 
   return (
     <button
+      type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={`relative p-2 rounded-full text-muted-foreground hover:text-primary hover:bg-muted/50 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${className}`}
+      className={`p-2 text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer flex items-center justify-center ${className}`}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {/* Sun icon - shown in dark mode */}
-      <Sun
-        className={`w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-          isDark
-            ? "opacity-100 rotate-0 scale-100"
-            : "opacity-0 rotate-90 scale-75"
-        }`}
-      />
-      {/* Moon icon - shown in light mode */}
-      <Moon
-        className={`w-5 h-5 transition-all duration-300 ${
-          isDark
-            ? "opacity-0 -rotate-90 scale-75"
-            : "opacity-100 rotate-0 scale-100"
-        }`}
-      />
+      {isDark ? (
+        <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 stroke-[2.2]" />
+      ) : (
+        <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 stroke-[2.2]" />
+      )}
     </button>
   );
 }
+
+export default ThemeToggle;

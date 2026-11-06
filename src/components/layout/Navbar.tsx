@@ -16,6 +16,7 @@ import type {
   Session,
 } from "@supabase/supabase-js";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { createClient } from "@/utils/supabase/client";
 
 interface NavLinkItem {
@@ -238,6 +239,9 @@ export default function Navbar() {
               <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </button>
 
+            {/* Dark & Light Mode Switcher */}
+            <ThemeToggle />
+
             {/* Authenticated user shortcut OR Log In button */}
             {user ? (
               <Link
@@ -310,7 +314,13 @@ export default function Navbar() {
               })}
             </nav>
 
-            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+              <div className="flex items-center justify-between px-3 py-1 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  Switch Theme
+                </span>
+                <ThemeToggle />
+              </div>
               {user ? (
                 <Link
                   href={role === "admin" ? "/admin" : "/student-portal"}
