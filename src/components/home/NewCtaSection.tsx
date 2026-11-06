@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Plane } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap, isReducedMotion } from "@/lib/gsap";
 
@@ -10,7 +10,7 @@ export default function NewCtaSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const scriptRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const planeRef = useRef<HTMLDivElement>(null);
+  const planeRef = useRef<SVGGElement>(null);
 
   useGSAP(
     () => {
@@ -58,14 +58,12 @@ export default function NewCtaSection() {
       if (planeRef.current) {
         gsap.fromTo(
           planeRef.current,
-          { opacity: 0, x: -30, y: 20 },
+          { opacity: 0 },
           {
             opacity: 1,
-            x: 0,
-            y: 0,
-            duration: 0.9,
+            duration: 0.8,
             ease: "power2.out",
-            clearProps: "all",
+            clearProps: "opacity",
             scrollTrigger: {
               trigger: sectionRef.current,
               start: "top 85%",
@@ -102,22 +100,29 @@ export default function NewCtaSection() {
         >
           {/* Loop-de-loop flight path */}
           <path
-            d="M 20 200 C 80 190, 160 140, 230 90 C 265 50, 320 25, 360 55 C 400 85, 395 155, 355 175 C 315 195, 280 165, 295 120 C 310 75, 390 40, 490 28"
+            d="M 20 200 C 80 190, 160 140, 230 90 C 265 50, 320 25, 360 55 C 400 85, 395 155, 355 175 C 315 195, 280 165, 295 120 C 310 75, 390 40, 485 30"
             stroke="#F59E0B"
             strokeWidth="2.5"
             strokeDasharray="6 6"
             strokeLinecap="round"
             className="opacity-70"
           />
-        </svg>
 
-        {/* Golden Airplane at the apex of the flight trail */}
-        <div
-          ref={planeRef}
-          className="absolute top-[16px] right-[28px] lg:right-[42px] text-[#F59E0B] rotate-[24deg]"
-        >
-          <Plane className="w-6 h-6 fill-[#F59E0B] stroke-[#F59E0B]" />
-        </div>
+          {/* Golden Airplane connected directly to the tip of the flight trail */}
+          <g
+            ref={planeRef}
+            transform="translate(480, 6) scale(1.25)"
+          >
+            <path
+              d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"
+              fill="#F59E0B"
+              stroke="#F59E0B"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        </svg>
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
