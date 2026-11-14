@@ -31,7 +31,7 @@ export const ARTICLES: ResourceArticle[] = [
     publishDate: "October 2025",
     author: {
       name: "Asma",
-      role: "Senior IELTS Trainer & Education Consultant",
+      role: "IELTS Trainer & Education Consultant",
     },
     heroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop",
     featured: true,
@@ -79,7 +79,7 @@ export const ARTICLES: ResourceArticle[] = [
     publishDate: "October 2025",
     author: {
       name: "Asma",
-      role: "Senior IELTS Trainer & Education Consultant",
+      role: "IELTS Trainer & Education Consultant",
     },
     heroImage: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1200&auto=format&fit=crop",
     featured: false,
@@ -122,7 +122,7 @@ export const ARTICLES: ResourceArticle[] = [
     publishDate: "October 2025",
     author: {
       name: "Asma",
-      role: "Senior IELTS Trainer & Education Consultant",
+      role: "IELTS Trainer & Education Consultant",
     },
     heroImage: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1200&auto=format&fit=crop",
     featured: false,
@@ -165,7 +165,7 @@ export const ARTICLES: ResourceArticle[] = [
     publishDate: "October 2025",
     author: {
       name: "Asma",
-      role: "Senior IELTS Trainer & Education Consultant",
+      role: "IELTS Trainer & Education Consultant",
     },
     heroImage: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1200&auto=format&fit=crop",
     featured: false,

@@ -60,7 +60,7 @@ export default function IeltsPageClient({ courses }: IeltsPageClientProps) {
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
             Personalized guidance, weekly live interactive masterclasses,
             recorded lesson archives, and detailed examiner-level essay grading
-            from senior trainer Asma.
+            from trainer Asma.
           </p>
 
           <div className="pt-2 select-none -rotate-1">

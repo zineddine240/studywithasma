@@ -4,7 +4,7 @@ import IeltsPageClient from "./IeltsPageClient";
 export const metadata = {
   title: "IELTS Preparation | Academic & General Training | Study With Asma",
   description:
-    "Structured online IELTS preparation led by senior trainer Asma. Live classes, recorded lessons, personalized writing evaluations, and exam-proven strategies.",
+    "Structured online IELTS preparation led by trainer Asma. Live classes, recorded lessons, personalized writing evaluations, and exam-proven strategies.",
 };
 
 export default async function IeltsPage() {

@@ -78,8 +78,8 @@ export default function CoursesPageClient({
 
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
               Prepare with structured lessons, live interactive masterclasses,
-              recorded sessions, and personal feedback directly from senior
-              trainer Asma.
+              recorded sessions, and personal feedback directly from trainer
+              Asma.
             </p>
 
             <div className="pt-2 select-none -rotate-1">

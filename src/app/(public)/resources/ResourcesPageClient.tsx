@@ -44,8 +44,8 @@ export default function ResourcesPageClient({
           </h1>
 
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-            In-depth guides crafted by senior trainer Asma to help you master
-            test rubrics and navigate European university applications.
+            In-depth guides crafted by trainer Asma to help you master test
+            rubrics and navigate European university applications.
           </p>
 
           <div className="pt-2 select-none -rotate-1">

@@ -20,8 +20,8 @@ const STATS = [
     circleBg: "bg-amber-100 text-amber-700 border-amber-200",
   },
   {
-    number: "1000+",
-    label: "Students Placed Abroad",
+    number: "+1,000",
+    label: "IELTS Students Taught",
     icon: Users2,
     circleBg: "bg-indigo-100 text-indigo-700 border-indigo-200",
   },

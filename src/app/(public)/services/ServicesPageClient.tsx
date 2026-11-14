@@ -44,13 +44,13 @@ const SERVICES_DETAILED: ServiceDetail[] = [
     icon: Users,
     deliverables: [
       "Comprehensive evaluation of academic transcripts and GPA",
-      "Country admissibility audit (Italy, France, Netherlands, Poland)",
+      "Country admissibility audit (France, Italy)",
       "Scholarship eligibility assessment (DSU grant €7,000/yr, regional aid)",
       "Personalized timeline and intake deadline schedule",
     ],
     idealFor:
       "Students exploring European study abroad for the first time who need clear, realistic options.",
-    destinationsCovered: ["Italy", "France", "Netherlands", "Poland"],
+    destinationsCovered: ["France", "Italy"],
     timeline: "60-minute live 1-on-1 session + written roadmap",
     ctaText: "Book Initial Consultation",
     ctaHref: "/contact?service=consultation",
@@ -71,7 +71,7 @@ const SERVICES_DETAILED: ServiceDetail[] = [
     ],
     idealFor:
       "Applicants looking to maximize admissions success without wasting fees on ineligible programs.",
-    destinationsCovered: ["Italy", "France", "Netherlands", "Poland"],
+    destinationsCovered: ["France", "Italy"],
     timeline: "3–5 business days turnaround with full breakdown report",
     ctaText: "Get University Shortlist",
     ctaHref: "/contact?service=university-selection",
@@ -134,7 +134,7 @@ const SERVICES_DETAILED: ServiceDetail[] = [
     ],
     idealFor:
       "Admitted students aiming for a seamless visa approval and smooth transition to Europe.",
-    destinationsCovered: ["France", "Italy", "Netherlands", "Poland"],
+    destinationsCovered: ["France", "Italy"],
     timeline: "Dedicated support from portal submission until visa decision",
     ctaText: "Secure Application Guidance",
     ctaHref: "/contact?service=visa-guidance",
@@ -234,24 +234,16 @@ export default function ServicesPageClient() {
         </div>
       </section>
 
-      {/* ── 4 Key Pillars / Trust Indicators ── */}
+      {/* ── Key Trust Indicators ── */}
       <section className="py-8 sm:py-10 bg-white border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-xl mx-auto text-center">
             <div className="space-y-1">
               <span className="text-2xl sm:text-3xl font-extrabold text-[#0B1536] block">
-                98%
+                +1,000
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                Admission & Visa Success Rate
-              </span>
-            </div>
-            <div className="space-y-1">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#0B1536] block">
-                500+
-              </span>
-              <span className="text-xs text-slate-500 font-medium">
-                Students Guided to Europe
+                IELTS Students Taught
               </span>
             </div>
             <div className="space-y-1">
@@ -260,14 +252,6 @@ export default function ServicesPageClient() {
               </span>
               <span className="text-xs text-slate-500 font-medium">
                 Average IELTS Score Achieved
-              </span>
-            </div>
-            <div className="space-y-1">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#0B1536] block">
-                1-on-1
-              </span>
-              <span className="text-xs text-slate-500 font-medium">
-                Direct Mentorship with Asma
               </span>
             </div>
           </div>
