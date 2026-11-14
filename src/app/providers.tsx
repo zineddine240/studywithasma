@@ -5,15 +5,19 @@ import { useState } from "react";
 
 import { ThemeProvider } from "next-themes";
 
-// Suppress the React 19 false-positive warning caused by next-themes inline script tag
+// Suppress false-positive React 19 warnings caused by next-themes inline script tag
+// or browser extensions injecting DOM attributes (e.g. Bitwarden bis_skin_checked, bis_register)
 if (process.env.NODE_ENV === "development") {
   const origError = console.error;
   console.error = (...args: any[]) => {
+    const errorStr = args
+      .map((a) => (typeof a === "string" ? a : a?.message || ""))
+      .join(" ");
+
     if (
-      typeof args[0] === "string" &&
-      args[0].includes(
-        "Encountered a script tag while rendering React component",
-      )
+      errorStr.includes("Encountered a script tag while rendering React component") ||
+      errorStr.includes("bis_skin_checked") ||
+      errorStr.includes("bis_register")
     ) {
       return;
     }
